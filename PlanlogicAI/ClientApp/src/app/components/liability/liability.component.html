@@ -1,0 +1,310 @@
+<form role="form" class="form-horizontal" #cashFlowIncomeForm="ngForm" novalidate>
+    <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;">
+        <div class="col-sm-2" style="display:none;"></div>
+        <div class="col-sm-3" style="text-align:center;">
+            Type/Name
+        </div>
+        <div class="col-sm-2" style="text-align:center;">
+            Owner
+        </div>
+        <div class="col-sm-2" style="text-align:center;">
+            Principal
+        </div>
+        <div class="col-sm-2" style="text-align:center;">
+            Repayment Type/Value
+        </div>
+        <div class="col-sm-1" style="text-align:center;">
+            Interest(%)
+        </div>
+    </div>
+    <div class='row' id="div_id" *ngFor="let item of liabilities;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+        <div class="col-sm-2" style="display:none;"><input name="{{'LiabilityUpdate' + item.liabilityId}}" [(ngModel)]="item.liabilityId" value="{{item.liabilityId}}" /></div>
+        <div class="col-sm-3">
+        <div id="container" style="position:relative;">
+            <input disabled placeholder="Non-Deductible" id="{{'name'+ i}}" [(ngModel)]="item.name" name="{{'liabilityUpdate' + item.name}}" required maxlength="30" type="text" class="form-control editableDD" autocomplete="off" />
+            <select disabled class="form-control" id="type" name="{{item.type}}" [(ngModel)]="item.type" required>
+                <option class='option' *ngFor='let t of type' [value]="t">{{t}}</option>
+            </select>
+        </div>
+    </div>
+        <div class="col-sm-2">
+            <select disabled class="form-control" id="owner" name="{{item.owner}}" [(ngModel)]="item.owner" required>
+                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <input disabled type="number" class="form-control" min="1" required id="principal" name="{{item.principal}}" [(ngModel)]="item.principal">
+        </div>
+        <div class="col-sm-2">
+            <div id="container" style="position:relative;">
+                <input disabled placeholder="Principal & Interest" id="repaymentUpdate" [(ngModel)]="item.repayment" name="{{item.repayment}}" required type="number" class="form-control editableDD" autocomplete="off" />
+                <select disabled class="form-control" id="type" name="{{item.repaymentType}}" [(ngModel)]="item.repaymentType" required>
+                    <option class='option' *ngFor='let t of repayment' [value]="t.id">{{t.name}}</option>
+                </select>
+            </div>
+        </div>
+         <div class="col-sm-1">
+        <div id="container" style="position:relative;">
+            <input placeholder="Non-Deductible" id="liabilityInterestRate" [(ngModel)]="item.interestRate" disabled name="{{item.interestRate}}" required maxlength="30" type="text" class="form-control editableDD" autocomplete="off" />
+            <select disabled class="form-control" id="interestRate" name="item.interestRate" [(ngModel)]="item.interestRate" required>
+                <option class='option' *ngFor='let t of interestRate' [value]="t.id">{{t.name}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-sm-2">
+        <button class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Update" (click)="openModal(item,i)"></i></button>
+        <button (click)="deleteLiability(item,i)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+    </div>
+    </div>
+    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+        <div class="col-sm-2" style="display:none;"><input name="{{'liability' + liabilityDetails.liabilityId}}" [(ngModel)]="liabilityDetails.liabilityId" value="{{liabilityDetails.liabilityId}}" /></div>
+        <div class="col-sm-3">
+            <div id="container" style="position:relative;">
+                <input placeholder="Non-Deductible" id="liabilityName" [(ngModel)]="liabilityDetails.name" name="liabilityname" required maxlength="30" type="text" class="form-control editableDD" autocomplete="off" />
+                <select class="form-control" id="type" #liabilityType name="type" [(ngModel)]="liabilityDetails.type" (change)="changeType(liabilityType.value,'0');" onchange="document.getElementById('liabilityName').placeholder =this.options[this.selectedIndex].text;document.getElementById('liabilityName').select();" required>
+                    <option class='option' *ngFor='let t of type' [value]="t">{{t}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <select class="form-control" id="owner" name="owner" [(ngModel)]="liabilityDetails.owner" required>
+                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <input type="number" class="form-control" min="1" #principal required id="principal" name="principal" [(ngModel)]="liabilityDetails.principal" (input)="setRepaymentValue(repaymentType.value,principal.value,interestRate.value,liabilityDetails.term,0)">
+        </div>
+        <div class="col-sm-2">
+            <div id="container" style="position:relative;">
+                <input placeholder="Principal & Interest" id="repayment" #repaymentVal (input)="checkMinRepayment(repaymentVal.value,0)" [(ngModel)]="liabilityDetails.repayment" name="repayment" required type="number" class="form-control editableDD" autocomplete="off" />
+                <select class="form-control" id="repaymentType" #repaymentType name="repaymentType" (change)="setRepaymentValue(repaymentType.value,principal.value,interestRate.value,liabilityDetails.term,0)" [(ngModel)]="liabilityDetails.repaymentType" onchange="document.getElementById('repayment').placeholder =this.options[this.selectedIndex].text;document.getElementById('repayment').select();" required>
+                    <option class='option' *ngFor='let t of repayment' [value]="t.id">{{t.name}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-1">
+            <div id="container" style="position:relative;">
+                <input placeholder="Non-Deductible" (input)="setRepaymentValue(repaymentType.value,principal.value,interestRate.value,liabilityDetails.term,0)" id="liabilityInterestRate" [(ngModel)]="liabilityDetails.interestRate" name="name" required maxlength="30" type="text" class="form-control editableDD" autocomplete="off" />
+                <select class="form-control"  id="type" name="type" (change)="setRepaymentValue(repaymentType.value,principal.value,interestRate.value,liabilityDetails.term,0)" [(ngModel)]="liabilityDetails.interestRate" onchange="document.getElementById('liabilityInterestRate').value = this.options[this.selectedIndex].value;"  required>
+                    <option class='option' *ngFor='let t of interestRate' [value]="t.id">{{t.name}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-2" id="bb">
+            <button (click)="addFieldValue(liabilityDetails)" id="liability" class="btn btn-success btn-circle" data-toggle="popover" data-trigger="hover" data-container="body" data-placement="right" type="button" data-html="true" title="Assumptions"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+            <!--<div id="popover-content-liability" class="hide">
+                <ul class="list-group">
+                    <li class="list-group-item">Indexation : {{cfDetails.indexation}}</li>
+                    <li class="list-group-item">Start Date : {{cfDetails.startDateType}}</li>
+                    <li class="list-group-item">End Date : {{cfDetails.endDateType}}</li>
+                </ul>
+            </div>-->
+        </div>
+    </div>
+</form>
+
+<div class="backdrop" [ngStyle]="{'display':display}"></div>
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':display}">
+    <div class="modal-dialog" role="document" style="width:90%;height:100%;">
+
+        <div class="modal-content" style="height:100%;">
+
+            <div class="modal-guts">
+                <div class="modal-body">
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        <label class="col-sm-1 labelAlignment" style="width:12%;" for="name">Name</label>
+                        <div class="col-sm-3">
+                            <input id="name" [(ngModel)]="liabilityUpdateDetails.name" name="name" required maxlength="30" class="form-control">
+                        </div>
+                        <label class="col-sm-1 labelAlignment" for="owner" style="text-align:right;">Owner</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="owner" name="owner" [(ngModel)]="liabilityUpdateDetails.owner" required>
+                                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+                            </select>
+                        </div>
+                        <label class="col-sm-1 labelAlignment" for="type">Type</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="type" #liabilityTypeUpdate name="type" [(ngModel)]="liabilityUpdateDetails.type" required (change)="changeType(liabilityTypeUpdate.value,'1');">
+                                <option class='option' *ngFor='let t of type' [value]="t">{{t}}</option>
+                            </select>
+                        </div>
+
+                    </div> 
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        <label class="col-sm-1 labelAlignment" style="width:12%;">Principal ($)</label>
+                        <div class="col-sm-2"><input (input)="setRepaymentValue(repaymentTypeUpdate.value,principalUpdate.value,interestRateUpdate.value,termUpdate.value,1)" #principalUpdate type="number" class="form-control" min="1" required id="principal" name="principal" [(ngModel)]="liabilityUpdateDetails.principal"></div>
+
+                        <label class="col-sm-2 labelAlignment" style="text-align:right;">Deductibility (%)</label>
+                        <div class="col-sm-2"><input type="number" class="form-control"  min="1" required id="deductibility" name="deductibility" [(ngModel)]="liabilityUpdateDetails.deductibility"></div>
+
+                        <label class="col-sm-1 labelAlignment" for="type">Interest rate(%)</label>
+                        <div class="col-sm-2">
+                            <div id="container" style="position:relative;">
+                                <input placeholder="Non-Deductible" id="liabilityInterestRateUpdate" (input)="setRepaymentValue(repaymentTypeUpdate.value,principalUpdate.value,interestRateUpdate.value,termUpdate.value,1)" #interestRateUpdate [(ngModel)]="liabilityUpdateDetails.interestRate" name="name" required maxlength="30" type="text" class="form-control editableDD" autocomplete="off" />
+                                <select class="form-control" id="type" name="type" [(ngModel)]="liabilityUpdateDetails.interestRate"  (change)="setRepaymentValue(repaymentTypeUpdate.value,principalUpdate.value,interestRateUpdate.value,termUpdate.value,1)" onchange="document.getElementById('liabilityInterestRateUpdate').value = this.options[this.selectedIndex].value;" required>
+                                    <option class='option' *ngFor='let t of interestRate' [value]="t.id">{{t.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        <label class="col-sm-2 labelAlignment" style="width:12%;">Repayment Type</label>
+                        <div class="col-sm-2">
+                            <select #repaymentTypeUpdate  class="form-control" (change)="setRepaymentValue(repaymentTypeUpdate.value,principalUpdate.value,interestRateUpdate.value,termUpdate.value,1)" id="type" name="type" [(ngModel)]="liabilityUpdateDetails.repaymentType" required>
+                                <option class='option' *ngFor='let t of repayment' [value]="t.id">{{t.name}}</option>
+                            </select>
+                        </div>
+                        <label class="col-sm-2 labelAlignment" style="text-align:right;">Repayment</label>
+                        <div class="col-sm-2"><input type="number" class="form-control" min="1" required id="repaymentValUpdate" name="repaymentValUpdate" #repaymentValUpdate (input)="checkMinRepayment(repaymentValUpdate.value,1)" [(ngModel)]="liabilityUpdateDetails.repayment"></div>
+                        <label class="col-sm-1 labelAlignment" for="type">Term (years)</label>
+                        <div class="col-sm-2"><input type="number" (input)="setRepaymentValue(repaymentTypeUpdate.value,principalUpdate.value,interestRateUpdate.value,termUpdate.value,1)" #termUpdate class="form-control" min="1" required id="term" name="term" [(ngModel)]="liabilityUpdateDetails.term"></div>
+
+                    </div>
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        <label class="col-sm-2 labelAlignment" style="width:12%;">Credit Limit ($)</label>
+                        <div class="col-sm-2"><input type="number" class="form-control" min="1" required id="creditLimit" name="creditLimit" [(ngModel)]="liabilityUpdateDetails.creditLimit"></div>
+
+                        <label class="col-sm-2 labelAlignment" style="text-align:right;">Associated Asset</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="associatedAssetassociatedAsset" name="associatedAsset" [(ngModel)]="liabilityUpdateDetails.associatedAsset" required>
+                                <option class='option' *ngFor='let t of associatedAssets' [value]="t.id">{{t.name}}</option>
+                            </select>
+                        </div>
+
+
+                    </div>
+
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        <div class="form-group">
+                            <label class="col-sm-1 labelAlignment" style="width:12%;">Commence on</label><div class="col-sm-2">
+                                <select class="form-control" id="commenceOnDateType" name="commenceOnDateType" [(ngModel)]="liabilityUpdateDetails.commenceOnDateType" required>
+                                    <option class='option' *ngFor='let s of start' [value]="s.id">{{s.name}}</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2" *ngIf="liabilityUpdateDetails.commenceOnDateType === 'Year'">
+                                <select class="form-control" id="commenceOnDate" name="commenceOnDate" [(ngModel)]="liabilityUpdateDetails.commenceOnDate" required>
+                                    <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        <div class="form-group">
+                            <label class="col-sm-1 labelAlignment" style="width:12%;">Full Repayment by</label>
+                            <div class="col-sm-2">
+                                <select class="form-control" id="repaymentDateType" name="repaymentDateType" [(ngModel)]="liabilityUpdateDetails.repaymentDateType" required>
+                                    <option class='option' *ngFor='let e of end' [value]="e.id">{{e.name}}</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2" *ngIf="liabilityUpdateDetails.repaymentDateType === 'Year'">
+                                <select class="form-control" id="repaymentDate" name="repaymentDate" [(ngModel)]="liabilityUpdateDetails.repaymentDate" required>
+                                    <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="line-title"><span>Drawdowns</span><hr /></div>
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;font-size:14px !important;">
+                        <div class="col-sm-1" style="display:none;"></div>
+                        <div class="col-sm-2" style="text-align:center;">
+                            Amount($)
+                        </div>
+                        <div class="col-sm-2" style="text-align:center;">
+                            From
+                        </div>
+                        <div class="col-sm-2">
+                            To
+                        </div>
+
+                    </div>
+                  
+            <div class='row' id="div_id" *ngFor="let item of liabilityDrawdowns;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+                <div class="col-sm-1" style="display:none;"><input name="{{'DD' + item.liabilityId}}" [(ngModel)]="item.liabilityId" value="{{item.liabilityId}}" /></div>
+               
+                <div class="col-sm-2">
+                    <input type="number" class="form-control" min="1" required id="amount" name="{{'DD'+item.amount}}" [(ngModel)]="item.amount">
+                </div>
+
+                <div class="col-sm-2">
+                    <select  class="form-control" id="ddfromDateType" name="ddfromDateType" [(ngModel)]="item.fromDateType" required>
+                        <option class='option' *ngFor='let f of from' [value]="f.id">{{f.name}}</option>
+                    </select>
+                </div>
+                <div class="col-sm-2" *ngIf="item.fromDateType === 'Year'" style="width:11%;">
+                    <select  class="form-control" id="ddfromDate" name="ddfromDate" [(ngModel)]="item.fromDate" required>
+                        <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                    </select>
+                </div>
+
+
+                <div class="col-sm-2">
+                    <select class="form-control" id="ddtoDateType" name="ddtoDateType" [(ngModel)]="item.toDateType" required>
+                        <option class='option' *ngFor='let t of to' [value]="t.id">{{t.name}}</option>
+                    </select>
+                </div>
+                <div class="col-sm-2" *ngIf="item.toDateType === 'Year'" style="width:11%;">
+                    <select class="form-control" id="ddtoDate" name="ddtoDate" [(ngModel)]="item.toDate" required>
+                        <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                    </select>
+                </div>
+                <div class="col-sm-1">
+
+                    <button (click)="DeleteLiabilityDD(item,i)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+                </div>
+            </div>
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+                        <div class="col-sm-2">
+                            <input type="number" class="form-control" min="1" required id="amount" name="amount" [(ngModel)]="drawdown.amount">
+                        </div>
+
+
+                        <div class="col-sm-2">
+                            <select class="form-control" id="drawdownfromDateType" name="drawdownfromDateType" [(ngModel)]="drawdown.fromDateType" required>
+                                <option class='option' *ngFor='let f of from' [value]="f.id">{{f.name}}</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2" *ngIf="drawdown.fromDateType === 'Year'" style="width:11%;">
+                            <select class="form-control" id="drawdownDetailsfromDate" name="drawdownDetailsfromDate" [(ngModel)]="drawdown.fromDate" required>
+                                <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                            </select>
+                        </div>
+
+
+                        <div class="col-sm-2">
+                            <select class="form-control" id="drawdowntoDateType" name="drawdowntoDateType" [(ngModel)]="drawdown.toDateType" required>
+                                <option class='option' *ngFor='let t of to' [value]="t.id">{{t.name}}</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2" *ngIf="drawdown.toDateType === 'Year'" style="width:11%;">
+                            <select class="form-control" id="drawdowntoDate" name="drawdowntoDate" [(ngModel)]="drawdown.toDate" required>
+                                <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                            </select>
+                        </div>
+
+                        <div class="col-sm-1">
+                            <button id="asset" (click)="AddLiabilityDD(drawdown)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <div class="form-group">
+                        <div class="col-sm-12">
+
+                            <button type="button" (click)="updateLiability(liabilityUpdateDetails)" class="btn btn-success ">Update</button>
+                            <button type="button" class="btn btn-danger pull-right" (click)="onCloseHandled()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

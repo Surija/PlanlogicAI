@@ -1,0 +1,209 @@
+
+
+<form (ngSubmit)="onSubmit()" #basicDetailsForm="ngForm" ngNativeValidate>
+  <div class="line-title"><span>Basic details</span><hr /></div>
+
+  <div class="row">
+    <div class="col-sm-3">
+      <mat-form-field class="example-full-width">
+        <input matInput placeholder="Family Name" [(ngModel)]="client.familyName" id="familyName" name="familyName" required maxlength="15">
+      </mat-form-field>
+      </div>
+      <div class="col-sm-3">
+        <mat-form-field>
+          <mat-select placeholder="Advice For" id="cMaritalStatus" #cMaritalStatus name="cMaritalStatus" [(ngModel)]="client.maritalStatus" (change)="clientMaritalStatusChange(cMaritalStatus.value)" required>
+            <mat-option *ngFor='let ms of maritalStatus' [value]="ms.id">
+              {{ms.name}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="row">
+      <!--<div class="col-sm-1"> </div>-->
+      <div class="col-sm-3"><hr /></div>
+      <div class="col-sm-3" *ngIf="showHide"><hr /></div>
+      <div class="col-sm-3" *ngIf="showHide"><hr /></div>
+    </div>
+    <div class="row">
+      <!--<div class="col-sm-1">
+    </div>-->
+      <div class="col-sm-3">
+        <label style="font-weight:bold;color:gray">Client</label>
+      </div>
+      <div class="col-sm-3" *ngIf="showHide">
+        <label style="font-weight:bold;color:gray">Partner</label>
+      </div>
+      <div class="col-sm-3" *ngIf="showHide">
+        <label style="font-weight:bold;color:gray">Joint</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3">
+        <mat-form-field class="example-full-width">
+          <input matInput placeholder="Client Name" id="clientName" [(ngModel)]="client.clientName" name="clientName" required maxlength="15">
+        </mat-form-field>
+
+      </div>
+      <div class="col-sm-3" *ngIf="showHide">
+        <mat-form-field class="example-full-width">
+          <input matInput placeholder="Partner Name" [(ngModel)]="client.partnerName" id="PartnerName" name="PartnerName" [attr.required]="isMarried" maxlength="15">
+        </mat-form-field>
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3">
+        <mat-form-field>
+          <input matInput (dateChange)="changeDOB($event,'client')" (dateInput)="changeDOB($event,'client')" [matDatepicker]="picker" placeholder="Client Date of Birth" [ngModel]="client.clientDob" name="client.clientDob" [formControl]="clientDOB" required>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+      </div>
+      <div class="col-sm-3" *ngIf="showHide">
+        <mat-form-field>
+          <input matInput (dateChange)="changeDOB($event,'partner')" (dateInput)="changeDOB($event,'partner')" [matDatepicker]="picker1" placeholder="Partner Date of Birth" [ngModel]="client.partnerDob" name="client.partnerDob" [formControl]="partnerDob" [attr.required]="isMarried">
+          <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+          <mat-datepicker #picker1></mat-datepicker>
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3">
+        <mat-form-field>
+          <mat-select placeholder="Client Employment Status" id="clientEmpStatus" #cEmpStatus name="clientEmpStatus" [(ngModel)]="client.clientEmpStatus" (change)="clientEmpStatusChange(cEmpStatus.value)" required>
+            <mat-option *ngFor='let empStatus of empStatuses' [value]="empStatus">
+              {{empStatus}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </div>
+      <div class="col-sm-3" *ngIf="showHide">
+        <mat-form-field>
+          <mat-select placeholder="Partner Employment Status" id="partnerEmpStatus" #pEmpStatus name="partnerEmpStatus" [(ngModel)]="client.partnerEmpStatus" (change)="partnerEmpStatusChange(pEmpStatus.value)" [attr.required]="isMarried">
+            <mat-option *ngFor='let empStatus of empStatuses' [value]="empStatus">
+              {{empStatus}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3">
+        <mat-form-field>
+          <mat-select placeholder="Client Retirement Year" id="clientRetirementYear" name="clientRetirementYear" [(ngModel)]="client.clientRetirementYear" [disabled]="clientEmpStatusDisabled">
+            <mat-option [value]="0"></mat-option>
+            <mat-option *ngFor='let ret of retirement' [value]="ret.id">
+              {{ret.name}} ({{ret.clientage}})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="col-sm-3" *ngIf="showHide">
+        <mat-form-field>
+          <mat-select placeholder="Partner Retirement Year" id="partnerRetirementYear" name="partnerRetirementYear" [(ngModel)]="client.partnerRetirementYear" [disabled]="partnerEmpStatusDisabled">
+            <mat-option [value]="0"></mat-option>
+            <mat-option *ngFor='let ret of retirement' [value]="ret.id">
+              {{ret.name}} ({{ret.partnerage}})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3">
+        <mat-form-field>
+          <mat-select placeholder="Client Private Health Insurance" id="clientPrivateHealthInsurance" name="clientPrivateHealthInsurance" [(ngModel)]="client.clientPrivateHealthInsurance" required>
+            <mat-option *ngFor='let boolValue of booleanValues' [value]="boolValue.id">
+              {{boolValue.name}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </div>
+      <div class="col-sm-3" *ngIf="showHide">
+        <mat-form-field>
+          <mat-select placeholder="Partner Private Health Insurance" id="partnerPrivateHealthInsurance" name="partnerPrivateHealthInsurance" [(ngModel)]="client.partnerPrivateHealthInsurance" [attr.required]="isMarried">
+            <mat-option *ngFor='let boolValue of booleanValues' [value]="boolValue.id">
+              {{boolValue.name}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-3">
+        <mat-form-field>
+          <mat-select placeholder="Client Risk Profile" id="clientRiskProfile" name="clientRiskProfile" [(ngModel)]="client.clientRiskProfile" required>
+            <mat-option *ngFor='let riskProfile of riskProfiles' [value]="riskProfile">
+              {{riskProfile}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </div>
+      <div class="col-sm-3" *ngIf="showHide">
+        <mat-form-field>
+          <mat-select placeholder="Partner Risk Profile" id="partnerRiskProfile" name="partnerRiskProfile" [(ngModel)]="client.partnerRiskProfile" [attr.required]="isMarried">
+            <mat-option *ngFor='let riskProfile of riskProfiles' [value]="riskProfile">
+              {{riskProfile}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </div>
+      <div class="col-sm-3" *ngIf="showHide">
+        <mat-form-field>
+          <mat-select placeholder="Joint Risk Profile" id="jointRiskProfile" name="jointRiskProfile" [(ngModel)]="client.jointRiskProfile" [attr.required]="isMarried">
+            <mat-option *ngFor='let riskProfile of riskProfiles' [value]="riskProfile">
+              {{riskProfile}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </div>
+    </div>
+    <div class="row"></div>
+    <div class="row">
+      <div class="col-sm-3" *ngIf="showHide"></div>
+      <div class="col-sm-6" style="text-align:right;">
+        <button mat-raised-button type="submit" [disabled]="!basicDetailsForm.form.valid" title="Save" class="  btn-success" style="text-decoration:none;">  <i class="glyphicon glyphicon-check"></i> Save</button>
+        <!--<button type="submit" [disabled]="!basicDetailsForm.form.valid" class="btn btn-success" title="Save" style="text-decoration:none;">
+        <i class="glyphicon glyphicon-check"></i> Save
+      </button>-->
+      </div>
+    </div>
+    <!--<div class="row">
+      <div class="col-sm-3">
+          <label for="ClientNoOfDependents">No. of Dependents &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (if above 1)</label>
+      </div>
+
+      <div class="col-sm-3">
+          <input type="number" class="form-control" [(ngModel)]="client.noOfDependents" name="noOfDependents" id="noOfDependents">
+      </div>
+
+  </div>-->
+    <!--<div class="row">
+      <div class="col-sm-4">
+          <label for="StartDate" class="labelAlignment">Start Projections on 1 July</label>
+      </div>
+      <div class="col-sm-2">
+          <input type="number" required [(ngModel)]="client.startDate" name="startDate" class="form-control" id="startDate">
+      </div>
+
+
+      <div class="col-sm-4">
+          <label for="Period" class="labelAlignment">Number of projection periods</label>
+      </div>
+      <div class="col-sm-2">
+          <input type="number" required [(ngModel)]="client.period" name="period" class="form-control" id="period">
+      </div>
+
+  </div>-->
+
+</form>

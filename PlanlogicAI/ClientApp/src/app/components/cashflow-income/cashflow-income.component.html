@@ -1,0 +1,158 @@
+
+<form role="form" class="form-horizontal" #cashFlowIncomeForm="ngForm" novalidate>
+    <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;">
+        <div class="col-sm-2" style="display:none;"></div>
+        <div class="col-sm-3" style="text-align:center;">
+            Type/Name
+        </div>
+        <div class="col-sm-2" style="text-align:center;">
+            Owner
+        </div>
+        <div class="col-sm-2" style="text-align:center;">
+            Value
+        </div>
+        <div class="col-sm-2" style="text-align:center;">
+
+        </div>
+    </div>
+    <div class='row' id="div_id" *ngFor="let item of cashFlowIncome;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+        <div class="col-sm-2" style="display:none;"><input name="{{'Cashflow' + item.cflowId}}" [(ngModel)]="item.cflowId" value="{{item.cflowId}}" /></div>
+        <div class="col-sm-3">
+            <div id="container" style="position:relative;">
+                <input disabled placeholder="" id="{{'cfname'+ i}}" [(ngModel)]="item.cfname" name="{{item.cfname}}" required maxlength="30" type="text" class="form-control editableDD" autocomplete="off" />
+                <select disabled class="form-control" id="type" name="{{item.type}}" [(ngModel)]="item.type" required>
+                    <option class='option' *ngFor='let t of type' [value]="t.id">{{t.name}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <select class="form-control" id="owner" name="{{item.owner}}" [(ngModel)]="item.owner" required disabled>
+                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <input type="number" class="form-control" min="1" required id="value" name="{{item.value}}" [(ngModel)]="item.value" disabled>
+        </div>
+        <div class="col-sm-2">
+            <button class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Update" (click)="openModal(item,i)"></i></button>
+            <button (click)="deleteCashFlow(item,i)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+        </div>
+    </div>
+
+    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+        <div class="col-sm-2" style="display:none;"><input name="{{'cf' + cfDetails.cflowId}}" [(ngModel)]="cfDetails.cflowId" value="{{cfDetails.cflowId}}" /></div>
+        <div class="col-sm-3">
+            <div id="container" style="position:relative;">
+                <input placeholder="Employment" id="cfIncomeName" [(ngModel)]="cfDetails.cfname" name="cfname" required maxlength="30" type="text" class="form-control editableDD" autocomplete="off" />
+                <select class="form-control" id="type" #incomeType name="type" [(ngModel)]="cfDetails.type" (change)="changeFieldValue(incomeType.value,'0');" onchange="document.getElementById('cfIncomeName').placeholder =this.options[this.selectedIndex].text;document.getElementById('cfIncomeName').select();" required>
+                    <option class='option' *ngFor='let t of type' [value]="t.id">{{t.name}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <select class="form-control" id="owner" name="owner" [(ngModel)]="cfDetails.owner" required>
+                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <input type="number" class="form-control" min="1" required id="value" name="value" [(ngModel)]="cfDetails.value">
+        </div>
+        <div class="col-sm-2" id="bb">
+            <button (click)="addFieldValue(cfDetails)" id="income" class="btn btn-success btn-circle" data-toggle="popover" data-trigger="hover" data-container="body" data-placement="right" type="button" data-html="true" title="Assumptions"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+            <div id="popover-content-income" class="hide">
+                <ul class="list-group">
+                    <li class="list-group-item">Indexation : {{cfDetails.indexation}}</li>
+                    <li class="list-group-item">Start Date : {{cfDetails.startDateType}}</li>
+                    <li class="list-group-item">End Date : {{cfDetails.endDateType}}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+<!--TODO: DETAILS-->
+<div class="backdrop" [ngStyle]="{'display':display}"></div>
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':display}">
+    <div class="modal-dialog" role="document" style="width:90%;height:100%;">
+        <!--  <form style="padding-top:50px;" role="form" class="form-horizontal" #cashFlowIncomeDetailsForm="ngForm" ngNativeValidate>-->
+        <div class="modal-content" style="height:100%;">
+            <!--<div class="modal-header">
+                <button type="button" class="close" aria-label="Close" (click)="onCloseInvestment()"><span aria-hidden="true">&times;</span></button>
+            </div>-->
+            <div class="modal-guts">
+                <div class="modal-body">
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        <label class="col-sm-1 labelAlignment" for="cfname"  style="width:11%;">Name</label>
+                        <div class="col-sm-3">
+                            <input id="cfname" [(ngModel)]="cfUpdateDetails.cfname" name="cfname" required maxlength="30" class="form-control">
+                        </div>
+                        <label class="col-sm-1 labelAlignment" for="type">Type</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="type" name="type" [(ngModel)]="cfUpdateDetails.type" (change)="changeFieldValue(incomeType.value,'1');" required>
+                                <option class='option' *ngFor='let t of type' [value]="t.id">{{t.name}}</option>
+                            </select>
+                        </div>
+                        <label class="col-sm-1 labelAlignment" for="owner">Owner</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="owner" name="owner" [(ngModel)]="cfUpdateDetails.owner" required>
+                                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        <label class="col-sm-1 labelAlignment"  style="width:11%;">Value ($)</label>
+                        <div class="col-sm-2"><input type="number" class="form-control" min="1" required id="value" name="value" [(ngModel)]="cfUpdateDetails.value"></div>
+                        <label class="col-sm-2 labelAlignment" style="text-align:center;">Indexation (%)</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="indexation" name="indexation" [(ngModel)]="cfUpdateDetails.indexation">
+                                <option class='option' value="0"></option>
+                                <option class='option' *ngFor='let i of indexation' [value]="i.id">{{i.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        <div class="form-group">
+                            <label class="col-sm-1 labelAlignment"  style="width:11%;">From</label><div class="col-sm-2">
+                                <select class="form-control" id="startDateType" #sDateType name="startDateType" [(ngModel)]="cfUpdateDetails.startDateType" required>
+                                    <option class='option' *ngFor='let s of start' [value]="s.id">{{s.name}}</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2" *ngIf="cfUpdateDetails.startDateType === 'Year'">
+                                <select class="form-control" id="startDate" name="startDate" [(ngModel)]="cfUpdateDetails.startDate" required>
+                                    <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;"> 
+                        <div class="form-group">
+                            <label class="col-sm-1 labelAlignment"  style="width:11%;">To</label>
+                            <div class="col-sm-2">
+                                <select class="form-control" id="endDateType" #eDateType name="endDateType" [(ngModel)]="cfUpdateDetails.endDateType" required>
+                                    <option class='option' *ngFor='let e of end' [value]="e.id">{{e.name}}</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2" *ngIf="cfUpdateDetails.endDateType === 'Year'">
+                                <select class="form-control" id="endDate" name="endDate" [(ngModel)]="cfUpdateDetails.endDate" required>
+                                    <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <!--[disabled]="!cashFlowIncomeFormDetails.form.valid"-->
+                            <button type="button" (click)="addFieldValue(cfUpdateDetails)" class="btn btn-success ">Update</button>
+                            <button type="button" class="btn btn-danger pull-right" (click)="onCloseHandled()" >Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--</form>-->
+    </div>
+</div>

@@ -1,0 +1,622 @@
+<!--{{ selectedClient | json }}
+{{ cashFlowIncome | json }}-->
+
+
+<table class="table" style="margin-top:30px;">
+    <tbody>
+        <tr style="background-color:#4c89bb;color:white">
+            <th style="min-width:230px !important;"></th>
+            <th *ngFor="let year of years">1/7/{{year}}</th>
+        </tr>
+        <tr style="color:gray">
+            <td style="border:none;"> Age - {{selectedClient.clientName}}</td>
+            <td style="border:none;" *ngFor="let year of years;let index = index">
+                <span *ngIf="year == clientRetirementYear else ageC">  {{index + clientAge }} [R] </span>  <ng-template #ageC> <span>{{index + clientAge }}</span> </ng-template>
+            </td>
+        </tr>
+
+        <tr style="color:gray" *ngIf="this.selectedClient.maritalStatus == 'M'">
+            <td style="border:none;"> Age - {{selectedClient.partnerName}}</td>
+            <td style="border:none;" *ngFor="let year of years;let index = index">
+                <span *ngIf="year == partnerRetirementYear else ageP"> {{index + partnerAge }} [R] </span>  <ng-template #ageP> <span>{{index + partnerAge }}</span> </ng-template>
+            </td>
+        </tr>
+        <tr style="height:40px;">
+            <td [attr.colspan]="period"></td>
+        </tr>
+
+        <!--Summary-->
+        <tr class="header">
+            <td style="border:none;font-weight:bold;" [attr.colspan]="period"> SUMMARY </td>
+        </tr>
+        <tr style="background:#619dce;">
+            <td [attr.colspan]="period"></td>
+        </tr>
+        <!--Client-->
+        <tr>
+            <td [attr.colspan]="period" style="border-bottom:1px solid #619dce;">{{selectedClient.clientName}}</td>
+        </tr>
+
+        <tr *ngIf="TotalPayable?.length <= 0 else clientTotalPayableSummary"></tr>
+        <ng-template #clientTotalPayableSummary>
+            <tr style="font-weight:bold;background:#eff8ff;" *ngFor="let item of TotalPayable | filter:'ClientTotalTaxPayable'">
+                <td style="border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="color:gray;font-style:oblique;" *ngFor="let item of TotalPayable | filter:'ClientAverageTaxRate'">
+                <td style="border:none;padding-left:2em !important;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}}% </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="color:gray;font-style:oblique;" *ngFor="let item of TotalPayable | filter:'ClientMarginalTaxRate'">
+                <td style="border:none;padding-left:2em !important;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}}% </span> </ng-template>
+                </td>
+            </tr>
+
+        </ng-template>
+        <tr style="height:10px;">
+            <td [attr.colspan]="period" style="border:none;"></td>
+        </tr>
+        <tr *ngIf="clientRTaxOffset?.length <= 0 else clientRTaxOffsetsSummary"></tr>
+        <ng-template #clientRTaxOffsetsSummary>
+
+            <tr *ngFor="let item of clientRTaxOffset | filter:'ClientFrankingCredits'">
+                <td style="border:none;padding-left:2em !important;">Refundable tax offsets</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else crt"> - </span>  <ng-template #crt> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+
+        </ng-template>
+        <tr *ngIf="clientNRTaxOffset?.length <= 0 else clientNRTaxOffsetsSummary"></tr>
+        <ng-template #clientNRTaxOffsetsSummary>
+            <tr *ngFor="let item of clientNRTaxOffset | filter:'ClientTotalTO'">
+                <td style="border:none;padding-left:2em !important;">Non-refundable tax offsets</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else cnrt"> - </span>  <ng-template #cnrt> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+
+        </ng-template>
+        <tr style="height:20px;">
+            <td [attr.colspan]="period" style="border:none;"></td>
+        </tr>
+        <!--Partner-->
+        <tr>
+            <td [attr.colspan]="period" style="border-bottom:1px solid #619dce;border-top:none;">{{selectedClient.partnerName}}</td>
+        </tr>
+        <tr *ngIf="TotalPayable?.length <= 0 else partnerTotalPayableSummary"></tr>
+        <ng-template #partnerTotalPayableSummary>
+            <tr style="font-weight:bold;background:#eff8ff;" *ngFor="let item of TotalPayable | filter:'PartnerTotalTaxPayable'">
+                <td style="border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="color:gray;font-style:oblique;" *ngFor="let item of TotalPayable | filter:'PartnerAverageTaxRate'">
+                <td style="border:none;padding-left:2em !important;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}}% </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="color:gray;font-style:oblique;" *ngFor="let item of TotalPayable | filter:'PartnerMarginalTaxRate'">
+                <td style="border:none;padding-left:2em !important;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}}% </span> </ng-template>
+                </td>
+            </tr>
+
+        </ng-template>
+        <tr style="height:10px;">
+            <td [attr.colspan]="period" style="border:none;"></td>
+        </tr>
+        <tr *ngIf="partnerRTaxOffset?.length <= 0 else partnerRTaxOffsetsSummary"></tr>
+        <ng-template #partnerRTaxOffsetsSummary>
+
+            <tr *ngFor="let item of partnerRTaxOffset | filter:'PartnerFrankingCredits'">
+                <td style="border:none;padding-left:2em !important;">Refundable tax offsets</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else crt"> - </span>  <ng-template #crt> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+
+        </ng-template>
+        <tr *ngIf="partnerRTaxOffset?.length <= 0 else partnerNRTaxOffsetsSummary"></tr>
+        <ng-template #partnerNRTaxOffsetsSummary>
+            <tr *ngFor="let item of partnerNRTaxOffset | filter:'PartnerTotalTO'">
+                <td style="border:none;padding-left:2em !important;">Non-refundable tax offsets</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else cnrt"> - </span>  <ng-template #cnrt> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+
+        </ng-template>
+        <!--Main body-->
+        <tr class="header" style="margin-top:30px;">
+            <td style="border:none;font-weight:bold;" [attr.colspan]="period"> TAXATION -  {{selectedClient.clientName}} <span class="glyphicon glyphicon-chevron-up" style="left:90%;"></span></td>
+        </tr>
+        <tr style="background:#619dce;">
+            <td [attr.colspan]="period"></td>
+        </tr>
+        <tr style="height:20px;">
+            <td [attr.colspan]="period" style="border-bottom:1px solid #619dce;"></td>
+        </tr>
+        <tr *ngIf="cfiClient?.length <= 0 else clientIncomeTotal"></tr>
+        <ng-template #clientIncomeTotal>
+            <tr *ngFor="let item of Income | filter:'Total-client'">
+                <td style="padding-left:1em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ict"> - </span>  <ng-template #ict> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr *ngFor="let item of Income | filter:'Client'" style="color:gray;">
+                <td style="padding-left:2em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ic"> - </span>  <ng-template #ic> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+
+        <!--Income Total-->
+
+        <tr *ngIf="cfiClient?.length <= 0  else CAssessibleIncomeTotal"></tr>
+        <ng-template #CAssessibleIncomeTotal>
+            <tr style="font-weight:bold;" *ngFor="let item of Income | filter:'ClientAssessibleIncome'">
+                <td style="border:none;">Total Assessible Income</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+        <tr>
+            <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+        </tr>
+
+        <!--Deductions-->
+        <tr *ngIf="( EPRTClient?.length <= 0 && EPRTJoint?.length <= 0 ) else clientDeduction"></tr>
+        <ng-template #clientDeduction>
+            <tr *ngFor="let item of ClientDeductions | filter:'Client'">
+                <td style="padding-left:1em !important;">{{item.name}}</td>
+                <td *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ec"> - </span>  <ng-template #ec> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+
+        <tr *ngIf="( EPRTClient?.length <= 0 && EPRTJoint?.length <= 0 ) else CDeductionTotal"></tr>
+        <ng-template #CDeductionTotal>
+            <tr style="font-weight:bold;" *ngFor="let item of ClientDeductions | filter:'ClientDeductions'">
+                <td style="border:none;">Total Deductions</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else td"> - </span>  <ng-template #td> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+
+        <tr>
+            <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+        </tr>
+
+        <!--Taxable Income & Adjustment for losses-->
+        <tr *ngIf="(clientTaxableIncome?.length <= 0) else CTaxableIncome"></tr>
+        <ng-template #CTaxableIncome>
+            <tr style="font-weight:bold;" *ngFor="let item of clientTaxableIncome | filter:'ClientTaxableIncome'">
+                <td style="border:none;">Taxable Income</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else tincome"> - </span>  <ng-template #tincome> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+        <tr *ngIf="clientLossAdjustment?.length <= 0 else CLossAdjustment"></tr>
+        <ng-template #CLossAdjustment>
+            <tr *ngFor="let item of clientLossAdjustment | filter:'ClientAdjustment'" style="color:gray;">
+                <td style="padding-left:2em !important;border:none;">Adjustment for losses</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else cla"> - </span>  <ng-template #cla> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+
+        <tr>
+            <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+        </tr>
+
+        <!--Gross tax payable-->
+        <tr *ngIf="GrossTax?.length <= 0 else ClientGrossTaxPayable"></tr>
+        <ng-template #ClientGrossTaxPayable>
+            <tr style="font-weight:bold;" *ngFor="let item of GrossTax | filter:'ClientGrossTax'">
+                <td style="border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else gtc"> - </span>  <ng-template #gtc> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+
+        <!--Non-refundable tax offsets-->
+
+        <tr *ngIf="clientNRTaxOffset?.length <= 0 else clientNRTaxOffsets"></tr>
+        <ng-template #clientNRTaxOffsets>
+            <tr *ngFor="let item of clientNRTaxOffset | filter:'ClientLowIncomeTO'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else cnr"> - </span>  <ng-template #cnr> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="font-weight:bold;" *ngFor="let item of clientNRTaxOffset | filter:'ClientTotalTO'">
+                <td style="border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else cnrt"> - </span>  <ng-template #cnrt> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+        <!--Refundable tax offsets-->
+
+        <tr *ngIf="clientRTaxOffset?.length <= 0 else clientRTaxOffsets"></tr>
+        <ng-template #clientRTaxOffsets>
+            <tr *ngFor="let item of clientRTaxOffset | filter:'ClientFrankingCredits'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else cr"> - </span>  <ng-template #cr> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="font-weight:bold;" *ngFor="let item of clientRTaxOffset | filter:'ClientFrankingCredits'">
+                <td style="border:none;">Total refundable tax offsets</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else crt"> - </span>  <ng-template #crt> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+        <!--Net tax payable-->
+
+        <tr *ngIf="NetPayable?.length <= 0 else clientTaxPayable"></tr>
+        <ng-template #clientTaxPayable>
+            <tr style="color:gray;" *ngFor="let item of NetPayable | filter:'ClientTPNonRefundable'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ctp"> - </span>  <ng-template #ctp> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="color:gray;" *ngFor="let item of NetPayable | filter:'ClientTPRefundable'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == '0' else ctpt"> - </span>
+                    <ng-template #ctpt>
+                        <span *ngIf="value.value > 0 else ct">${{value.value | number}} </span>
+                        <ng-template #ct>
+                            <span> (${{value.value | positive | number  }}) </span>
+                        </ng-template>
+                    </ng-template>
+                </td>
+            </tr>
+            <tr style="font-weight:bold;" *ngFor="let item of NetPayable | filter:'ClientTPRefundable'">
+                <td style="border:none;">Net tax payable</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ct"> - </span>
+                    <ng-template #ct>
+                        <span *ngIf="value.value > 0 else ctn">${{value.value | number}} </span>
+                        <ng-template #ctn>
+                            <span> (${{value.value | positive | number  }}) </span>
+                        </ng-template>
+                    </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+        <!--Medicare levy-->
+        <tr *ngIf="clientMedicareLevy?.length <= 0 else clientMedicareLevys"></tr>
+        <ng-template #clientMedicareLevys>
+            <tr *ngFor="let item of clientMedicareLevy | filter:'ClientMedicareLevy'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ec"> - </span>  <ng-template #ec> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="font-weight:bold;" *ngFor="let item of clientMedicareLevy | filter:'ClientMedicareLevy'">
+                <td style="border:none;">Medicare levy payable</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+        <!--Total tax payable-->
+
+        <tr *ngIf="TotalPayable?.length <= 0 else clientTotalPayable"></tr>
+        <ng-template #clientTotalPayable>
+            <tr style="font-weight:bold;" *ngFor="let item of TotalPayable | filter:'ClientTotalTaxPayable'">
+                <td style="border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr *ngFor="let item of TotalPayable | filter:'ClientAverageTaxRate'">
+                <td style="border:none;padding-left:2em !important;font-style:oblique;">{{item.name}}</td>
+                <td style="border:none;font-style:oblique;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}}% </span> </ng-template>
+                </td>
+            </tr>
+            <tr *ngFor="let item of TotalPayable | filter:'ClientMarginalTaxRate'">
+                <td style="border:none;padding-left:2em !important;font-style:oblique;">{{item.name}}</td>
+                <td style="border:none;font-style:oblique;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}}% </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+        <!--PARTNER-->
+        <tr style="height:50px;" [attr.colspan]="period"></tr>
+        <tr class="header">
+            <td style="border:none;font-weight:bold;" [attr.colspan]="period"> TAXATION -  {{selectedClient.partnerName}} <span class="glyphicon glyphicon-chevron-up" style="left:90%;"></span></td>
+        </tr>
+        <tr style="background:#619dce;">
+            <td [attr.colspan]="period"></td>
+        </tr>
+        <tr style="height:20px;">
+            <td [attr.colspan]="period" style="border-bottom:1px solid #619dce;"></td>
+        </tr>
+        <tr *ngIf="cfiPartner?.length <= 0 else partnerIncomeTotal"></tr>
+        <ng-template #partnerIncomeTotal>
+            <tr *ngFor="let item of Income | filter:'Total-partner'">
+                <td style="padding-left:1em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ict"> - </span>  <ng-template #ict> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr *ngFor="let item of Income | filter:'Partner'" style="color:gray;">
+                <td style="padding-left:2em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ic"> - </span>  <ng-template #ic> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+        <!--Income Total-->
+        <tr *ngIf="cfiPartner?.length <= 0  else PAssessibleIncomeTotal"></tr>
+        <ng-template #PAssessibleIncomeTotal>
+            <tr style="font-weight:bold;" *ngFor="let item of Income | filter:'PartnerAssessibleIncome'">
+                <td style="border:none;">Total Assessible Income</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+        <!--Deductions-->
+        <tr *ngIf="( EPRTPartner?.length <= 0 && EPRTJoint?.length <= 0 ) else partnerDeduction"></tr>
+        <ng-template #partnerDeduction>
+            <tr *ngFor="let item of PartnerDeductions | filter:'Partner'">
+                <td style="padding-left:1em !important;">{{item.name}}</td>
+                <td *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ec"> - </span>  <ng-template #ec> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+
+        <tr *ngIf="( EPRTPartner?.length <= 0 && EPRTJoint?.length <= 0 ) else PDeductionTotal"></tr>
+        <ng-template #PDeductionTotal>
+            <tr style="font-weight:bold;" *ngFor="let item of PartnerDeductions | filter:'PartnerDeductions'">
+                <td style="border:none;">Total Deductions</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+
+        <tr>
+            <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+        </tr>
+        <!--Taxable Income & Adjustment for losses-->
+        <tr *ngIf="(partnerTaxableIncome?.length <= 0) else PTaxableIncome"></tr>
+        <ng-template #PTaxableIncome>
+            <tr style="font-weight:bold;" *ngFor="let item of partnerTaxableIncome | filter:'PartnerTaxableIncome'">
+                <td style="border:none;">Taxable Income</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+        <tr *ngIf="partnerLossAdjustment?.length <= 0 else PLossAdjustment"></tr>
+        <ng-template #PLossAdjustment>
+            <tr *ngFor="let item of partnerLossAdjustment | filter:'PartnerAdjustment'" style="color:gray;">
+                <td style="padding-left:2em !important;border:none;">Adjustment for losses</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ec"> - </span>  <ng-template #ec> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+
+        <tr>
+            <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+        </tr>
+
+        <!--Gross tax payable-->
+        <tr *ngIf="GrossTax?.length <= 0 else PartnerGrossTaxPayable"></tr>
+        <ng-template #PartnerGrossTaxPayable>
+            <tr style="font-weight:bold;" *ngFor="let item of GrossTax | filter:'PartnerGrossTax'">
+                <td style="border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else gtp"> - </span>  <ng-template #gtp> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+        <!--Non-refundable tax offsets-->
+        <tr *ngIf="partnerNRTaxOffset?.length <= 0 else partnerNRTaxOffsets"></tr>
+        <ng-template #partnerNRTaxOffsets>
+            <tr *ngFor="let item of partnerNRTaxOffset | filter:'PartnerLowIncomeTO'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ec"> - </span>  <ng-template #ec> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="font-weight:bold;" *ngFor="let item of partnerNRTaxOffset | filter:'PartnerTotalTO'">
+                <td style="border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+        <!--Refundable tax offsets-->
+
+        <tr *ngIf="partnerRTaxOffset?.length <= 0 else partnerRTaxOffsets"></tr>
+        <ng-template #partnerRTaxOffsets>
+            <tr *ngFor="let item of partnerRTaxOffset | filter:'PartnerFrankingCredits'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ec"> - </span>  <ng-template #ec> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="font-weight:bold;" *ngFor="let item of partnerRTaxOffset | filter:'PartnerFrankingCredits'">
+                <td style="border:none;">Total refundable tax offsets</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+
+        <!--Net tax payable-->
+
+        <tr *ngIf="NetPayable?.length <= 0 else partnerTaxPayable"></tr>
+        <ng-template #partnerTaxPayable>
+            <tr style="color:gray;" *ngFor="let item of NetPayable | filter:'PartnerTPNonRefundable'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ec"> - </span>  <ng-template #ec> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+
+            <tr style="color:gray;" *ngFor="let item of NetPayable | filter:'PartnerTPRefundable'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == '0' else ctpt"> - </span>
+                    <ng-template #ctpt>
+                        <span *ngIf="value.value > 0 else ct">${{value.value | number}} </span>
+                        <ng-template #ct>
+                            <span> (${{value.value | positive | number  }}) </span>
+                        </ng-template>
+                    </ng-template>
+                </td>
+            </tr>
+            <tr style="font-weight:bold;" *ngFor="let item of NetPayable | filter:'PartnerTPRefundable'">
+                <td style="border:none;">Net tax payable</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ct"> - </span>
+                    <ng-template #ct>
+                        <span *ngIf="value.value > 0 else ctn">${{value.value | number}} </span>
+                        <ng-template #ctn>
+                            <span> (${{value.value | positive | number  }}) </span>
+                        </ng-template>
+                    </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+        <!--Medicare levy-->
+        <tr *ngIf="partnerMedicareLevy?.length <= 0 else partnerMedicareLevys"></tr>
+        <ng-template #partnerMedicareLevys>
+            <tr *ngFor="let item of partnerMedicareLevy | filter:'PartnerMedicareLevy'">
+                <td style="border:none;padding-left:1em !important;">{{item.name}}</td>
+                <td *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ec"> - </span>  <ng-template #ec> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="font-weight:bold;" *ngFor="let item of partnerMedicareLevy | filter:'PartnerMedicareLevy'">
+                <td style="border:none;">Medicare levy payable</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+        <!--Total tax payable-->
+
+        <tr *ngIf="TotalPayable?.length <= 0 else partnerTotalPayable"></tr>
+        <ng-template #partnerTotalPayable>
+            <tr style="font-weight:bold;" *ngFor="let item of TotalPayable | filter:'PartnerTotalTaxPayable'">
+                <td style="border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr *ngFor="let item of TotalPayable | filter:'PartnerAverageTaxRate'">
+                <td style="border:none;padding-left:2em !important;font-style:oblique;">{{item.name}}</td>
+                <td style="border:none;font-style:oblique;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}}% </span> </ng-template>
+                </td>
+            </tr>
+            <tr *ngFor="let item of TotalPayable | filter:'PartnerMarginalTaxRate'">
+                <td style="border:none;padding-left:2em !important;font-style:oblique;">{{item.name}}</td>
+                <td style="border:none;font-style:oblique;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == 0 else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}}% </span> </ng-template>
+                </td>
+            </tr>
+            <tr>
+                <td [attr.colspan]="period" style="border:none;border-bottom:1px solid #619dce;"></td>
+            </tr>
+        </ng-template>
+
+        <!--<tr class="header">
+        <td [attr.colspan]="period"></td>
+    </tr>-->
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

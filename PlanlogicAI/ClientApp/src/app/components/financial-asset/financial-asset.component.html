@@ -1,0 +1,153 @@
+
+<!--{{ assetAssumptions | json }}-->
+<!--<form role="form" class="form-horizontal" (ngSubmit)="onSubmit()" #financialAssetForm="ngForm" novalidate>
+    <div class='row'>
+
+        <div class='col-sm-9'>
+            <div>
+                <hr />
+                <div class="container">
+
+                    <div class="form-group">
+                        <label class="col-sm-1 labelAlignment" for="name">Name</label>
+                        <div class="col-sm-5">
+                            <input style="width: 50%;" id="name" [(ngModel)]="faDetails.name" name="name" required maxlength="30" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 labelAlignment" for="owner">Owner</label>
+                        <div class="col-sm-5">
+                            <select style="width: 50%;" class="form-control" id="owner" name="owner" [(ngModel)]="faDetails.owner" required>
+                                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-1 labelAlignment">Value ($)</label><div class="col-sm-2"><input type="number" class="form-control" min="1" required id="value" name="value" [(ngModel)]="faDetails.value"></div>
+                        <label class="col-sm-1 labelAlignment">Cost base ($)</label><div class="col-sm-2"><input type="number" class="form-control" min="1" required id="costBase" name="costBase" [(ngModel)]="faDetails.costBase"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 labelAlignment">From</label><div class="col-sm-2">
+                            <select class="form-control" id="startDateType" #sDateType name="startDateType" [(ngModel)]="faDetails.startDateType" required>
+                                <option class='option' *ngFor='let s of start' [value]="s.id">{{s.name}}</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2" *ngIf="faDetails.startDateType === 'Year'">
+                            <select class="form-control" id="startDate" name="startDate" [(ngModel)]="faDetails.startDate" required>
+                                <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                            </select>
+                        </div>
+                        <label class="col-sm-1 labelAlignment">To</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="endDateType" #eDateType name="endDateType" [(ngModel)]="faDetails.endDateType" required>
+                                <option class='option' *ngFor='let e of end' [value]="e.id">{{e.name}}</option>
+
+                            </select>
+                        </div>
+                        <div class="col-sm-2" *ngIf="faDetails.endDateType === 'Year'">
+                            <select class="form-control" id="endDate" name="endDate" [(ngModel)]="faDetails.endDate" required>
+                                <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 labelAlignment">Asset Type</label>
+                        <div class="col-sm-3">
+                            <label class="radio-inline labelAlignment">
+                                <input type="radio" name="assetType" [(ngModel)]="faDetails.assetType" id="C" value="C" checked> Asset class
+                            </label>
+                            <label class="radio-inline labelAlignment">
+                                <input type="radio" name="assetType" [(ngModel)]="faDetails.assetType" id="P" value="P"> Investment profile
+                            </label>
+                        </div>
+                        <div class="col-sm-2" *ngIf="faDetails.assetType === 'C'">
+                            <select class="form-control" id="assetName" name="assetName" [(ngModel)]="faDetails.assetName" required #assetName1 (change)="assetTypeChange(assetName1.value)">
+                                <option class='option' *ngFor='let a of assetClass' [value]="a.name">{{a.name}}</option>
+
+                            </select>
+                        </div>
+                        <div class="col-sm-2" *ngIf="faDetails.assetType === 'P'">
+                            <select class="form-control" id="assetName" name="assetName" [(ngModel)]="faDetails.assetName" required #assetName2 (change)="assetTypeChange(assetName2.value)">
+                                <option class='option' *ngFor='let i of investmentProfile' [value]="i.name">{{i.name}}</option>
+
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 labelAlignment">Growth ($)</label><div class="col-sm-2"><input type="number" class="form-control" min="1" required id="growth" name="growth" [(ngModel)]="faDetails.growth"></div>
+                        <label class="col-sm-1 labelAlignment">Income ($)</label><div class="col-sm-2"><input type="number" class="form-control" min="1" required id="income" name="income" [(ngModel)]="faDetails.income"></div>
+                        <label class="col-sm-1 labelAlignment">Franked ($)</label><div class="col-sm-2"><input type="number" class="form-control" min="1" required id="franked" name="franked" [(ngModel)]="faDetails.franked"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 labelAlignment">Reinvest income ?</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="reinvest" name="reinvest" [(ngModel)]="faDetails.reinvest" required>
+                                <option class='option' *ngFor='let boolValue of booleanValues' [value]="boolValue.id">{{boolValue.name}}</option>
+                            </select>
+                        </div>
+
+                        <label class="col-sm-1 labelAlignment">From</label><div class="col-sm-2">
+                            <select class="form-control" id="reinvestStartDateType" name="reinvestStartDateType" [(ngModel)]="faDetails.reinvestStartDateType" required>
+                                <option class='option' *ngFor='let f of from' [value]="f.id">{{f.name}}</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2" *ngIf="faDetails.startDateType === 'Year'">
+                            <select class="form-control" id="reinvestStartDate" name="reinvestStartDate" [(ngModel)]="faDetails.reinvestStartDate" required>
+                                <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+                            </select>
+                        </div>
+                        <label class="col-sm-1 labelAlignment">To</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="reinvestEndDateType" #eDateType name="reinvestEndDateType" [(ngModel)]="faDetails.reinvestEndDateType" required>
+                                <option class='option' *ngFor='let t of to' [value]="t.id">{{t.name}}</option>
+
+                            </select>
+                        </div>
+                        <div class="col-sm-2" *ngIf="faDetails.endDateType === 'Year'">
+                            <select class="form-control" id="reinvestEndDate" name="reinvestEndDate" [(ngModel)]="faDetails.reinvestEndDate" required>
+                                <option class='option' *ngFor='let year of years' [value]="year">{{year}}</option>
+
+                            </select>
+                        </div>
+                    </div>
+
+
+
+
+
+                    <hr>
+                </div>
+                <bR><bR>
+                <table class="table table-striped">
+                    <tr>
+                        <th style="display:none;"></th>
+                        <th>Amount</th>
+                        <th style="text-align:center" colspan="2">Start Date</th>
+                        <th style="text-align:center" colspan="2">End Date</th>
+                        <th></th>
+                    </tr>
+                    <tr *ngFor="let item of financialAssetDetails; let i = index" (click)="fnClick(item,i)" style="cursor:pointer" [attr.data-index]="i">
+                        <td style="display:none;">{{i}}</td>
+                        <td>{{item.amount}}</td>
+                        <td>{{item.startDateType}}</td>
+                        <td *ngIf="item.startDateType == 'Year' else start" style="color:dimgray">{{item.startDate}}</td>
+                        <ng-template #start><td></td></ng-template>
+                        <td>{{item.endDateType}}</td>
+                        <td *ngIf="item.endDateType == 'Year' else end" style="color:dimgray">{{item.endDate}}</td>
+                        <ng-template #end><td></td></ng-template>
+                        <td><i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete" (click)="DeleteTempData(item,i)"></i></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-sm-10">
+            <button type="submit" [disabled]="!financialAssetForm?.length > 0" class="btn btn-info pull-right">Submit</button>
+        </div>
+    </div>
+</form>-->
+

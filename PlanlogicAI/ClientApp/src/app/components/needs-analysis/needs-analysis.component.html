@@ -1,0 +1,182 @@
+<div class="row" id="preview">
+  <mat-tab-group dynamicHeight>
+
+    <mat-tab label="Client">
+      <div class=" col-container">
+        <div class="col-md-12 col" style="margin-right:25px;margin-left:5px;min-width:650px !important;margin-top:20px;">
+          <div class="row col-container">
+            <div class="col-md-4 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Capital Requirements</div>
+            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Life</div>
+            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">TPD</div>
+            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Trauma</div>
+            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Income Protection</div>
+          </div>
+        </div>
+      </div>
+      <div class=" col-container">
+        <div class="col-md-12 col" style="min-width:650px !important;margin-left:5px;margin-right:25px;">
+
+          <div class='row col-container' *ngFor="let item of clientNeedsAnalysis;let i = index" [attr.data-index]="i">
+            <div class="col-sm-4 container">
+              <input [disabled]="item.isDefault" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:100%;height:100%;" name="{{'CDescription' + i}}" [(ngModel)]="item.description">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:100%;height:100%;" name="{{'Clife' + i}}" [(ngModel)]="item.life">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:100%;height:100%;" name="{{'CTpd' + i}}" [(ngModel)]="item.tpd">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:100%;height:100%;" name="{{'CTrauma' + i}}" [(ngModel)]="item.trauma">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" type="text" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:70%;display:inline;" name="{{'CIncomeN' + i}}" [(ngModel)]="item.incomeProtection">
+              <!-- <input class="form-control plain"  *ngIf="item.description != 'Total Cover Recommended' && item.description != 'Amount of gross income to cover' && item.description != 'Waiting period' && item.description != 'Benefit period'" type="number" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:70%;display:inline;" name="{{'CIncome' + i}}" [(ngModel)]="item.incomeProtection">-->
+              <button *ngIf="!item.isDefault" style="float:right;" (click)="deleteFieldValue(item,i,0)" class="btn btn-danger btn-circle" type="button" title="Delete"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;"></i></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class=" col-container">
+        <div class="col-md-12 col" style="min-width:650px !important;margin-left:5px;margin-right:25px;">
+
+          <div class='row col-container'>
+            <div class="col-sm-4 container">
+              <input style="width:100%;height:100%;font-weight:bold;" value="Total Cover Required">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:100%;height:100%;font-weight:bold;" name="{{'TotalClife'}}" [(ngModel)]="totalClientNeeds.life">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:100%;height:100%;font-weight:bold;" name="{{'TotalCTpd'}}" [(ngModel)]="totalClientNeeds.tpd">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:100%;height:100%;font-weight:bold;" name="{{'TotalCTrauma'}}" [(ngModel)]="totalClientNeeds.trauma">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:70%;display:inline;font-weight:bold;" name="{{'TotalCIncome'}}" [(ngModel)]="totalClientNeeds.incomeProtection">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class=" col-container">
+        <div class="col-md-12 col" style="min-width:650px !important;margin-left:5px;margin-right:25px;">
+
+          <div class='row col-container'>
+            <div class="col-sm-4 container">
+              <input style="width:100%;height:100%;" name="{{'CDescription'}}" [(ngModel)]="clientNeeds.description">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:100%;height:100%;" name="{{'Clife'}}" [(ngModel)]="clientNeeds.life">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:100%;height:100%;" name="{{'CTpd'}}" [(ngModel)]="clientNeeds.tpd">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:100%;height:100%;" name="{{'CTrauma'}}" [(ngModel)]="clientNeeds.trauma">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:70%;display:inline;" name="{{'CIncome'}}" [(ngModel)]="clientNeeds.incomeProtection">
+              <button (click)="addFieldValue(clientNeeds,0)" style="float:right;" id="income" class="btn btn-success btn-circle" type="button" title="Add"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </mat-tab>
+
+    <mat-tab label="Partner" *ngIf="clientDetails.maritalStatus == 'M'">
+      <div class=" col-container">
+
+        <div class="col-md-12 col" style="margin-right:25px;margin-left:5px;margin-top:20px;min-width:650px !important;">
+          <div class="row col-container">
+            <div class="col-md-4 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Capital Requirements</div>
+            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Life</div>
+            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">TPD</div>
+            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Trauma</div>
+            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Income Protection</div>
+
+          </div>
+        </div>
+      </div>
+      <div class=" col-container">
+        <div class="col-md-12 col" style="min-width:650px !important;margin-left:5px;margin-right:25px;">
+
+          <div class='row col-container' *ngFor="let item of partnerNeedsNanlysis;let i = index" [attr.data-index]="i">
+            <div class="col-sm-4 container">
+              <input [disabled]="item.isDefault" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:100%;height:100%;" name="{{'CDescription' + i}}" [(ngModel)]="item.description">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" type="number" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:100%;height:100%;" name="{{'Clife' + i}}" [(ngModel)]="item.life">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" type="number" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:100%;height:100%;" name="{{'CTpd' + i}}" [(ngModel)]="item.tpd">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" type="number" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:100%;height:100%;" name="{{'CTrauma' + i}}" [(ngModel)]="item.trauma">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" type="text" *ngIf="item.description == 'Total Cover Recommended' || item.description == 'Amount of gross income to cover' || item.description == 'Waiting period' || item.description == 'Benefit period'" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:70%;display:inline;" name="{{'PIncomeN' + i}}" [(ngModel)]="item.incomeProtection">
+              <input class="form-control plain" type="number" *ngIf="item.description != 'Total Cover Recommended' && item.description != 'Amount of gross income to cover' && item.description != 'Waiting period' && item.description != 'Benefit period'" type="number" [ngClass]="{'boldFont': item.description == 'Total Cover Recommended'}" style="width:70%;display:inline;" name="{{'PIncome' + i}}" [(ngModel)]="item.incomeProtection">
+
+              <!--<input class="form-control plain" style="width:70%;display:inline;" name="{{'CIncome' + i}}" [(ngModel)]="item.incomeProtection">-->
+              <button *ngIf="!item.isDefault" style="float:right;" (click)="deleteFieldValue(item,i,1)" class="btn btn-danger btn-circle" type="button" title="Delete"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;"></i></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class=" col-container">
+        <div class="col-md-12 col" style="min-width:650px !important;margin-left:5px;margin-right:25px;">
+
+          <div class='row col-container'>
+            <div class="col-sm-4 container">
+              <input style="width:100%;height:100%;font-weight:bold;" value="Total Cover Required">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:100%;height:100%;font-weight:bold;" name="{{'TotalPlife'}}" [(ngModel)]="totalPartnerNeeds.life">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:100%;height:100%;font-weight:bold;" name="{{'TotalPTpd'}}" [(ngModel)]="totalPartnerNeeds.tpd">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:100%;height:100%;font-weight:bold;" name="{{'TotalPTrauma'}}" [(ngModel)]="totalPartnerNeeds.trauma">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" style="width:70%;display:inline;font-weight:bold;" name="{{'TotalPIncome'}}" [(ngModel)]="totalPartnerNeeds.incomeProtection">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class=" col-container">
+        <div class="col-md-12 col" style="min-width:650px !important;margin-left:5px;margin-right:25px;">
+
+          <div class='row col-container'>
+            <div class="col-sm-4 container">
+              <input style="width:100%;height:100%;" name="{{'CDescription'}}" [(ngModel)]="partnerNeeds.description">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" type="number" style="width:100%;height:100%;" name="{{'Clife'}}" [(ngModel)]="partnerNeeds.life">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" type="number" style="width:100%;height:100%;" name="{{'CTpd'}}" [(ngModel)]="partnerNeeds.tpd">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" type="number" style="width:100%;height:100%;" name="{{'CTrauma'}}" [(ngModel)]="partnerNeeds.trauma">
+            </div>
+            <div class="col-sm-2 container">
+              <input class="form-control plain" type="number" style="width:70%;display:inline;" name="{{'CIncome'}}" [(ngModel)]="partnerNeeds.incomeProtection">
+              <button (click)="addFieldValue(partnerNeeds,1)" style="float:right;" id="income" class="btn btn-success btn-circle" type="button" title="Add"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+
+  <button type="submit" class="btn btn-success pull-right" (click)="SaveNeedsAnalysis()" title="Save" style="text-decoration:none;margin:20px;">
+    <i class="glyphicon glyphicon-check"></i> Save
+  </button>
+</div>

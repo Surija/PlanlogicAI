@@ -1,0 +1,882 @@
+<form #InsuranceSwitchingForm="ngForm">
+  <div class="line-title"><span>Insurance Product Switching</span><button type="button" class="btn btn-circle" data-container="body" data-toggle="popover" data-placement="bottom" data-content="1. Click the '+' icon to create a new product <br /> 2. Drag & drop a current product to the proposed section to Retain , Rebalance or Change Value.<br /> 3. Click on a proposed product to view its underlying funds , asset allocation & fees."><i class="glyphicon glyphicon-question-sign" style="text-decoration:none;" title="Help"></i></button><hr /></div>
+
+
+  <div class="row">
+    <div class="col-md-6 container " style="text-align:center;font-weight:bold;padding:10px !important;background: #393939;color: white;border-bottom: 2px solid #ED7D27;border-right:none;">
+      Current Insurance Products
+      <button style="float:right;padding:0;background:none;color:white;" (click)="openCurrentModal()" title="Add new product" id="addCurrentProduct"><span class="glyphicon glyphicon-plus"></span></button>
+    </div>
+    <div class="col-md-6 container " style="text-align:center;font-weight:bold;padding:10px !important;background: #393939;color: white;border-bottom: 2px solid #ED7D27;border-right:none;">
+      Proposed Insurance Products
+      <button style="float:right;padding:0;background:none;color:white;" (click)="openProposedModal()" title="Add new product" id="addProposedProduct"><span class="glyphicon glyphicon-plus"></span></button>
+    </div>
+  </div>
+
+
+  <div class="row col-container">
+    <div class="col-md-6 container">
+      <div class="col-md-12 col-sm-12 col-xs-12"><div class="col-md-7 col-sm-7 col-xs-7">Product</div><div class="col-md-2 col-sm-2 col-xs-2">Life Insured</div></div>
+    </div>
+    <div class="col-md-6 container">
+      <div class="col-md-12 col-sm-12 col-xs-12"><div class="col-md-7 col-sm-7 col-xs-7">Product</div><div class="col-md-2 col-sm-2 col-xs-2">Life Insured</div></div>
+    </div>
+  </div>
+
+  <div class="row col-container">
+    <div class="col-md-6 container" [dragula]='"third-bag"' [dragulaModel]="currentInsurance" id="sourceDiv">
+      <div *ngFor='let cI of currentInsurance' (click)="setSelectedCurrent(cI.recId)" draggable="true" id="{{cI.recId}}" class="col-md-12 col-sm-12 col-xs-12 dragCss" style="cursor:-webkit-grab;"><div draggable="true" class="col-md-7 col-sm-7 col-xs-7">{{cI.provider}}</div><div class="col-md-1 col-sm-1 col-xs-1"> {{cI.owner}} </div></div>
+    </div>
+    <div class="col-md-6 container" [dragula]='"third-bag"' [dragulaModel]="proposedInsurance" id="targetDiv">
+      <div *ngFor='let pI of proposedInsurance' class="proposed{{pI.recId}} col-md-12 col-sm-12 col-xs-12  no-drag dragCss" id="{{pI.recId}}"><div class="col-md-7 col-sm-7 col-xs-7" (click)="setSelectedProduct(pI.recId)">{{pI.provider}}</div><div class="col-md-1 col-sm-1 col-xs-1" (click)="setSelectedProduct(pI.recId)"> {{pI.owner}} </div><div> <button style="float:right;padding:0;background:none;color:white;" title="Delete proposed insurance product" (click)="deleteproposedProduct(pI.recId)"><span class="glyphicon glyphicon-remove"></span></button></div></div>
+    </div>
+  </div>
+
+  <div class="line-title"><hr /></div>
+
+  <button [ngStyle]="{'display':generateWord}" (click)="generateWordDocument()" class="btn btn-success pull-right" type="button" style="margin-bottom:20px"> <i class="glyphicon glyphicon-download" style="text-decoration:none;"></i> Generate Insurance Doc</button>
+</form>
+
+<div class="backdrop" [ngStyle]="{'display':dropOptionMain}"></div>
+<div *ngIf="showLoadingIndicator" class="spinner"> </div>
+
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':currentInsuranceView}">
+  <div class="modal-dialog" role="document" style="width:90%;height:100%;">
+    <div class="modal-content" style="height:100%;">
+      <div class="modal-guts">
+        <div class="modal-body">
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <label class="col-sm-2 labelAlignment" for="name" style="text-align:center">Provider</label>
+            <div class="col-sm-3">
+              <input id="name" [(ngModel)]="currentInsuranceDetails.provider" name="provider" required maxlength="30" class="form-control">
+            </div>
+            <label class="col-sm-1 labelAlignment" for="owner" style="text-align:center;">Owner</label>
+            <div class="col-sm-2">
+              <select class="form-control" id="owner" name="owner" [(ngModel)]="currentInsuranceDetails.owner" required>
+                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+              </select>
+            </div>
+
+
+          </div>
+
+          <div class="line-title"><span>Premium & Fee Details</span><hr /></div>
+
+          <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;">
+            <div class="col-sm-1" style="display:none;"></div>
+            <div class="col-sm-2" style="text-align:center;">
+              Fee Type
+            </div>
+            <div class="col-sm-2" style="text-align:center;">
+              Amount ($)
+            </div>
+            <div class="col-sm-2" style="text-align:center;">
+              Frequency
+            </div>
+            <div class="col-sm-5">
+              Special Notes
+            </div>
+          </div>
+          <div class='row' id="div_id1" *ngFor="let item of currentInsuranceDetails.feeDetails;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'FD' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select class="form-control" id="{{'feeType' + i}}" name="{{'feeType' + i}}" [(ngModel)]="item.feeType" required>
+                <option class='option' *ngFor='let t of feeType' [value]="t.id">{{t.name}}</option>
+              </select>
+            </div>
+            <div class="col-sm-2">
+              <input type="number" class="form-control" required id="{{'amount' + i}}" name="{{'amount' + i}}" [(ngModel)]="item.amount">
+            </div>
+
+            <div class="col-sm-2">
+              <select class="form-control" id="{{'frequency' + i}}" name="{{'frequency' + i}}" [(ngModel)]="item.frequency" required>
+                <option class='option' *ngFor='let f of frequency' [value]="f">{{f}}</option>
+              </select>
+            </div>
+            <div class="col-sm-5">
+              <input id="{{'specialNotes' + i}}" [(ngModel)]="item.specialNotes" name="{{'specialNotes' + i}}" required maxlength="500" class="form-control">
+            </div>
+
+            <div class="col-sm-1">
+              <button (click)="DeleteFeeDetails(i,0)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+            <div class="col-sm-2">
+              <select class="form-control" id="feeType" name="feeType" [(ngModel)]="feeDetails.feeType" required>
+                <option class='option' *ngFor='let t of feeType' [value]="t.id">{{t.name}}</option>
+              </select>
+            </div>
+
+            <div class="col-sm-2">
+              <input type="number" class="form-control" required id="value" name="value" [(ngModel)]="feeDetails.amount">
+            </div>
+            <div class="col-sm-2">
+              <select class="form-control" id="frequency" name="frequency" [(ngModel)]="feeDetails.frequency" required>
+                <option class='option' *ngFor='let f of frequency' [value]="f">{{f}}</option>
+              </select>
+            </div>
+            <div class="col-sm-5">
+              <input id="name" [(ngModel)]="feeDetails.specialNotes" name="specialNotes" required maxlength="500" class="form-control">
+            </div>
+            <div class="col-sm-1">
+              <button id="asset" (click)="AddFeeDetails(feeDetails,0)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+            </div>
+          </div>
+
+          <div class="line-title"><span>Cover Details</span><hr /></div>
+
+          <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;">
+            <div class="col-sm-1" style="display:none;"></div>
+            <div class="col-sm-2" style="text-align:center;">
+              Cover Type
+            </div>
+            <div class="col-sm-2" style="text-align:center;">
+              Policy Owner
+            </div>
+            <div class="col-sm-2" style="text-align:center;">
+              Benefit Amount ($)
+            </div>
+          </div>
+
+          <div class='row' id="div_id2" *ngFor="let item of currentInsuranceDetails.lifeCover;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'LC' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'coverTypeTemp' + i}}" name="{{'coverTypeTemp' + i}}" [(ngModel)]="lifeDefault" required>
+                <option class='option' *ngFor='let o of coverTypeTemp' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'policyOwner' + i}}" name="{{'policyOwner' + i}}" [(ngModel)]="item.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <input type="number" disabled class="form-control" required id="{{'benefitAmount' + i}}" name="{{'benefitAmount' + i}}" [(ngModel)]="item.benefitAmount">
+            </div>
+            <div class="col-sm-1">
+              <button (click)="EditLifeCoverDetails(item)" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+              <button (click)="DeleteLifeCoverDetails(i,0)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' id="div_id" *ngFor="let item of currentInsuranceDetails.tpdCover;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'TC' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'coverTypeTemp' + i}}" name="{{'coverTypeTemp' + i}}" [(ngModel)]="tpdDefault" required>
+                <option class='option' *ngFor='let o of coverTypeTemp' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'policyOwner' + i}}" name="{{'policyOwner' + i}}" [(ngModel)]="item.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <input type="number" disabled class="form-control" required id="{{'benefitAmount' + i}}" name="{{'benefitAmount' + i}}" [(ngModel)]="item.benefitAmount">
+            </div>
+
+
+
+            <div class="col-sm-1">
+              <button (click)="EditTpdCoverDetails(item)" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+              <button (click)="DeleteTpdCoverDetails(i,0)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' id="div_id" *ngFor="let item of currentInsuranceDetails.traumaCover;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'TrC' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'coverTypeTemp' + i}}" name="{{'coverTypeTemp' + i}}" [(ngModel)]="traumaDefault" required>
+                <option class='option' *ngFor='let o of coverTypeTemp' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'policyOwner' + i}}" name="{{'policyOwner' + i}}" [(ngModel)]="item.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <input type="number" disabled class="form-control" required id="{{'benefitAmount' + i}}" name="{{'benefitAmount' + i}}" [(ngModel)]="item.benefitAmount">
+            </div>
+
+
+
+            <div class="col-sm-1">
+              <button (click)="EditTraumaCoverDetails(item)" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+              <button (click)="DeleteTraumaCoverDetails(i,0)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' id="div_id" *ngFor="let item of currentInsuranceDetails.incomeCover;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'IC' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'coverTypeTemp' + i}}" name="{{'coverTypeTemp' + i}}" [(ngModel)]="incomeDefault" required>
+                <option class='option' *ngFor='let o of coverTypeTemp' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'policyOwner' + i}}" name="{{'policyOwner' + i}}" [(ngModel)]="item.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <input type="number" disabled class="form-control" required id="{{'monthlyBenefitAmount' + i}}" name="{{'monthlyBenefitAmount' + i}}" [(ngModel)]="item.monthlyBenefitAmount">
+            </div>
+
+
+
+            <div class="col-sm-1">
+              <button (click)="EditIncomeCoverDetails(item)" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+              <button (click)="DeleteIncomeCoverDetails(i,0)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+            <div class="col-sm-2">
+              <select class="form-control" id="coverType" name="coverType" #currentType (change)="changeCoverType(currentType.value);" [(ngModel)]="coverDetails.type" required>
+                <option class='option' *ngFor='let t of coverType' [value]="t.id">{{t.name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <div class="form-group">
+            <div class="col-sm-12">
+              <button type="button" (click)="updateInsurance(currentInsuranceDetails,0)" class="btn btn-success ">Update</button>
+              <button type="button" (click)="onCloseInsurance()" class="btn btn-danger pull-right">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':proposedInsuranceView}">
+  <div class="modal-dialog" role="document" style="width:90%;height:100%;">
+    <div class="modal-content" style="height:100%;">
+      <div class="modal-guts">
+        <div class="modal-body">
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <label class="col-sm-2 labelAlignment" for="name" style="text-align:center">Provider</label>
+            <div class="col-sm-3">
+              <input id="name" [(ngModel)]="proposedInsuranceDetails.provider" name="provider" required maxlength="30" class="form-control">
+            </div>
+            <label class="col-sm-1 labelAlignment" for="owner" style="text-align:center;">Owner</label>
+            <div class="col-sm-2">
+              <select class="form-control" id="owner" name="owner" [(ngModel)]="proposedInsuranceDetails.owner" required>
+                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+              </select>
+            </div>
+
+
+          </div>
+
+          <div class="line-title"><span>Premium & Fee Details</span><hr /></div>
+
+          <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;">
+            <div class="col-sm-1" style="display:none;"></div>
+            <div class="col-sm-2" style="text-align:center;">
+              Fee Type
+            </div>
+            <div class="col-sm-2" style="text-align:center;">
+              Amount ($)
+            </div>
+            <div class="col-sm-2" style="text-align:center;">
+              Frequency
+            </div>
+            <div class="col-sm-5">
+              Special Notes
+            </div>
+          </div>
+          <div class='row' id="div_id" *ngFor="let item of proposedInsuranceDetails.feeDetails;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'FD' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select class="form-control" id="{{'feeType' + i}}" name="{{'feeType' + i}}" [(ngModel)]="item.feeType" required>
+                <option class='option' *ngFor='let t of feeType' [value]="t.id">{{t.name}}</option>
+              </select>
+            </div>
+            <div class="col-sm-2">
+              <input type="number" class="form-control" required id="{{'amount' + i}}" name="{{'amount' + i}}" [(ngModel)]="item.amount">
+            </div>
+
+            <div class="col-sm-2">
+              <select class="form-control" id="{{'frequency' + i}}" name="{{'frequency' + i}}" [(ngModel)]="item.frequency" required>
+                <option class='option' *ngFor='let f of frequency' [value]="f">{{f}}</option>
+              </select>
+            </div>
+            <div class="col-sm-5">
+              <input id="{{'specialNotes' + i}}" [(ngModel)]="item.specialNotes" name="{{'specialNotes' + i}}" required maxlength="500" class="form-control">
+            </div>
+
+            <div class="col-sm-1">
+              <button (click)="DeleteFeeDetails(i,1)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+            <div class="col-sm-2">
+              <select class="form-control" id="feeType" name="feeType" [(ngModel)]="feeDetails.feeType" required>
+                <option class='option' *ngFor='let t of feeType' [value]="t.id">{{t.name}}</option>
+              </select>
+            </div>
+
+            <div class="col-sm-2">
+              <input type="number" class="form-control" required id="amount" name="amount" [(ngModel)]="feeDetails.amount">
+            </div>
+            <div class="col-sm-2">
+              <select class="form-control" id="frequency" name="frequency" [(ngModel)]="feeDetails.frequency" required>
+                <option class='option' *ngFor='let f of frequency' [value]="f">{{f}}</option>
+              </select>
+            </div>
+            <div class="col-sm-5">
+              <input id="specialNotes" [(ngModel)]="feeDetails.specialNotes" name="specialNotes" required maxlength="500" class="form-control">
+            </div>
+            <div class="col-sm-1">
+              <button id="asset" (click)="AddFeeDetails(feeDetails,1)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+            </div>
+          </div>
+
+          <div class="line-title"><span>Cover Details</span><hr /></div>
+
+          <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;">
+            <div class="col-sm-1" style="display:none;"></div>
+            <div class="col-sm-2" style="text-align:center;">
+              Cover Type
+            </div>
+            <div class="col-sm-2" style="text-align:center;">
+              Policy Owner
+            </div>
+            <div class="col-sm-2" style="text-align:center;">
+              Benefit Amount ($)
+            </div>
+          </div>
+
+          <div class='row' id="div_id" *ngFor="let item of proposedInsuranceDetails.lifeCover;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'LC' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'coverTypeTemp' + i}}" name="{{'coverTypeTemp' + i}}" [(ngModel)]="lifeDefault" required>
+                <option class='option' *ngFor='let o of coverTypeTemp' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'policyOwner' + i}}" name="{{'policyOwner' + i}}" [(ngModel)]="item.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <input type="number" disabled class="form-control" required id="{{'benefitAmount' + i}}" name="{{'benefitAmount' + i}}" [(ngModel)]="item.benefitAmount">
+            </div>
+
+
+
+            <div class="col-sm-1">
+              <button (click)="EditLifeCoverDetails(item)" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+              <button (click)="DeleteLifeCoverDetails(i,1)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' id="div_id" *ngFor="let item of proposedInsuranceDetails.tpdCover;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'TC' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'coverTypeTemp' + i}}" name="{{'coverTypeTemp' + i}}" [(ngModel)]="tpdDefault" required>
+                <option class='option' *ngFor='let o of coverTypeTemp' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'policyOwner' + i}}" name="{{'policyOwner' + i}}" [(ngModel)]="item.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <input type="number" disabled class="form-control" required id="{{'benefitAmount' + i}}" name="{{'benefitAmount' + i}}" [(ngModel)]="item.benefitAmount">
+            </div>
+
+
+
+            <div class="col-sm-1">
+              <button (click)="EditTpdCoverDetails(item)" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+              <button (click)="DeleteTpdCoverDetails(i,1)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' id="div_id" *ngFor="let item of proposedInsuranceDetails.traumaCover;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'TrC' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'coverTypeTemp' + i}}" name="{{'coverTypeTemp' + i}}" [(ngModel)]="traumaDefault" required>
+                <option class='option' *ngFor='let o of coverTypeTemp' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'policyOwner' + i}}" name="{{'policyOwner' + i}}" [(ngModel)]="item.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <input type="number" disabled class="form-control" required id="{{'benefitAmount' + i}}" name="{{'benefitAmount' + i}}" [(ngModel)]="item.benefitAmount">
+            </div>
+
+
+
+            <div class="col-sm-1">
+              <button (click)="EditTraumaCoverDetails(item)" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+              <button (click)="DeleteTraumaCoverDetails(i,1)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' id="div_id" *ngFor="let item of proposedInsuranceDetails.incomeCover;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'IC' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'coverTypeTemp' + i}}" name="{{'coverTypeTemp' + i}}" [(ngModel)]="incomeDefault" required>
+                <option class='option' *ngFor='let o of coverTypeTemp' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <select disabled class="form-control" id="{{'policyOwner' + i}}" name="{{'policyOwner' + i}}" [(ngModel)]="item.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+
+            </div>
+            <div class="col-sm-2">
+              <input type="number" disabled class="form-control" required id="{{'benefitAmount' + i}}" name="{{'benefitAmount' + i}}" [(ngModel)]="item.monthlyBenefitAmount">
+            </div>
+
+
+
+            <div class="col-sm-1">
+              <button (click)="EditIncomeCoverDetails(item)" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+              <button (click)="DeleteIncomeCoverDetails(i,1)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+          </div>
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+            <div class="col-sm-2">
+              <select class="form-control" id="coverType" name="coverType" #proposedType (change)="changeCoverType(proposedType.value);" [(ngModel)]="coverDetails.type" required>
+                <option class='option' *ngFor='let t of coverType' [value]="t.id">{{t.name}}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="line-title"><span>Link to Current - Replacement of Insurance Product</span><hr /></div>
+
+
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="col-sm-6">
+              <div id="container" style="position:relative;">
+                <mat-form-field>
+                  <mat-select [(ngModel)]="proposedInsuranceDetails.replacement" multiple>
+                    <mat-option *ngFor="let f of existingCurrent" [value]="f.currentId">{{f.name}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <!--<ngx-select [items]="existingCurrent" id="currentId" optionValueField="currentId" optionTextField="name" [(ngModel)]="proposedInsuranceDetails.replacement" [multiple]="true" name="currentId"></ngx-select>-->
+
+              </div>
+            </div>
+
+          </div>
+
+          <div class="line-title"><span>Cost of advice</span><hr /></div>
+
+
+          <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;">
+            <div class="col-sm-2" style="text-align:center;">
+
+            </div>
+            <div class="col-sm-2" style="text-align:center;">
+              Commission (%)
+            </div>
+            <div class="col-sm-3" style="text-align:center;">
+              % Retained by
+            </div>
+
+          </div>
+
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+            <label class="col-sm-2 labelAlignment" style="text-align:center;padding-top:20px;">Implementation</label>
+
+            <div class="col-sm-2 form-group col-sm-2" style="text-align:center;">
+              <label class="control-label" for="iCommission"></label>
+              <input id="iCommission" type="number" [(ngModel)]="proposedInsuranceDetails.implementation.commission" name="iCommission" class="form-control" style="margin-top:5px;">
+            </div>
+            <div class="form-group col-sm-1" style="text-align:center;">
+              <label class="control-label" for="iAdviser">Adviser</label>
+              <input id="iAdviser" type="number" [(ngModel)]="proposedInsuranceDetails.implementation.adviser" name="iAdviser" class="form-control">
+            </div>
+            <div class="form-group col-sm-1" style="text-align:center;">
+              <label class="control-label" for="iPractice">Practice</label>
+              <input id="iPractice" type="number" [(ngModel)]="proposedInsuranceDetails.implementation.practice" name="iPractice" class="form-control">
+            </div>
+            <div class="form-group col-sm-1" style="text-align:center;">
+              <label class="control-label" for="iRIAdvice">RI Advice</label>
+              <input id="iRIAdvice" type="number" [(ngModel)]="proposedInsuranceDetails.implementation.riadvice" name="iRIAdvice" class="form-control">
+            </div>
+          </div>
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+            <label class="col-sm-2 labelAlignment" style="text-align:center">Ongoing</label>
+
+            <div class="col-sm-2">
+              <input id="oCommission" type="number" [(ngModel)]="proposedInsuranceDetails.ongoing.commission" name="oCommission" class="form-control">
+            </div>
+            <div class="col-sm-1">
+
+              <input id="oAdviser" type="number" [(ngModel)]="proposedInsuranceDetails.ongoing.adviser" name="oAdviser" class="form-control">
+            </div>
+            <div class="col-sm-1">
+              <input id="oPractice" type="number" [(ngModel)]="proposedInsuranceDetails.ongoing.practice" name="oPractice" class="form-control">
+            </div>
+            <div class="col-sm-1">
+              <input id="oRIAdvice" type="number" [(ngModel)]="proposedInsuranceDetails.ongoing.riadvice" name="oRIAdvice" class="form-control">
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <div class="form-group">
+            <div class="col-sm-12">
+              <button type="button" (click)="updateInsurance(proposedInsuranceDetails,1)" class="btn btn-success ">Update</button>
+              <button type="button" (click)="onCloseInsurance()" class="btn btn-danger pull-right">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':currentLifeCoverView}">
+  <div class="modal-dialog" role="document" style="width:90%;height:100%;">
+    <div class="modal-content" style="height:100%;">
+      <div class="modal-guts">
+        <div class="modal-body">
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="col-sm-1" style="display:none;"><input [(ngModel)]="lifeCoverDetails.recId" /></div>
+
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="policyOwner">Policy Owner</label>
+              <select class="form-control" id="policyOwner" name="policyOwner" [(ngModel)]="lifeCoverDetails.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="amount">Benefit Amount ($)</label>
+              <input type="number" class="form-control" required id="value" name="amount" [(ngModel)]="lifeCoverDetails.benefitAmount">
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="premiumType">Premium Type</label>
+              <select class="form-control" id="premiumType" name="premiumType" [(ngModel)]="lifeCoverDetails.premiumType" required>
+                <option class='option' *ngFor='let p of premiumType' [value]="p">{{p}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="withinSuper">Within Super ?</label>
+              <input type="checkbox" style="width:100%;height:20px;" [ngModel]="lifeCoverDetails.withinSuper == 1 ? true : lifeCoverDetails.withinSuper == 0 ? false : null" (ngModelChange)="lifeCoverDetails.withinSuper = $event ? 1 : 0" [checked]="lifeCoverDetails.withinSuper" />
+            </div>
+
+          </div>
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="futureInsurability">Future Insurability</label>
+              <input type="checkbox" [ngModel]="lifeCoverDetails.futureInsurability == 1 ? true : lifeCoverDetails.futureInsurability == 0 ? false : null" (ngModelChange)="lifeCoverDetails.futureInsurability = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="lifeCoverDetails.futureInsurability" />
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="terminalIllness">Terminal Illness</label>
+              <input type="checkbox" [ngModel]="lifeCoverDetails.terminalIllness == 1 ? true : lifeCoverDetails.terminalIllness == 0 ? false : null" (ngModelChange)="lifeCoverDetails.terminalIllness = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="lifeCoverDetails.terminalIllness" />
+
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <div class="form-group">
+              <div class="col-sm-12">
+                <button *ngIf="lifeCoverDetails.recId == 0" type="button" (click)="AddLifeCoverDetails(lifeCoverDetails,isCurrent)" class="btn btn-success ">Add</button>
+                <button *ngIf="lifeCoverDetails.recId != 0" type="button" (click)="AddLifeCoverDetails(lifeCoverDetails,isCurrent)" class="btn btn-success ">Update</button>
+                <button type="button" class="btn btn-danger pull-right" (click)="onCloseLifeCover()">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':currentTpdCoverView}">
+  <div class="modal-dialog" role="document" style="width:90%;height:100%;">
+    <div class="modal-content" style="height:100%;">
+      <div class="modal-guts">
+        <div class="modal-body">
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="col-sm-1" style="display:none;"><input [(ngModel)]="tpdCoverDetails.recId" /></div>
+
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="policyOwner">Policy Owner</label>
+              <select class="form-control" id="policyOwner" name="policyOwner" [(ngModel)]="tpdCoverDetails.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="benefitAmount">Benefit Amount ($)</label>
+              <input type="number" class="form-control" required id="benefitAmount" name="benefitAmount" [(ngModel)]="tpdCoverDetails.benefitAmount">
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="premiumType">Premium Type</label>
+              <select class="form-control" id="premiumType" name="premiumType" [(ngModel)]="tpdCoverDetails.premiumType" required>
+                <option class='option' *ngFor='let p of premiumType' [value]="p">{{p}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="standaloneOrLinked">Standalone / Linked</label>
+              <select class="form-control" id="standaloneOrLinked" name="standaloneOrLinked" [(ngModel)]="tpdCoverDetails.standaloneOrLinked" required>
+                <option class='option' *ngFor='let p of standaloneLinkedType' [value]="p">{{p}}</option>
+              </select>
+            </div>
+
+
+          </div>
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="definition">Definition</label>
+              <select class="form-control" id="definition" name="definition" [(ngModel)]="tpdCoverDetails.definition" required>
+                <option class='option' *ngFor='let o of Definition' [value]="o">{{o}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="withinSuper">Within Super ?</label>
+              <select class="form-control" id="withinSuper" name="withinSuper" [(ngModel)]="tpdCoverDetails.withinSuper" required>
+                <option class='option' *ngFor='let o of WithinSuperlinked' [value]="o">{{o}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="disabilityTerm">Disability Term</label>
+              <input type="text" class="form-control" required id="disabilityTerm" name="disabilityTerm" [(ngModel)]="tpdCoverDetails.disabilityTerm">
+
+            </div>
+
+
+          </div>
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="doubleTpd">Double TPD</label>
+              <input type="checkbox" [ngModel]="tpdCoverDetails.doubleTpd == 1 ? true : tpdCoverDetails.doubleTpd == 0 ? false : null" (ngModelChange)="tpdCoverDetails.doubleTpd = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="tpdCoverDetails.doubleTpd" />
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="waiverOfPremium">Waiver of Premium</label>
+              <input type="checkbox" [ngModel]="tpdCoverDetails.waiverOfPremium == 1 ? true : tpdCoverDetails.waiverOfPremium == 0 ? false : null" (ngModelChange)="tpdCoverDetails.waiverOfPremium = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="tpdCoverDetails.waiverOfPremium" />
+
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="futureInsurability">Future Insurability</label>
+              <input type="checkbox" [ngModel]="tpdCoverDetails.futureInsurability == 1 ? true : tpdCoverDetails.futureInsurability == 0 ? false : null" (ngModelChange)="tpdCoverDetails.futureInsurability = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="tpdCoverDetails.futureInsurability" />
+
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <div class="form-group">
+              <div class="col-sm-12">
+                <button *ngIf="tpdCoverDetails.recId == 0" type="button" (click)="AddTpdCoverDetails(tpdCoverDetails,isCurrent)" class="btn btn-success ">Add</button>
+                <button *ngIf="tpdCoverDetails.recId != 0" type="button" (click)="AddTpdCoverDetails(tpdCoverDetails,isCurrent)" class="btn btn-success ">Update</button>
+                <button type="button" class="btn btn-danger pull-right" (click)="onCloseTpdCover()">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':currentTraumaCoverView}">
+  <div class="modal-dialog" role="document" style="width:90%;height:100%;">
+    <div class="modal-content" style="height:100%;">
+      <div class="modal-guts">
+        <div class="modal-body">
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="col-sm-1" style="display:none;"><input [(ngModel)]="traumaCoverDetails.recId" /></div>
+
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="policyOwner">Policy Owner</label>
+              <select class="form-control" id="policyOwner" name="policyOwner" [(ngModel)]="traumaCoverDetails.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="benefitAmount">Benefit Amount ($)</label>
+              <input type="number" class="form-control" required id="benefitAmount" name="benefitAmount" [(ngModel)]="traumaCoverDetails.benefitAmount">
+            </div>
+            <div class="form-group col-sm-2" style="text-align:center;">
+              <label class="control-label" for="premiumType">Premium Type</label>
+              <select class="form-control" id="premiumType" name="premiumType" [(ngModel)]="traumaCoverDetails.premiumType" required>
+                <option class='option' *ngFor='let p of premiumType' [value]="p">{{p}}</option>
+              </select>
+            </div>
+
+            <div class="form-group col-sm-2" style="text-align:center;">
+              <label class="control-label" for="standaloneOrLinked">Standalone / Linked</label>
+              <select class="form-control" id="standaloneOrLinked" name="standaloneOrLinked" [(ngModel)]="traumaCoverDetails.standaloneOrLinked" required>
+                <option class='option' *ngFor='let p of standaloneLinkedType' [value]="p">{{p}}</option>
+              </select>
+            </div>
+
+            <div class="form-group col-sm-2" style="text-align:center;">
+              <label class="control-label" for="withinSuper">Within Super ?</label>
+              <select class="form-control" id="withinSuper" name="withinSuper" [(ngModel)]="traumaCoverDetails.withinSuper" required>
+                <option class='option' *ngFor='let o of WithinSuperlinked' [value]="o">{{o}}</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="reinstatement">Reinstatement</label>
+              <input type="checkbox" [ngModel]="traumaCoverDetails.reinstatement == 1 ? true : traumaCoverDetails.reinstatement == 0 ? false : null" (ngModelChange)="traumaCoverDetails.reinstatement = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="traumaCoverDetails.reinstatement" />
+
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="doubleTrauma">Double Trauma</label>
+              <input type="checkbox" [ngModel]="traumaCoverDetails.doubleTrauma == 1 ? true : traumaCoverDetails.doubleTrauma == 0 ? false : null" (ngModelChange)="traumaCoverDetails.doubleTrauma = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="traumaCoverDetails.doubleTrauma" />
+            </div>
+            <div class="form-group col-sm-2" style="text-align:center;">
+              <label class="control-label" for="childTrauma">Child Trauma</label>
+              <input type="checkbox" [ngModel]="traumaCoverDetails.childTrauma == 1 ? true : traumaCoverDetails.childTrauma == 0 ? false : null" (ngModelChange)="traumaCoverDetails.childTrauma = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="traumaCoverDetails.childTrauma" />
+            </div>
+
+            <div class="form-group col-sm-2" style="text-align:center;">
+              <label class="control-label" for="waiverOfPremium">Waiver of Premium</label>
+              <input type="checkbox" [ngModel]="traumaCoverDetails.waiverOfPremium == 1 ? true : traumaCoverDetails.waiverOfPremium == 0 ? false : null" (ngModelChange)="traumaCoverDetails.waiverOfPremium = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="traumaCoverDetails.waiverOfPremium" />
+
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <div class="form-group">
+              <div class="col-sm-12">
+                <button *ngIf="traumaCoverDetails.recId == 0" type="button" (click)="AddTraumaCoverDetails(traumaCoverDetails,isCurrent)" class="btn btn-success ">Add</button>
+                <button *ngIf="traumaCoverDetails.recId != 0" type="button" (click)="AddTraumaCoverDetails(traumaCoverDetails,isCurrent)" class="btn btn-success ">Update</button>
+                <button type="button" class="btn btn-danger pull-right" (click)="onCloseTraumaCover()">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':currentIncomeCoverView}">
+  <div class="modal-dialog" role="document" style="width:90%;height:100%;">
+    <div class="modal-content" style="height:100%;">
+      <div class="modal-guts">
+        <div class="modal-body">
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="col-sm-1" style="display:none;"><input [(ngModel)]="incomeCoverDetails.recId" /></div>
+
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="policyOwner">Policy Owner</label>
+              <select class="form-control" id="policyOwner" name="policyOwner" [(ngModel)]="incomeCoverDetails.policyOwner" required>
+                <option class='option' *ngFor='let o of policyOwner' [value]="o.id">{{o.name}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="benefitAmount">Monthly Benefit Amount ($)</label>
+              <input type="number" class="form-control" required id="monthlyBenefitAmount" name="monthlyBenefitAmount" [(ngModel)]="incomeCoverDetails.monthlyBenefitAmount">
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="premiumType">Premium Type</label>
+              <select class="form-control" id="premiumType" name="premiumType" [(ngModel)]="incomeCoverDetails.premiumType" required>
+                <option class='option' *ngFor='let p of premiumType' [value]="p">{{p}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="withinSuper">Within Super ?</label>
+              <input type="checkbox" [ngModel]="incomeCoverDetails.withinSuper == 1 ? true : incomeCoverDetails.withinSuper == 0 ? false : null" (ngModelChange)="incomeCoverDetails.withinSuper = $event ? 1 : 0" style="width:100%;height:20px;" [checked]="incomeCoverDetails.withinSuper" />
+            </div>
+
+
+          </div>
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="definition">Definition</label>
+              <select class="form-control" id="definition" name="definition" [(ngModel)]="incomeCoverDetails.definition" required>
+                <option class='option' *ngFor='let o of incomeDefinition' [value]="o.id">{{o.name}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="waitingPeriod">Waiting Period</label>
+              <select class="form-control" id="waitingPeriod" name="definition" [(ngModel)]="incomeCoverDetails.waitingPeriod" required>
+                <option class='option' *ngFor='let o of waitingPeriod' [value]="o">{{o}}</option>
+              </select>
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="benefitPeriod">Benefit Period</label>
+              <select class="form-control" id="benefitPeriod" name="definition" [(ngModel)]="incomeCoverDetails.benefitPeriod" required>
+                <option class='option' *ngFor='let o of benefitPeriod' [value]="o.id">{{o.name}}</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="reinstatement">Claims Indexation</label>
+              <input type="checkbox" [ngModel]="incomeCoverDetails.claimsIndexation == 1 ? true : incomeCoverDetails.claimsIndexation == 0 ? false : null" (ngModelChange)="incomeCoverDetails.claimsIndexation = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="incomeCoverDetails.claimsIndexation" />
+
+            </div>
+            <div class="form-group col-sm-3" style="text-align:center;">
+              <label class="control-label" for="doubleTrauma">Critical Conditions Cover</label>
+              <input type="checkbox" [ngModel]="incomeCoverDetails.criticalConditionsCover == 1 ? true : incomeCoverDetails.criticalConditionsCover == 0 ? false : null" (ngModelChange)="incomeCoverDetails.criticalConditionsCover = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="incomeCoverDetails.criticalConditionsCover" />
+            </div>
+            <div class="form-group col-sm-2" style="text-align:center;">
+              <label class="control-label" for="childTrauma">Accident Benefit</label>
+              <input type="checkbox" [ngModel]="incomeCoverDetails.accidentBenefit == 1 ? true : incomeCoverDetails.accidentBenefit == 0 ? false : null" (ngModelChange)="incomeCoverDetails.accidentBenefit = $event ? 1 : 0" style="float:left;margin-left:5px;margin-right:5px;height:20px;width:100%;" [checked]="incomeCoverDetails.accidentBenefit" />
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <div class="form-group">
+              <div class="col-sm-12">
+                <button *ngIf="incomeCoverDetails.recId == 0" type="button" (click)="AddIncomeCoverDetails(incomeCoverDetails,isCurrent)" class="btn btn-success ">Add</button>
+                <button *ngIf="incomeCoverDetails.recId != 0" type="button" (click)="AddIncomeCoverDetails(incomeCoverDetails,isCurrent)" class="btn btn-success ">Update</button>
+                <button type="button" class="btn btn-danger pull-right" (click)="onCloseIncomeCover()">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

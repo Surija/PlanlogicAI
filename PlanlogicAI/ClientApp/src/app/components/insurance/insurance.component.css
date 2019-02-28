@@ -1,0 +1,406 @@
+.spinner {
+  border: 16px solid silver;
+  border-top: 16px solid #337AB7;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 700ms linear infinite;
+  top: 50%;
+  left: 50%;
+  position: fixed;
+  z-index: 99;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg)
+  }
+
+  100% {
+    transform: rotate(-360deg)
+  }
+}
+/*.gu-mirror {
+    position: fixed !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+    opacity: 0.8;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+    filter: alpha(opacity=80);
+    pointer-events: none;
+}
+/* high-performance display:none; helper */
+.gu-hide {
+    left: -9999px !important;
+}
+/* added to mirrorContainer (default = body) while dragging */
+.gu-unselectable {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+}
+/* added to the source element while its mirror is dragged */
+.gu-transit {
+    opacity: 0.2;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+    filter: alpha(opacity=20);
+}
+
+.fundDisplayCss label {
+    font-weight: 200 !important;
+}
+
+/*.fundDisplayCss :nth-child(odd) {
+    background-color: #faebd796;
+}
+.fundDisplayCss :nth-child(even) {
+    background-color: #fff;
+}*/
+
+/*@media (min-width: 768px)
+{
+    .fundDisplayCss .row :nth-child(4n - 2), .row :nth-child(4n - 3) {
+        background-color: #faebd796;
+    }
+}
+@media (min-width: 992px) {
+    .fundDisplayCss .row :nth-child(6n - 3), .row :nth-child(6n - 4), .row :nth-child(6n - 5) {
+        background-color: #faebd796;
+    }
+}*/
+
+/*.displayPopup .btn:hover
+{
+    background:gray !important;
+}*/
+
+
+.no-drag {
+    cursor: pointer !important;
+}
+
+.col-md-6 {
+    min-width: 500px !important;
+}
+
+.headings {
+    padding: 12px 6px 6px 12px !important;
+    font-weight: bold;
+}
+
+.popover {
+    width: 500px !important;
+    max-width: none !important;
+}
+
+.container {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.col {
+    display: table-cell;
+}
+
+.col-container {
+    display: flex; /* Make the container element behave like a table */
+}
+
+.container div {
+    /*margin: 3px;*/
+    padding: 5px;
+    /*background-color: rgba(0,0,0,0.2);*/
+    transition: opacity 0.4s;
+    cursor: grab;
+}
+
+.container .current :after {
+    /*content: '\2807';
+            font-size: 20px;
+            color: gray;*/
+    cursor: grabbing;
+}
+
+.dragCss:hover {
+    background-color: lightgray !important;
+    /*border: 1px solid lightgrey;*/
+}
+/*.container div ::selection
+{
+    border:1px solid gray;
+}*/
+.highlight {
+    background-color: #e3e3e3;
+}
+/* dragula-specific example page styles */
+.wrapper {
+    display: table;
+}
+
+.container {
+    display: table-cell;
+    border: 1px solid lightgrey;
+    /*background-color: rgba(255, 255, 255, 0.2);*/
+    /*width: 50%;*/
+}
+
+
+/*.container:nth-child(odd) {
+        background-color: rgba(0, 0, 0, 0.2);
+    }*/
+/*
+ * note that styling gu-mirror directly is a bad practice because it's too generic.
+ * you're better off giving the draggable elements a unique class and styling that directly!
+ */
+
+/*select[disabled] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none; 
+    background: none;
+}*/
+
+
+
+/* ***************************************** */
+.plain[disabled], fieldset[disabled] .form-control {
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+}
+
+/*.input[disabled], select[disabled] {
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+}*/
+
+.line-title {
+    font-size: 15px;
+    margin-bottom: 10px;
+    padding-top: 20px; /* Allows for hr margin to start at top of h2 */
+    color: gray;
+}
+
+    /* clearfix for floats */
+    .line-title:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .line-title span {
+        padding-right: 10px;
+        float: left;
+    }
+
+    .line-title hr {
+        border: 1px solid #DDD;
+        border-width: 1px 0 0 0;
+        margin-top: 11px;
+    }
+
+.modal-content {
+    font-size: 12.6px;
+}
+
+.modal-guts {
+    /* other stuff we already covered */
+    /* cover the modal */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* spacing as needed */
+    padding: 20px 50px 20px 20px;
+    /* let it scroll */
+    overflow: auto;
+}
+
+.line-title {
+    font-size: 15px;
+    margin-bottom: 10px;
+    padding-top: 20px; /* Allows for hr margin to start at top of h2 */
+    color: gray;
+}
+
+    /* clearfix for floats */
+    .line-title:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .line-title span {
+        padding-right: 10px;
+        float: left;
+    }
+
+    .line-title hr {
+        border: 1px solid #DDD;
+        border-width: 1px 0 0 0;
+        margin-top: 11px;
+    }
+
+
+.btn-circle {
+    width: 30px !important;
+    height: 30px !important;
+    padding: 6px 0px !important;
+    border-radius: 15px !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    line-height: 1.42857 !important;
+}
+
+table, tr, td, th {
+    border: none !important;
+}
+
+.editableDD {
+    position: absolute;
+    width: 80%;
+    height: 32px;
+    top: 1px;
+    left: 1px;
+    border: none;
+}
+
+input.editableDD:focus {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+button {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.backdrop {
+    background-color: rgba(0,0,0,0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 9;
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
+}
+
+
+/*.modal-content {
+    font-size: 12.6px;
+}
+
+.modal-guts {
+     other stuff we already covered 
+     cover the modal 
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+     spacing as needed 
+    padding: 20px 50px 20px 20px;
+     let it scroll 
+    overflow: auto;
+}
+
+.line-title {
+    font-size: 15px;
+    margin-bottom: 10px;
+    padding-top: 20px;  Allows for hr margin to start at top of h2 
+    color: gray;
+}
+
+     clearfix for floats 
+    .line-title:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .line-title span {
+        padding-right: 10px;
+        float: left;
+    }
+
+    .line-title hr {
+        border: 1px solid #DDD;
+        border-width: 1px 0 0 0;
+        margin-top: 11px;
+    }
+
+
+.btn-circle {
+    width: 30px !important;
+    height: 30px !important;
+    padding: 6px 0px !important;
+    border-radius: 15px !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    line-height: 1.42857 !important;
+}
+
+table, tr, td, th {
+    border: none !important;
+}
+
+.editableDD {
+    position: absolute;
+    width: 80%;
+    height: 32px;
+    top: 1px;
+    left: 1px;
+    border: none;
+}
+
+input.editableDD:focus {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+button {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.backdrop {
+    background-color: rgba(0,0,0,0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 9;
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+   
+}*/

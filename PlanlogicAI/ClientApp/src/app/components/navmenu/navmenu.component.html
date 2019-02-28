@@ -1,0 +1,210 @@
+<div class='main-nav'>
+    <div class='navbar navbar-inverse'>
+        <div class='navbar-header'>
+            <a class='navbar-brand' [routerLink]="['/clients/new']">
+                <!--<span class='glyphicon glyphicon-home'></span>--> Home
+            </a>
+        </div>
+        <div class='navbar-header' (click)="ProjectionDate('bDetail')">
+
+            <a class='navbar-brand'>Basic Details</a>
+        </div>
+
+        <div class='navbar-header' (click)="ProjectionDate('strategyOptimizer')">
+            <!--TODO - Uncomment-->
+            <!--(click)="ProjectionDate('strategyOptimizer')"-->
+            <a class='navbar-brand'>Strategy Optimiser</a>
+        </div>
+
+        <div class="StrategyOptimizerchild">
+            <div class='clearfix'></div>
+            <div class='navbar-collapse collapse'>
+                <ul class='nav navbar-nav parent'>
+                    <!--<li style="background:#02030a;" title="Basic Details">
+                    <a [routerLink]="['basic-details']">
+                        <span class='glyphicon glyphicon-circle-arrow-right'></span> Basic Details
+                    </a>
+                </li>-->
+                    <li style="background:#02030a;" title="Current Position">
+                        <a [routerLink]="['current-position']">
+                            <span class='glyphicon glyphicon-circle-arrow-right'></span> Current Position
+                        </a>
+                    </li>
+                    <li style="background:#02030a;" title="Projections" (click)="ProjectionDate('projection')">
+                        <a>
+                            <span class='glyphicon glyphicon-circle-arrow-down'></span> Projections
+                        </a>
+                        <ol class="Projectionchild">
+                            <li>
+                                <a [routerLink]="['current-projections/cashflow']">
+                                    <span class='glyphicon glyphicon-circle-arrow-right' style="font-size:12px !important"></span> Cashflow
+                                </a>
+                            </li>
+                            <li>
+                                <a [routerLink]="['current-projections/tax']">
+                                    <span class='glyphicon glyphicon-circle-arrow-right' style="font-size:12px !important"></span> Tax
+                                </a>
+                            </li>
+                            <li>
+                                <a [routerLink]="['current-projections/financialAssets']">
+                                    <span class='glyphicon glyphicon-circle-arrow-right' style="font-size:12px !important"></span> Assets
+                                </a>
+                            </li>
+                            <li>
+                                <a [routerLink]="['current-projections/liabilities']">
+                                    <span class='glyphicon glyphicon-circle-arrow-right' style="font-size:12px !important"></span> Liabilities
+                                </a>
+                            </li>
+                            <!--ToDO : Complete Centrelink-->
+                            <!--<li>
+                                <a [routerLink]="['current-projections/centrelink']">
+                                    <span class='glyphicon glyphicon-circle-arrow-right' style="font-size:12px !important"></span> Centrelink
+                                </a>
+                            </li>-->
+                        </ol>
+                    </li>
+                    <li style="background:#02030a;" title="Strategy Optimizer" (click)="ProjectionDate('optimizer')">
+                        <a>
+                            <span class='glyphicon glyphicon-circle-arrow-right'></span> Strategy Optimizer
+                        </a>
+                    </li>
+
+                    <li style="background:#02030a;" title=" Proposed Projections" (click)="ProjectionDate('proposedprojection')">
+                        <a>
+                            <span class='glyphicon glyphicon-circle-arrow-down'></span> Proposed Projections
+                        </a>
+                        <ol class="ProposedProjectionchild">
+                            <li>
+                                <a [routerLink]="['current-projections/proposedcashflow']">
+                                    <span class='glyphicon glyphicon-circle-arrow-right' style="font-size:12px !important"></span>  Cashflow
+                                </a>
+                            </li>
+                            <li>
+                                <a [routerLink]="['current-projections/proposedtax']">
+                                    <span class='glyphicon glyphicon-circle-arrow-right' style="font-size:12px !important"></span> Tax
+                                </a>
+                            </li>
+                            <li>
+                                <a [routerLink]="['current-projections/proposedFinancialAssets']">
+                                    <span class='glyphicon glyphicon-circle-arrow-right' style="font-size:12px !important"></span>  Assets
+                                </a>
+                            </li>
+
+                            <li>
+                                <a [routerLink]="['current-projections/liabilitiesProposed']">
+                                    <span class='glyphicon glyphicon-circle-arrow-right' style="font-size:12px !important"></span>  Liabilities
+                                </a>
+                            </li>
+                        </ol>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+        <!--Project Comparison-->
+        <div class='navbar-header' (click)="ProjectionDate('productComparison')">
+            <a class='navbar-brand'>Product Optimiser</a>
+        </div>
+
+        <div class="ProductComparisonchild">
+            <div class='clearfix'></div>
+            <div class='navbar-collapse collapse'>
+                <ul class='nav navbar-nav parent'>
+                    <!--TODO - Uncomment-->
+                    <!--<li style="background:#02030a;" title="Upload Product Details">
+                    <a [routerLink]="['product-current-position']">
+                        <span class='glyphicon glyphicon-circle-arrow-right'></span> Product Details
+                    </a>
+                </li>-->
+                    <!--<li style="background:#02030a;" title="Current Portfolio">
+                    <a [routerLink]="['current-portfolio']">
+                        <span class='glyphicon glyphicon-circle-arrow-right'></span> Current Portfolio
+                    </a>
+                </li>-->
+                    <li style="background:#02030a;" title="Product Switching">
+                        <a [routerLink]="['product-switching/main']">
+                            <span class='glyphicon glyphicon-circle-arrow-right'></span> Product Switching
+                        </a>
+                    </li>
+                    <li style="background:#02030a;" title="Preview">
+                        <a [routerLink]="['product-switching/preview']">
+                            <span class='glyphicon glyphicon-circle-arrow-right'></span> Preview
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class='navbar-header'>
+            <a class='navbar-brand'>Insurance</a>
+        </div>
+        <div class="InsuranceComparisonchild">
+            <div class='clearfix'></div>
+            <div class='navbar-collapse collapse'>
+              <ul class='nav navbar-nav parent'>
+                <li style="background:#02030a;" title="Needs Analysis">
+                  <a [routerLink]="['needs-analysis']">
+                    <span class='glyphicon glyphicon-circle-arrow-right'></span> Needs Analysis
+                  </a>
+                </li>
+
+                <li style="background:#02030a;" title="Insurance Switching">
+                  <a [routerLink]="['insurance']">
+                    <span class='glyphicon glyphicon-circle-arrow-right'></span> Insurance Switching
+                  </a>
+                </li>
+
+              </ul>
+            </div>
+        </div>
+
+    </div>
+
+  
+</div>
+<div class="backdrop" [ngStyle]="{'display':display}"></div>
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':display}">
+    <div class="modal-dialog" role="document">
+        <form style="padding-top:50px;" (ngSubmit)="onSubmit()" #heroForm="ngForm" ngNativeValidate>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" aria-label="Close" (click)="onCloseHandled()"><span aria-hidden="true">&times;</span></button>
+                  
+                </div>
+                <div class="modal-body">
+                 
+                    <table>
+                        <tr>
+                            <td style="width:170px;">
+                                <div class="form-group">
+                                    <label for="StartDate">Start Date</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input type="number" required [(ngModel)]="clientDetails.startDate" name="startDate" class="form-control" id="startDate">
+                                </div>
+                            </td>
+                            <td style="padding-left:30px;"></td>
+                            <td>
+                                <div class="form-group">
+                                    <label for="Period">Period</label>
+                                </div>
+                            </td>
+                            <td style="padding-left:30px;"></td>
+                            <td>
+                                <div class="form-group">
+                                    <input type="number" required [(ngModel)]="clientDetails.period" name="period" class="form-control" id="period">
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success" [disabled]="!heroForm.form.valid">Submit</button>
+                    <button type="button" class="btn btn-default" (click)="onCloseHandled()">Close</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

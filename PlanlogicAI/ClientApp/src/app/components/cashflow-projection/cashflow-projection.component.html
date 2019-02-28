@@ -1,0 +1,226 @@
+<table class="table" style="margin-top:50px;">
+    <tr style="background-color:#4c89bb;color:white">
+        <td style="width:100px !important;"></td>
+        <td *ngFor="let year of years">1/7/{{year}}</td>
+    </tr>
+
+    <tr style="color:gray">
+        <td style="border:none;"> Age - {{selectedClient.clientName}}</td>
+        <td style="border:none;" *ngFor="let year of years;let index = index">
+            <span *ngIf="year == clientRetirementYear else ageC">  {{index + clientAge }} [R] </span>  <ng-template #ageC> <span>{{index + clientAge }}</span> </ng-template>
+        </td>
+    </tr>
+
+    <tr style="color:gray" *ngIf="this.selectedClient.maritalStatus == 'M'">
+        <td style="border:none;"> Age - {{selectedClient.partnerName}}</td>
+        <td style="border:none;" *ngFor="let year of years;let index = index">
+            <span *ngIf="year == partnerRetirementYear else ageP"> {{index + partnerAge }} [R] </span>  <ng-template #ageP> <span>{{index + partnerAge }}</span> </ng-template>
+        </td>
+    </tr>
+    <tr style="height:40px;">
+        <td [attr.colspan]="period"></td>
+    </tr>
+
+
+    <!--Inflow-->
+    <tr class="header">
+        <td style="border:none;font-weight:bold;" [attr.colspan]="period"> INFLOW </td>
+    </tr>
+    <tr style="background:#619dce;">
+        <td [attr.colspan]="period"></td>
+    </tr>
+    <!--Client-->
+    <tr *ngIf="cfiClient?.length > 0">
+        <td [attr.colspan]="period" style="border-bottom:1px solid #619dce;">{{selectedClient.clientName}}</td>
+    </tr>
+
+
+
+
+
+    <!--Client-->
+    <tr *ngIf="cfiClient?.length <= 0 else clientIncomeTotal"></tr>
+    <ng-template #clientIncomeTotal>
+        <tr *ngFor="let item of inflow | filter:'Total-client'">
+            <td style="padding-left:1em !important;border:none;">{{item.name}}</td>
+            <td style="border:none;" *ngFor=" let value of item.values | keys">
+                <span *ngIf="value.value == '-' else ict"> - </span>  <ng-template #ict> <span>${{value.value | number}} </span> </ng-template>
+            </td>
+        </tr>
+        <tr *ngFor="let item of inflow | filter:'Client'" style="color:gray;">
+            <td style="padding-left:2em !important;border:none;">{{item.name}}</td>
+            <td style="border:none;" *ngFor=" let value of item.values | keys">
+                <span *ngIf="value.value == '-' else ic"> - </span>  <ng-template #ic> <span>${{value.value | number}} </span> </ng-template>
+            </td>
+        </tr>
+        <tr style="height:20px;">
+            <td [attr.colspan]="period" style="border:none;"></td>
+        </tr>
+    </ng-template>
+
+
+    <!--Partner-->
+    <tr class="lessons-list" *ngIf="this.selectedClient.maritalStatus == 'S' else partnerIncome"></tr>
+    <ng-template #partnerIncome>
+        <tr *ngIf="cfiPartner?.length > 0">
+            <td [attr.colspan]="period" style="border-bottom:1px solid #619dce;border-top:none;">{{selectedClient.partnerName}}</td>
+        </tr>
+        <tr *ngIf="cfiPartner?.length <= 0 else partnerIncomeTotal"></tr>
+        <ng-template #partnerIncomeTotal>
+            <tr *ngFor="let item of inflow | filter:'Total-partner'">
+                <td style="padding-left:1em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == '-' else ipt"> - </span>  <ng-template #ipt> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr *ngFor="let item of inflow | filter:'Partner'" style="color:gray;">
+                <td style="padding-left:2em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == '-' else ip"> - </span>  <ng-template #ip> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+
+
+    </ng-template>
+
+    <tr *ngIf="(cfiClient?.length <= 0 && cfiPartner?.length <= 0 ) else InflowTotal"></tr>
+   
+    <ng-template #InflowTotal>
+        <tr style="height:10px;">
+            <td [attr.colspan]="period" style="border:none;"></td>
+        </tr>
+        <tr style="background-color:#eff8ff;font-weight:bold;" *ngFor="let item of inflow | filter:'Inflow'">
+            <td style="border-bottom:1px solid #619dce;border-top:none;">Total Inflow</td>
+            <td style="border-bottom:1px solid #619dce;border-top:none;" *ngFor=" let value of item.values | keys">
+                <span *ngIf="value.value == '-' else ti"> - </span>  <ng-template #ti> <span>${{value.value | number}} </span> </ng-template>
+            </td>
+        </tr>
+    </ng-template>
+    <!--<tr style="background:#619dce;">
+        <td [attr.colspan]="period"></td>
+    </tr>-->
+    <tr style="height:20px;">
+        <td [attr.colspan]="period" style="border:none;"></td>
+    </tr>
+    <!--Outflow-->
+
+    <tr class="header">
+        <td style="border:none;font-weight:bold;" [attr.colspan]="period"> OUTFLOW </td>
+    </tr>
+    <tr style="background:#619dce;">
+        <td [attr.colspan]="period"></td>
+    </tr>
+
+    <tr *ngIf="cfeClient?.length > 0">
+        <td [attr.colspan]="period" style="border-bottom:1px solid #619dce;"> {{selectedClient.clientName}}</td>
+    </tr>
+
+    <!--Client-->
+    <tr *ngIf="cfeClient?.length <= 0 else clientExpenditureTotal"></tr>
+    <ng-template #clientExpenditureTotal>
+        <tr *ngFor="let item of outflow | filter:'Total-client'">
+            <td style="padding-left:1em !important;border:none;">{{item.name}}</td>
+            <td style="border:none;" *ngFor=" let value of item.values | keys">
+                <span *ngIf="value.value == '-' else ect"> - </span>  <ng-template #ect> <span>${{value.value | number}} </span> </ng-template>
+            </td>
+        </tr>
+        <tr *ngFor="let item of outflow | filter:'Client'" style="color:gray;">
+            <td style="padding-left:2em !important;border:none;">{{item.name}}</td>
+            <td style="border:none;" *ngFor=" let value of item.values | keys">
+                <span *ngIf="value.value == '-' else ec"> - </span>  <ng-template #ec> <span>${{value.value | number}} </span> </ng-template>
+            </td>
+        </tr>
+        <tr style="height:20px;">
+            <td [attr.colspan]="period" style="border:none;"></td>
+        </tr>
+    </ng-template>
+
+
+    <!--Partner-->
+    <tr class="lessons-list" *ngIf="this.selectedClient.maritalStatus == 'S' else partnerExpenditure"></tr>
+    <ng-template #partnerExpenditure>
+        <tr *ngIf="cfePartner?.length > 0">
+            <td [attr.colspan]="period" style="border-bottom:1px solid #619dce;">{{selectedClient.partnerName}}</td>
+        </tr>
+
+        <tr *ngIf="cfePartner?.length <= 0 else partnerExpenditureTotal"></tr>
+        <ng-template #partnerExpenditureTotal>
+            <tr *ngFor="let item of outflow | filter:'Total-partner'">
+                <td style="padding-left:1em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == '-' else ept"> - </span>  <ng-template #ept> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr *ngFor="let item of outflow | filter:'Partner'" style="color:gray;">
+                <td style="padding-left:2em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == '-' else ep"> - </span>  <ng-template #ep> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr style="height:20px;">
+                <td [attr.colspan]="period" style="border:none;"></td>
+            </tr>
+        </ng-template>
+
+
+        <!--Joint-->
+
+        <tr *ngIf="cfeJoint?.length > 0">
+            <td [attr.colspan]="period" style="border-bottom:1px solid #619dce;">Joint</td>
+        </tr>
+
+        <tr *ngIf="cfeJoint?.length <= 0 else jointExpenditureTotal"></tr>
+        <ng-template #jointExpenditureTotal>
+            <tr *ngFor="let item of outflow | filter:'Total-joint'">
+                <td style="padding-left:1em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == '-' else ejt"> - </span>  <ng-template #ejt> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+            <tr *ngFor="let item of outflow | filter:'Joint'" style="color:gray;">
+                <td style="padding-left:2em !important;border:none;">{{item.name}}</td>
+                <td style="border:none;" *ngFor=" let value of item.values | keys">
+                    <span *ngIf="value.value == '-' else ej"> - </span>  <ng-template #ej> <span>${{value.value | number}} </span> </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+
+    </ng-template>
+
+    <tr *ngIf="(cfeClient?.length <= 0 && cfePartner?.length <= 0 && cfeJoint?.length <= 0 ) else OutflowTotal"></tr>
+   
+    <ng-template #OutflowTotal>
+        <tr style="height:10px;">
+            <td [attr.colspan]="period" style="border:none;"></td>
+        </tr>
+        <tr style="background-color:#eff8ff;font-weight:bold;" *ngFor="let item of outflow | filter:'Outflow'">
+            <td style="border-bottom:1px solid #619dce;border-top:none;">Total Outflow</td>
+            <td style="border-bottom:1px solid #619dce;border-top:none;" *ngFor=" let value of item.values | keys">
+                <span *ngIf="value.value == '-' else to"> - </span>  <ng-template #to> <span>${{value.value | number}} </span> </ng-template>
+            </td>
+        </tr>
+    </ng-template>
+    <!--<tr style="background:#619dce;">
+        <td [attr.colspan]="period"></td>
+    </tr>-->
+    <tr style="height:20px;">
+        <td [attr.colspan]="period" style="border:none;"></td>
+    </tr>
+
+    <tr *ngIf="(net?.length <= 0 ) else NetFlowTotal"></tr>
+    <ng-template #NetFlowTotal>
+        <tr style="font-weight:bold;background-color:#eff8ff;border:none;" *ngFor="let item of net">
+            <td style="border:none;">Net Cashflow</td>
+            <td style="border:none;" *ngFor=" let value of item.values | keys">
+                <span *ngIf="value.value == '-' else nc"> - </span>
+                <ng-template #nc>
+                    <span *ngIf="value.value > 0 else neg">${{value.value | number}} </span>
+                    <ng-template #neg>
+                        <span> (${{value.value | positive | number  }}) </span>
+                    </ng-template>
+                </ng-template>
+            </td>
+        </tr>
+    </ng-template>
+</table>

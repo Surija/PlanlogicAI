@@ -1,0 +1,56 @@
+<div class="container" >
+    <!--effect7-->
+    <div class="content">
+        <div class="row">
+            <div class="col-sm-7">
+
+                
+            </div>
+            <div class="col-sm-5">
+                <div class="row">
+                  <div class="col-sm-7">
+                    <img src="images/logo.png" style="width:100%;display:block;" />
+                  
+                  </div>
+                </div>
+                <form (ngSubmit)="onSubmit()" #newClientForm="ngForm" ngNativeValidate>
+                    <div class="row">
+
+                        <div class="col-sm-5">
+                            <input class="form-control" id="familyName" placeholder="Family Name" [(ngModel)]="client.familyName" name="familyName" required maxlength="15">
+                        </div>
+                        <div class="col-sm-2">
+                            <button type="submit" [disabled]="!newClientForm.form.valid" class="btn btn-success btn-circle" title="Save">
+                                <i class="glyphicon glyphicon-ok"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-circle" (click)="onCloseHandled()" title="Cancel">
+                                <i class="glyphicon glyphicon-remove"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div class="row">
+
+                    <div class="col-sm-7">
+                        <table class="table" id="tblClients">
+                            <thead>
+                                <tr style="background:lightgray;">
+                                    <th >Clients</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let c of clients">
+
+                                    <td><a (click)="routeExistingClient(c.clientId)" style="cursor:pointer;">{{ c.familyName }}</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                  
+                  
+                </div>
+
+            </div>
+            </div>
+</div>
+</div>

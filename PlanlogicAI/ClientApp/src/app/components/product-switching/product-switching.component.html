@@ -1,0 +1,2131 @@
+<div [ngStyle]="{'display':mainDisplay}">
+  <form #ProductSwitchingForm="ngForm">
+    <div class="line-title"><span>Product Switching</span><button type="button" class="btn btn-circle" data-container="body" data-toggle="popover" data-placement="bottom" data-content="1. Click the '+' icon to create a new product <br /> 2. Drag & drop a current product to the proposed section to Retain , Rebalance or Change Value.<br /> 3. Click on a proposed product to view its underlying funds , asset allocation & fees."><i class="glyphicon glyphicon-question-sign" style="text-decoration:none;" title="Help"></i></button><hr /></div>
+
+    <!--<a  id="addProduct" data-toggle="popover" title="Popover Header" data-content="Some content inside the popover">Toggle popover</a>-->
+    <div class="row">
+      <div class="col-md-6 container " style="text-align:center;font-weight:bold;padding:5px !important;background: #393939;color: white;border-bottom: 2px solid #ED7D27;border-right:none;">
+        <span>Current</span>
+        <button mat-icon-button style="float:right;padding:0;line-height:0 !important" title="Add new product" id="addCurrentProduct" (click)="openCurrentModal()">
+          <mat-icon aria-label="Add new product">add_circle</mat-icon>
+        </button>
+
+      </div>
+      <div class="col-md-6 container " style="text-align:center;font-weight:bold;padding:5px !important;background: #393939;color: white;border-bottom: 2px solid #ED7D27;border-right:none;">
+        <span>Proposed</span>
+        <button mat-icon-button style="float:right;padding:0;background:none;color:white;" title="Add new product" id="addProposedProduct" (click)="openNewProductModal()">
+          <mat-icon aria-label="Add new product">add_circle</mat-icon>
+        </button>
+      </div>
+    </div>
+
+
+    <div class="row col-container">
+      <div class="col-md-6 container">
+        <div class="col-md-12 col-sm-12 col-xs-12"><div class="col-md-7 col-sm-7 col-xs-7">Product</div><div class="col-md-2 col-sm-2 col-xs-2"> Value</div><div class="col-md-1 col-sm-1 col-xs-1"> Owner</div><div class="col-md-2 col-sm-2 col-xs-2" style="color:gray"></div></div>
+      </div>
+      <div class="col-md-6 container">
+        <div class="col-md-12 col-sm-12 col-xs-12"><div class="col-md-7 col-sm-7 col-xs-7">Product</div><div class="col-md-2 col-sm-2 col-xs-2">Value</div><div class="col-md-1 col-sm-1 col-xs-1">Owner</div></div>
+      </div>
+    </div>
+
+    <div class="row col-container">
+      <div class="col-md-6 container" [dragula]='"first-bag"' [dragulaModel]="currentInvestments" id="sourceDiv">
+        <div *ngFor='let cI of currentInvestments' (click)="setCurrentProduct(cI.recId)" draggable="true" id="{{cI.recId}}" class="{{cI.product}} col-md-12 col-sm-12 col-xs-12 dragCss" style="cursor:-webkit-grab;"><div draggable="true" class="col-md-7 col-sm-7 col-xs-7">{{cI.product}}</div><div class="col-md-2 col-sm-2 col-xs-2"> ${{cI.value | number}}</div><div class="col-md-1 col-sm-1 col-xs-1"> {{cI.owner}} </div></div>
+        <!---->
+        <!--<div style="display:none;" class="{{cI.product}}"></div><div class="col-md-7 col-sm-7 col-xs-7">{{cI.product}}</div><div class="col-md-2 col-sm-2 col-xs-2"> ${{cI.value | number}}</div><div class="col-md-1 col-sm-1 col-xs-1"> {{cI.owner}} </div><div class="col-md-2 col-sm-2 col-xs-2" style="color:gray;text-align:right">${{cI.unutilizedValue | number}}</div>-->
+      </div>
+      <div class="col-md-6 container" [dragula]='"first-bag"' [dragulaModel]="proposedInvestments" id="targetDiv">
+        <div *ngFor='let pI of proposedInvestments' class="proposed{{pI.recId}} col-md-12 col-sm-12 col-xs-12  no-drag dragCss" id="{{pI.recId}}"><div class="col-md-7 col-sm-7 col-xs-7" (click)="setSelected(pI.recId)">{{pI.product}}</div><div class="col-md-2 col-sm-2 col-xs-2" (click)="setSelected(pI.recId)">${{pI.value | number}}</div><div class="col-md-1 col-sm-1 col-xs-1" (click)="setSelected(pI.recId)"> {{pI.owner}} </div><div> <button style="float:right;padding:0;background:none;color:white;" title="Delete proposed product" (click)="deleteproposedProduct(pI.recId)"><span class="glyphicon glyphicon-remove"></span></button></div></div>
+      </div>
+    </div>
+
+
+    <div class="row col-container">
+      <div class="col-md-6 container">
+        <div class="col-md-7 col-sm-7 col-xs-7" style="font-weight:bold">Total</div><div class="col-md-2 col-sm-2 col-xs-2" [style.color]="totalCurrentInvestments == totalProposedInvestments ? 'green' : 'red' ">${{totalCurrentInvestments | number }}</div>
+      </div>
+      <div class="col-md-6 container">
+        <div class="col-md-7 col-sm-7 col-xs-7" style="font-weight:bold">Total</div><div class="col-md-2 col-sm-2 col-xs-2" [style.color]="totalCurrentInvestments == totalProposedInvestments ? 'green' : 'red' ">${{totalProposedInvestments | number }}</div>
+      </div>
+    </div>
+
+  </form>
+  <div class="backdrop" [ngStyle]="{'display':dropOptionMain}"></div>
+  <div class="modal switching" tabindex="-1" role="dialog" [ngStyle]="{'display':rebalanceOption}">
+    <div class="modal-dialog" role="document" style="min-width:90%;">
+      <div class="modal-content displayPopup">
+
+        <div class="modal-header">
+          <!--<button type="button" (click)="updatePlatform(pf)" class="btn btn-success ">Save</button>-->
+          <button type="button" class="close" (click)="onCloseRebalance()" aria-hidden="true"><i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Close"></i></button>
+          <h4 class="modal-title" style="color:dimgrey;">Product Replacement</h4>
+        </div>
+        <div class="modal-body fundDisplayCss" id="abc" style="overflow-y:auto;max-height:calc(100vh - 210px) !important;height:calc(100vh - 210px) !important;">
+          <div class="row col-container" style="padding-top:20px;padding-bottom:20px; ">
+            <mat-tab-group dynamicHeight style="width:100%;" (selectedTabChange)="switchTabs($event)">
+
+              <mat-tab label="Proposed">
+
+                <div id="Proposed" style="margin:30px;">
+                  <!--<div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;font-size:14px !important;">
+                    <div class="col-sm-1" style="display:none;"></div>
+                    <div class="col-sm-5" style="text-align:center;">
+                      Product
+                    </div>
+                    <div class="col-sm-3" style="text-align:center;">
+                      Value
+                    </div>
+                    <div class="col-sm-2" style="text-align:center;">
+                      Owner
+                    </div>
+                  </div>-->
+                  <div class="col-container">
+                    <div class="col-md-12" style="text-align:center;font-weight:bold;min-width:650px !important;margin-left:5px;margin-right:25px;">
+                      <div class="col-sm-5">
+                        <mat-form-field class="full-width">
+                          <mat-select [(ngModel)]="selectedProductDetails.productId" [disabled]="!selectedProductDetails.isEditable" placeholder="Products">
+                            <mat-option *ngFor="let prod of allProducts" [value]="prod.productId">{{prod.productName}}</mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-3">
+                        <mat-form-field class="full-width">
+                          <input matInput [disabled]="!selectedProductDetails.isEditable" placeholder="Value($)" required id="productNewAmount" name="name" type="number" [(ngModel)]="selectedProductDetails.value">
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-2">
+                        <mat-form-field class="full-width">
+                          <mat-select [disabled]="!selectedProductDetails.isEditable " #ownerVal id="owner" placeholder="Owner" name="owner" [(ngModel)]="selectedProductDetails.owner" required>
+                            <mat-option *ngFor='let o of owner' [value]="o">{{o}}</mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-sm-2" *ngIf="selectedProduct == 0">
+                        <button id="btnProposedProduct" (click)="addproposedProduct(selectedProductDetails)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+                      </div>
+                      <div class="col-sm-2" *ngIf="selectedProduct != 0">
+                        <button (click)="selectedProductDetails.isEditable = !selectedProductDetails.isEditable" *ngIf="!selectedProductDetails.isEditable" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+                        <button (click)="editproposedProduct(selectedProductDetails)" *ngIf="selectedProductDetails.isEditable" class="btn btn-success btn-circle"> <i class="glyphicon glyphicon-check" style="text-decoration:none;" title="Update"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="line-title" *ngIf="selectedProduct != 0"><span>Underlying Fund(s)</span><hr /></div>
+                  <div class="col-container" *ngIf="selectedProduct != 0">
+                    <div class="col-md-12" style="text-align:center;font-weight:bold;min-width:650px !important;margin-left:5px;margin-right:25px;">
+                      <div class='col-container'>
+                        <div class="col-sm-5">
+                          <!--<mat-form-field class="full-width">
+    <mat-select [(ngModel)]="proposedFundDetails.apircode" name="proposedFundDetails" placeholder="Funds" (selectionChange)="applySelectFilter($event,selectedProductDetails,'P')">
+      <mat-option style="background:gray;" [value]="New">Add New Fund</mat-option>
+      <mat-option *ngFor="let f of funds" [value]="f.apircode">{{f.apircode}} - {{f.fundName}}</mat-option>
+    </mat-select>
+  </mat-form-field>-->
+                          <mat-form-field class="full-width">
+                            <input type="text" placeholder="Fund" value="" name="proposedSearch" (input)="_filterProposed($event.target.value,selectedProduct)" aria-label="Number" matInput [formControl]="myControl" [matAutocomplete]="auto" [(ngModel)]="proposedFundDetails.apircode">
+                            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="applySelectFilter($event.option.value,selectedProductDetails,'P')">
+                              <mat-option style="background:gray;" [value]="New">Add New Fund</mat-option>
+                              <mat-option *ngFor="let option of funds" [value]="option.apircode">
+                                {{option.apircode}} - {{option.fundName}}
+                              </mat-option>
+                            </mat-autocomplete>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-3">
+                          <mat-form-field class="full-width">
+                            <input matInput placeholder="Value ($)" [disabled]="proposedFundDetails.isPercentage == true" (focusout)="calculatePercentage($event.target.value,0)" (input)="$event.target.value > 0 ? proposedFundDetails.isValue = true : proposedFundDetails.isValue = false" required id="fundNewAmount" name="name" type="number" [(ngModel)]="proposedFundDetails.value">
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-2">
+                          <mat-form-field class="full-width">
+                            <input matInput placeholder="Percentage (%)" [disabled]="proposedFundDetails.isValue == true" (focusout)="calculateValue($event.target.value,0)" (input)="$event.target.value > 0 ? proposedFundDetails.isPercentage = true : proposedFundDetails.isPercentage = false" required id="fundNewPercentage" name="type" type="number" [(ngModel)]="proposedFundDetails.percentage">
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-2">
+                          <button id="btnProposedFund" (click)="addProposedFund(proposedFundDetails)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                  <!--<div class="row col-container" *ngIf="selectedProduct != 0">
+                    <div class="col-md-12 col" style="margin-left:5px;margin-right:25px;min-width:650px !important;">
+                      <div class="row col-container">
+                        <div class="col-md-5 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Fund</div>
+                        <div class="col-md-3 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Value</div>
+                        <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">%</div>
+
+                      </div>
+
+                    </div>
+                  </div>-->
+                  <div class="col-container" *ngIf="selectedProduct != 0">
+                    <div class="col-md-12 col" style="margin-left:5px;margin-right:25px;min-width:650px !important;">
+                      <div class='col-container' *ngFor="let item of proposedFund;let i = index" [attr.data-index]="i">
+                        <div class="col-sm-5">
+                          <button style="background: none;padding: 3% 0 0 3%;" title="View details" (click)="onClick(item.apircode)"><span class="glyphicon glyphicon-search"></span></button>
+                          <!-- <ngx-select style="width:90%;float:right;" [disabled]="!item.isEditable" class="plain" [items]="funds" id="funds" optionValueField="apircode" optionTextField="fundName" [(ngModel)]="item.apircode" name="{{'fund' + i}}"></ngx-select>-->
+                          <!--<mat-form-field style="width:80%;float:right; ">
+    <mat-select [(ngModel)]="item.apircode" [disabled]="!item.isEditable">
+      <mat-option *ngFor="let fund of funds" [value]="fund.apircode">{{fund.apircode}} - {{ fund.fundName}}</mat-option>
+    </mat-select>
+  </mat-form-field>-->
+                          <mat-form-field style="width:90%;float:right; ">
+                            <input type="text" [(ngModel)]="item.apircode" [disabled]="!item.isEditable" name="fieldName" (input)="_filterProposed($event.target.value,selectedProduct)" aria-label="Number" matInput [matAutocomplete]="auto">
+                            <mat-autocomplete #auto="matAutocomplete">
+                              <mat-option *ngFor="let option of funds" [value]="option.apircode">
+                                {{option.apircode}} - {{option.fundName}}
+                              </mat-option>
+                            </mat-autocomplete>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-3">
+                          <mat-form-field class="full-width">
+                            <input matInput [disabled]="!item.isEditable || item.isPercentage == true" (focusout)="calculatePercentage($event.target.value,item.recId)" (input)="$event.target.value > 0 ? item.isValue = true : item.isValue = false" type="number" required id="value" name="{{'value' + i}}" [(ngModel)]="item.value">
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-2">
+                          <mat-form-field class="full-width">
+                            <input matInput [disabled]="!item.isEditable || item.isValue == true" (focusout)="calculateValue($event.target.value,item.recId)" (input)="$event.target.value > 0 ? item.isPercentage = true : item.isPercentage = false" type="number" required id="percentage" name="{{'percentage' + i}}" [(ngModel)]="item.percentage">
+                          </mat-form-field>
+                        </div>
+                        <div class="col-sm-2" style="text-align:center;">
+                          <button (click)="item.isEditable = !item.isEditable" *ngIf="!item.isEditable" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+                          <button (click)="editProposedFund(item)" *ngIf="item.isEditable" class="btn btn-success btn-circle"> <i class="glyphicon glyphicon-check" style="text-decoration:none;" title="Update"></i></button>
+                          <button (click)="deleteProposedFund(item,i)" class="btn btn-danger  btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+              <mat-tab label="ROP - Current">
+                <div id="Current" style="padding-top:20px;padding-bottom:20px;overflow:auto;">
+                  <div class="col-container">
+                    <div class="col-md-6" *ngFor='let cf of currentFund' style="margin-right:25px;margin-left:5px;min-width:650px !important;padding:10px;text-align:center;font-weight:bold;">
+                      <div class="row col-container">
+
+                        <div class="col-md-12" style="padding:10px;text-align:center;font-weight:bold;min-width:650px !important;margin-left:5px;margin-right:25px;">
+                          <div class="col-sm-5" style="padding-left:8px !important;padding-right:8px !important;">
+                            <mat-form-field class="full-width">
+                              <mat-select [(ngModel)]="cf.productId" [disabled]="true" placeholder="Products">
+                                <mat-option *ngFor="let prod of currentInvestments" [value]="prod.productId">{{prod.product}}</mat-option>
+                              </mat-select>
+                            </mat-form-field>
+                          </div>
+                          <div class="col-sm-3" style="padding-left:8px !important;padding-right:8px !important;">
+                            <mat-form-field class="full-width">
+                              <input matInput placeholder="Value($)" [disabled]="!cf.isEditable" required id="productNewAmount" name="name" type="number" [(ngModel)]="cf.value">
+                            </mat-form-field>
+                          </div>
+                          <div class="col-sm-2" style="padding-left:8px !important;padding-right:8px !important;">
+                            <mat-form-field class="full-width">
+                              <mat-select #ownerVal id="owner" placeholder="Owner" name="owner" [(ngModel)]="cf.owner" required [disabled]="!cf.isEditable ">
+                                <mat-option *ngFor='let o of owner' [value]="o">{{o}}</mat-option>
+                              </mat-select>
+                            </mat-form-field>
+                          </div>
+                          <div class="col-sm-2" *ngIf="selectedProduct != 0">
+                            <button (click)="cf.isEditable = !cf.isEditable" *ngIf="!cf.isEditable" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+                            <button (click)="editROPCurrentProduct(cf , cf.id)" *ngIf="cf.isEditable" class="btn btn-success btn-circle"> <i class="glyphicon glyphicon-check" style="text-decoration:none;" title="Update"></i></button>
+                            <button (click)="deleteROPCurrentProduct(cf.id)" *ngIf="!cf.isEditable" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row col-container">
+                        <div class="line-title col-md-12"><span>Underlying Fund(s)</span><hr /></div>
+                      </div>
+                      <div class="row col-container">
+
+                        <div class="col-md-12" style="text-align:center;font-weight:bold;min-width:650px !important;margin-left:5px;margin-right:25px;">
+                          <div class='row col-container'>
+                            <div class="col-sm-5">
+                              <mat-form-field class="example-full-width">
+                                <input type="text" placeholder="Fund" id="{{cf.id}}" value="" name="currentSearch" (input)="_filterCurrent($event.target.value,cf.id)" aria-label="Number" matInput [formControl]="myControl" [matAutocomplete]="auto" [(ngModel)]="cf.fundDetails.apircode">
+                                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="applySelectFilter($event.option.value,cf,'C')">
+                                  <mat-option style="background:gray;" [value]="New">Add New Fund</mat-option>
+                                  <mat-option *ngFor="let option of cf.filteredFund" [value]="option.apircode">
+                                    {{option.apircode}} - {{option.fundName}}
+                                  </mat-option>
+                                </mat-autocomplete>
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-3">
+                              <mat-form-field class="full-width">
+                                <input matInput placeholder="Value($)" [disabled]="cf.fundDetails.isPercentage == true" (focusout)="calculateROPPercentage($event.target.value,0,cf.id)" (input)="$event.target.value > 0 ? cf.fundDetails.isValue = true : cf.fundDetails.isValue = false" required id="currentNewAmount" name="name" type="number" [(ngModel)]="cf.fundDetails.value">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-2">
+                              <mat-form-field class="full-width">
+                                <input matInput placeholder="Percentage(%)" [disabled]="cf.fundDetails.isValue == true" (focusout)="calculateROPValue($event.target.value,0,cf.id)" (input)="$event.target.value > 0 ? cf.fundDetails.isPercentage = true : cf.fundDetails.isPercentage = false" required id="currentNewPercentage" name="type" type="number" [(ngModel)]="cf.fundDetails.percentage">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-2">
+                              <button id="btnCurrentFund" (click)="addROPFund(cf.fundDetails,cf.id,cf.productId)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                      <!--<div class="row col-container">
+
+                        <div class="col-md-12 col" style="margin-right:25px;margin-left:5px;min-width:650px !important;">
+                          <div class="row col-container">
+                            <div class="col-md-5 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Fund</div>
+                            <div class="col-md-3 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Value</div>
+                            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">%</div>
+                          </div>
+                        </div>
+                      </div>-->
+                      <div class="row col-container">
+                        <div class="col-md-12 col" style="min-width:650px !important;margin-left:5px;margin-right:25px;">
+
+                          <div class='row col-container' *ngFor="let item of cf.data;let i = index" [attr.data-index]="i">
+                            <div class="col-sm-5">
+                              <button style="background: none;padding: 3% 0 0 3%;" title="View details" (click)="onClick(item.apircode)"><span class="glyphicon glyphicon-search"></span></button>
+                              <mat-form-field style="width:80%;float:right; ">
+                                <input type="text" style="float:right;width:80%;" [(ngModel)]="item.apircode" [disabled]="!item.isEditable" name="fieldName" (input)="_filterCurrent($event.target.value,cf.id)" aria-label="Number" matInput [matAutocomplete]="auto">
+                                <mat-autocomplete #auto="matAutocomplete">
+                                  <mat-option *ngFor="let option of cf.filteredFund" [value]="option.apircode">
+                                    {{option.apircode}} - {{option.fundName}}
+                                  </mat-option>
+                                </mat-autocomplete>
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-3">
+                              <mat-form-field class="full-width">
+                                <input matInput [disabled]="!item.isEditable || item.isPercentage == true" (focusout)="calculateROPPercentage($event.target.value,item.recId,cf.id)" (input)="$event.target.value > 0 ? item.isValue = true : item.isValue = false" type="number" required id="value" name="{{'currentvalue' + cf.id + i}}" [(ngModel)]="item.value">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-2">
+                              <mat-form-field class="full-width">
+                                <input matInput [disabled]="!item.isEditable || item.isValue == true" (focusout)="calculateROPValue($event.target.value,item.recId,cf.id)" (input)="$event.target.value > 0 ? item.isPercentage = true : item.isPercentage = false" type="number" required id="percentage" name="{{'currentpercentage' + cf.id  + i}}" [(ngModel)]="item.percentage">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-2" style="text-align:center;">
+                              <button (click)="item.isEditable = !item.isEditable" *ngIf="!item.isEditable" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+                              <button (click)="editROPFund(item,cf.id,cf.productId)" *ngIf="item.isEditable" class="btn btn-success btn-circle"> <i class="glyphicon glyphicon-check" style="text-decoration:none;" title="Update"></i></button>
+                              <button (click)="deleteROPFund(item,i,cf.productId)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                    <div class="col-md-6" style="border-left:1px solid gray;margin-left:5px;min-width:650px !important;padding:10px;text-align:center;font-weight:bold;">
+                      <div class="row col-container" style="font-size:15px;color:lightgray;display:inline-block;">
+                        <span style="text-align:center"> Add Current Product </span>
+                      </div>
+                      <div class="row col-container">
+                        <div class="line-title col-md-12"><hr /></div>
+                      </div>
+                      <div class="row col-container">
+
+                        <div class="col-md-12 col" style="margin-left:5px;margin-right:25px;min-width:650px !important;">
+
+                          <div id="ropCurrentNewProduct">
+                            <div class="row" style="padding-top:10px;">
+                              <div class="col-md-6">
+                                <!--<label class="control-label" for="altProduct">Product</label>-->
+                                <mat-form-field>
+                                  <mat-select placeholder="Select Product" [(ngModel)]="ropDetails.productId" style="float:right;width:90%;">
+                                    <mat-option *ngFor="let prod of currentInvestments" [value]="prod.productId">{{prod.product}}</mat-option>
+                                  </mat-select>
+                                </mat-form-field>
+                                <!--<ngx-select [items]="currentInvestments" id="ropProduct" optionValueField="productId" optionTextField="product" [(ngModel)]="ropDetails.productId" name="ropProduct" placeholder="Select Product"></ngx-select>-->
+
+                              </div>
+                            </div>
+
+                            <div class="row" style="padding-top:10px;">
+                              <div class="col-md-6">
+                                <mat-form-field>
+                                  <!--<label class="control-label" for="currentProductVal">Value</label>-->
+                                  <input matInput placeholder="Value($)" required id="currentProductVal" name="currentProductVal" [(ngModel)]="ropDetails.value" type="number">
+                                </mat-form-field>
+                              </div>
+                            </div>
+                            <div class="row" style="padding-top:10px;">
+                              <div class="col-md-6">
+                                <mat-form-field>
+                                  <!--<label class="control-label" for="currentProductVal">Owner</label>-->
+                                  <!--<select class="form-control" #ownerVal id="owner" name="owner" [(ngModel)]="ropDetails.owner" required>
+                                    <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+                                  </select>-->
+                                  <mat-select #ownerVal placeholder="Owner" id="owner" name="owner" [(ngModel)]="ropDetails.owner" required>
+                                    <mat-option *ngFor='let o of owner' [value]="o">{{o}}</mat-option>
+                                  </mat-select>
+                                </mat-form-field>
+                              </div>
+                            </div>
+                            <div class="row" style="padding-top:10px;">
+                              <div class="col-md-6">
+                                <button id="btnAddCurrentProduct" (click)="addROPCurrentProduct()" class="btn btn-success pull-right btn-circle" type="button"> <i class="glyphicon glyphicon-check" style="text-decoration:none;"></i></button>
+
+                              </div>
+                            </div>
+
+
+                          </div>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+              </mat-tab>
+              <mat-tab label="ROP - Alternative">
+                <div id="Alternative" style="padding-top:20px;padding-bottom:20px;overflow:auto;">
+                  <div class="row col-container">
+                    <div class="col-md-6" *ngFor='let ap of alternativeProducts' style="margin-right:25px;margin-left:5px;min-width:650px !important;padding:10px;text-align:center;font-weight:bold;">
+
+                      <div class="row col-container">
+
+                        <div class="col-md-12" style="padding:10px;text-align:center;font-weight:bold;min-width:650px !important;margin-left:5px;margin-right:25px;">
+
+                          <div class="col-sm-5" style="padding-left:8px !important;padding-right:8px !important;">
+                            <mat-form-field>
+                              <mat-select [(ngModel)]="ap.productId" [disabled]="true">
+                                <mat-option *ngFor="let prod of allProducts" [value]="prod.productId">{{prod.productName}}</mat-option>
+                              </mat-select>
+                            </mat-form-field>
+                            <!-- <ngx-select [disabled]="true" [items]="allProducts" id="product" optionValueField="productId" optionTextField="productName" [(ngModel)]="ap.productId" name="productNewId"></ngx-select>-->
+                          </div>
+                          <div class="col-sm-3" style="padding-left:8px !important;padding-right:8px !important;">
+                            <input [disabled]="!ap.isEditable" class="form-control" required id="productNewAmount" name="name" type="number" [(ngModel)]="ap.value">
+                          </div>
+                          <div class="col-sm-2" style="padding-left:8px !important;padding-right:8px !important;">
+                            <select [disabled]="!ap.isEditable " class="form-control" #ownerVal id="owner" name="owner" [(ngModel)]="ap.owner" required>
+                              <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+                            </select>
+                          </div>
+
+                          <div class="col-sm-2" *ngIf="selectedProduct != 0">
+                            <button (click)="ap.isEditable = !ap.isEditable" *ngIf="!ap.isEditable" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+                            <button (click)="editAltProduct(ap , ap.id)" *ngIf="ap.isEditable" class="btn btn-success btn-circle"> <i class="glyphicon glyphicon-check" style="text-decoration:none;" title="Update"></i></button>
+                            <button (click)="deleteAltProduct(ap.id,ap.productId)" *ngIf="!ap.isEditable" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row col-container">
+                        <div class="line-title col-md-6"><span>Underlying Fund(s)</span><hr /></div>
+                      </div>
+                      <div class="row col-container">
+
+                        <div class="col-md-12" style="padding:10px;text-align:center;font-weight:bold;min-width:650px !important;margin-left:5px;margin-right:25px;">
+                          <div class='row col-container'>
+                            <div class="col-sm-5 " style="padding-left:8px !important;padding-right:8px !important;">
+                                <mat-form-field class="example-full-width">
+                                  <input type="text" placeholder="Fund" id="{{ap.id}}" value="" name="alternativeSearch" (input)="_filterAlternative($event.target.value,ap.id)" aria-label="Number" matInput [formControl]="myControl" [matAutocomplete]="auto" [(ngModel)]="ap.fundDetails.apircode">
+                                  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="applySelectFilter($event.option.value,ap,'A')">
+                                    <mat-option style="background:gray;" [value]="New">Add New Fund</mat-option>
+                                    <mat-option *ngFor="let option of ap.filteredFund" [value]="option.apircode">
+                                      {{option.apircode}} - {{option.fundName}}
+                                    </mat-option>
+                                  </mat-autocomplete>
+                                </mat-form-field>
+                            </div>
+                            <div class="col-sm-3 " style="padding-left:8px !important;padding-right:8px !important;">
+                              <input class="form-control" [disabled]="ap.fundDetails.isPercentage == true" (focusout)="calculateAlternativePercentage($event.target.value,0,ap.id)" (input)="$event.target.value > 0 ? ap.fundDetails.isValue = true : ap.fundDetails.isValue = false" required id="alternativeNewAmount" name="name" type="number" [(ngModel)]="ap.fundDetails.value">
+                            </div>
+                            <div class="col-sm-2 " style="padding-left:8px !important;padding-right:8px !important;">
+                              <input class="form-control" [disabled]="ap.fundDetails.isValue == true" (focusout)="calculateAlternativeValue($event.target.value,0,ap.id)" (input)="$event.target.value > 0 ? ap.fundDetails.isPercentage = true : ap.fundDetails.isPercentage = false" required id="alternativeNewPercentage" name="type" type="number" [(ngModel)]="ap.fundDetails.percentage">
+                            </div>
+                            <div class="col-sm-2 ">
+                              <button id="btnAlternativeFund" (click)="addAlternativeFund(ap.fundDetails,ap.id,ap.productId)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                      <div class="row col-container">
+
+                        <div class="col-md-12 col" style="margin-right:25px;margin-left:5px;min-width:650px !important;">
+                          <div class="row col-container">
+                            <div class="col-md-5 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Fund</div>
+                            <div class="col-md-3 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">Value</div>
+                            <div class="col-md-2 headings container" style="padding:12px 6px 6px 12px !important;font-weight:bold;">%</div>
+
+                          </div>
+
+                        </div>
+
+
+                      </div>
+                      <div class="row col-container">
+
+
+
+                        <div class="col-md-12 col" style="min-width:650px !important;margin-left:5px;margin-right:25px;">
+
+                          <div class='row col-container' *ngFor="let item of ap.data;let i = index" [attr.data-index]="i">
+                            <div class="col-sm-5 container">
+                              <button style="background: none;padding: 3% 0 0 3%;" title="View details" (click)="onClick(item.apircode)"><span class="glyphicon glyphicon-search"></span></button>
+                              <mat-form-field class="example-full-width">
+                                <input type="text"  style="float:right;width:90%;" [(ngModel)]="item.apircode"  [disabled]="!item.isEditable"  name="fieldName" (input)="_filterAlternative($event.target.value,ap.id)" aria-label="Number" matInput [matAutocomplete]="auto">
+                                <mat-autocomplete #auto="matAutocomplete"> 
+                                  <mat-option *ngFor="let option of ap.filteredFund" [value]="option.apircode" >
+                                    {{option.apircode}} - {{option.fundName}}
+                                  </mat-option>
+                                </mat-autocomplete>
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-3 container">
+                              <input [disabled]="!item.isEditable || item.isPercentage == true" (focusout)="calculateAlternativePercentage($event.target.value,item.recId,ap.id)" (input)="$event.target.value > 0 ? item.isValue = true : item.isValue = false" type="number" class="form-control plain" required id="value" name="{{'alternativevalue' + ap.id + i}}" [(ngModel)]="item.value">
+                            </div>
+                            <div class="col-sm-2 container">
+                              <input [disabled]="!item.isEditable || item.isValue == true" (focusout)="calculateAlternativeValue($event.target.value,item.recId,ap.id)" (input)="$event.target.value > 0 ? item.isPercentage = true : item.isPercentage = false" type="number" class="form-control plain" required id="percentage" name="{{'alternativepercentage' + ap.id  + i}}" [(ngModel)]="item.percentage">
+                            </div>
+                            <div class="col-sm-2" style="text-align:center;">
+                              <button (click)="item.isEditable = !item.isEditable" *ngIf="!item.isEditable" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+                              <button (click)="editAlternativeFund(item,ap.id,ap.productId)" *ngIf="item.isEditable" class="btn btn-success btn-circle"> <i class="glyphicon glyphicon-check" style="text-decoration:none;" title="Update"></i></button>
+                              <button (click)="deleteAlternativeFund(item,i,ap.productId)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+
+                    </div>
+                    <div class="col-md-6" style="border-left:1px solid gray;margin-left:5px;min-width:650px !important;padding:10px;text-align:center;font-weight:bold;">
+                      <div class="row col-container" style="font-size:15px;color:lightgray;display:inline-block;">
+                        <span style="text-align:center"> Add Alternative Product </span>
+                      </div>
+                      <div class="row col-container">
+                        <div class="line-title col-md-6"><hr /></div>
+                      </div>
+                      <div class="col-md-12 col" style="margin-left:5px;margin-right:25px;min-width:650px !important;">
+
+                        <div id="alternativeNewProduct">
+                          <div class="row" style="padding-top:10px;">
+                            <div class="col-md-6">
+                              <!--<label class="control-label" for="altProduct">Product</label>-->
+                              <!-- <ngx-select [items]="allProducts" id="altProduct" optionValueField="productId" optionTextField="productName" [(ngModel)]="alternativeDetails.productId" name="altProduct" placeholder="Select Product"></ngx-select>-->
+                              <mat-form-field>
+                                <mat-select [(ngModel)]="alternativeDetails.productId" placeholder="Select Product">
+                                  <mat-option *ngFor="let prod of alternativeProductsList" [value]="prod.productId">{{prod.productName}}</mat-option>
+                                </mat-select>
+                              </mat-form-field>
+                            </div>
+                          </div>
+
+                          <div class="row" style="padding-top:10px;">
+                            <div class="col-md-6">
+                              <label class="control-label" for="altProductVal">Value</label>
+                              <input class="form-control" required id="altProductVal" name="altProductVal" [(ngModel)]="alternativeDetails.value" type="number">
+                            </div>
+                          </div>
+                          <div class="row" style="padding-top:10px;">
+                            <div class="col-md-6">
+                              <label class="control-label" for="currentProductVal">Owner</label>
+                              <select class="form-control" #ownerVal id="owner" name="owner" [(ngModel)]="alternativeDetails.owner" required>
+                                <option class='option' *ngFor='let o of owner' [value]="o">{{o}}</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="row" style="padding-top:10px;">
+                            <div class="col-md-6">
+                              <button id="btn " (click)="addAltProduct()" class="btn btn-success pull-right btn-circle" type="button"> <i class="glyphicon glyphicon-check" style="text-decoration:none;"></i></button>
+
+                            </div>
+                          </div>
+
+
+                        </div>
+                      </div>
+
+
+
+                    </div>
+
+
+
+                  </div>
+                </div>
+              </mat-tab>
+              <mat-tab label="ROP - Summary">
+
+                <mat-tab-group dynamicHeight style="width:100%;">
+                  <mat-tab label="Asset Allocation">
+                    <div id="AA" style="padding-top:20px;padding-bottom:20px;overflow:auto;">
+                      <div class="row col-container" style="padding-top:20px;padding-bottom:20px; ">
+                        <div class="col-md-6 col" *ngFor='let cf of currentFund' style="min-width:650px !important;margin-right:25px;margin-left:5px;">
+                          <div class='row'>
+                            <div class="col-sm-12">
+                              <label class="control-label" style="font-weight:bold !important;"> {{cf.product}} - Current</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label" style="font-weight:bold !important;">Asset Allocation</label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> Product</label>
+                            </div>
+                            <div class="col-sm-2" style="padding:0;">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"><button style="background: none;" title="Change Risk Profile" (click)="getRP(cf.id,'current')"><span class="glyphicon glyphicon-pencil"></span></button> {{cf.riskProfile.riskProfile1}}</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;">Variance</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Equity</label>
+                              <label class="control-label" style="float:right;"> {{cf.domesticEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.domesticEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.domesticEquity}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="control-label">International Equity</label>
+                              <label class="control-label" style="float:right;"> {{cf.internationalEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.internationalEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.internationalEquity}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Property</label>
+                              <label class="control-label" style="float:right;">{{cf.domesticProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.domesticProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.domesticProperty}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">International Property</label>
+                              <label class="control-label" style="float:right;">{{cf.internationalProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.internationalProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.internationalProperty}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Growth Alternatives</label>
+                              <label class="control-label" style="float:right;">{{cf.growthAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.growthAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.growthAlternatives}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="labelAlignment">Other Growth</label>
+                              <label class="control-label" style="float:right;">{{cf.otherGrowth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.otherGrowth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.otherGrowth}} (%)</label>
+                            </div>
+                          </div>
+
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="labelAlignment" style="font-weight:bold !important;">Total Growth</label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;">{{cf.totGrowth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{cf.riskProfile.growth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{cf.variance.totGrowth}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Fixed Interest</label>
+                              <label class="control-label" style="float:right;">{{cf.domesticFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.domesticFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.domesticFixedInterest}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">International Fixed Interest </label>
+                              <label class="control-label" style="float:right;"> {{cf.internationalFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.internationalFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.internationalFixedInterest}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Cash</label>
+                              <label class="control-label" style="float:right;">{{cf.domesticCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.domesticCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.domesticCash}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="control-label">International Cash</label>
+                              <label class="control-label" style="float:right;">{{cf.internationalCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.internationalCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.internationalCash}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Defensive Alternatives</label>
+                              <label class="control-label" style="float:right;"> {{cf.defensiveAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.riskProfile.defensiveAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{cf.variance.defensiveAlternatives}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="labelAlignment" style="font-weight:bold !important;">Total Defensive </label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{cf.totDefensive}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{cf.riskProfile.defensive}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{cf.variance.totDefensive}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row' style="border-top:1px solid lightgray;padding-top:15px;">
+
+                            <div class="col-sm-8">
+                              <label class="labelAlignment" style="font-weight:bold !important;">Total </label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{cf.total}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{cf.riskProfile.total}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{cf.variance.total}} (%)</label>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6 col" *ngFor='let pf of proposedProduct' style="min-width:650px !important;margin-right:25px;margin-left:5px;">
+                          <div class='row'>
+                            <div class="col-sm-12">
+                              <label class="control-label" style="font-weight:bold !important;"> {{selectedProductDetails.product}} - Proposed</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label" style="font-weight:bold !important;">Asset Allocation</label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> Product</label>
+                            </div>
+                            <div class="col-sm-2" style="padding:0;">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"><button style="background: none;" title="Change Risk Profile" (click)="getRP(pf.id,'proposed')"><span class="glyphicon glyphicon-pencil"></span></button> {{pf.riskProfile.riskProfile1}}</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;">Variance</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Equity</label>
+                              <label class="control-label" style="float:right;"> {{pf.domesticEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.domesticEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.domesticEquity}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="control-label">International Equity</label>
+                              <label class="control-label" style="float:right;"> {{pf.internationalEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.internationalEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.internationalEquity}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Property</label>
+                              <label class="control-label" style="float:right;">{{pf.domesticProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.domesticProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.domesticProperty}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">International Property</label>
+                              <label class="control-label" style="float:right;">{{pf.internationalProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.internationalProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.internationalProperty}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Growth Alternatives</label>
+                              <label class="control-label" style="float:right;">{{pf.growthAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.growthAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.growthAlternatives}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="labelAlignment">Other Growth</label>
+                              <label class="control-label" style="float:right;">{{pf.otherGrowth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.otherGrowth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.otherGrowth}} (%)</label>
+                            </div>
+                          </div>
+
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="labelAlignment" style="font-weight:bold !important;">Total Growth</label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;">{{pf.totGrowth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{pf.riskProfile.growth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{pf.variance.totGrowth}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Fixed Interest</label>
+                              <label class="control-label" style="float:right;">{{pf.domesticFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.domesticFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.domesticFixedInterest}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">International Fixed Interest </label>
+                              <label class="control-label" style="float:right;"> {{pf.internationalFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.internationalFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.internationalFixedInterest}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Cash</label>
+                              <label class="control-label" style="float:right;">{{pf.domesticCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.domesticCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.domesticCash}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="control-label">International Cash</label>
+                              <label class="control-label" style="float:right;">{{pf.internationalCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.internationalCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.internationalCash}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Defensive Alternatives</label>
+                              <label class="control-label" style="float:right;"> {{pf.defensiveAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.riskProfile.defensiveAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{pf.variance.defensiveAlternatives}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="labelAlignment" style="font-weight:bold !important;">Total Defensive </label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{pf.totDefensive}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{pf.riskProfile.defensive}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{pf.variance.totDefensive}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row' style="border-top:1px solid lightgray;padding-top:15px;">
+
+                            <div class="col-sm-8">
+                              <label class="labelAlignment" style="font-weight:bold !important;">Total </label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{pf.total}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{pf.riskProfile.total}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{pf.variance.total}} (%)</label>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6 col" *ngFor='let ap of alternativeProducts' style="min-width:650px !important;margin-left:5px;margin-right:25px;">
+                          <div class='row'>
+                            <div class="col-sm-12">
+                              <label class="control-label" style="font-weight:bold !important;"> {{ap.product}} - Alternative</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label" style="font-weight:bold !important;">Asset Allocation</label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> Product</label>
+                            </div>
+                            <div class="col-sm-2" style="padding:0;">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"><button style="background: none;" title="Change Risk Profile" (click)="getRP(ap.id,'alternative')"><span class="glyphicon glyphicon-pencil"></span></button> {{ap.riskProfile.riskProfile1}}</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;">Variance</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Equity</label>
+                              <label class="control-label" style="float:right;"> {{ap.domesticEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.domesticEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.domesticEquity}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="control-label">International Equity</label>
+                              <label class="control-label" style="float:right;"> {{ap.internationalEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.internationalEquity}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.internationalEquity}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Property</label>
+                              <label class="control-label" style="float:right;">{{ap.domesticProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.domesticProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.domesticProperty}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">International Property</label>
+                              <label class="control-label" style="float:right;">{{ap.internationalProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.internationalProperty}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.internationalProperty}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Growth Alternatives</label>
+                              <label class="control-label" style="float:right;">{{ap.growthAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.growthAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.growthAlternatives}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="labelAlignment">Other Growth</label>
+                              <label class="control-label" style="float:right;">{{ap.otherGrowth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.otherGrowth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.otherGrowth}} (%)</label>
+                            </div>
+                          </div>
+
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="labelAlignment" style="font-weight:bold !important;">Total Growth</label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;">{{ap.totGrowth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{ap.riskProfile.growth}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{ap.variance.totGrowth}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Fixed Interest</label>
+                              <label class="control-label" style="float:right;">{{ap.domesticFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.domesticFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.domesticFixedInterest}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">International Fixed Interest </label>
+                              <label class="control-label" style="float:right;"> {{ap.internationalFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.internationalFixedInterest}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.internationalFixedInterest}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Domestic Cash</label>
+                              <label class="control-label" style="float:right;">{{ap.domesticCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.domesticCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.domesticCash}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="control-label">International Cash</label>
+                              <label class="control-label" style="float:right;">{{ap.internationalCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.internationalCash}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.internationalCash}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+                            <div class="col-sm-8">
+                              <label class="control-label">Defensive Alternatives</label>
+                              <label class="control-label" style="float:right;"> {{ap.defensiveAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.riskProfile.defensiveAlternatives}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;"> {{ap.variance.defensiveAlternatives}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row'>
+
+                            <div class="col-sm-8">
+                              <label class="labelAlignment" style="font-weight:bold !important;">Total Defensive </label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{ap.totDefensive}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{ap.riskProfile.defensive}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{ap.variance.totDefensive}} (%)</label>
+                            </div>
+                          </div>
+                          <div class='row' style="border-top:1px solid lightgray;padding-top:15px;">
+
+                            <div class="col-sm-8">
+                              <label class="labelAlignment" style="font-weight:bold !important;">Total </label>
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{ap.total}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{ap.riskProfile.total}} (%)</label>
+                            </div>
+                            <div class="col-sm-2">
+                              <label class="control-label" style="float:right;font-weight:bold !important;"> {{ap.variance.total}} (%)</label>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6 col" style="margin-left:5px;min-width:650px !important;">
+                        </div>
+                      </div>
+
+                    </div>
+                  </mat-tab>
+                  <mat-tab label="Fees">
+                    <div id="Fee" style="padding-top:20px;padding-bottom:20px;overflow:auto;">
+
+                      <div class="row col-container" style="padding-top:10px;padding-bottom:10px;">
+                        <div class="col-sm-3" style="min-width:300px !important"> </div>
+                        <div class="col-sm-3" style="font-weight:bold !important;text-align:center;min-width:300px !important" *ngFor='let cf of currentFund'>{{cf.product}} - Current</div>
+                        <div class="col-sm-3" style="font-weight:bold !important;text-align:center;min-width:300px !important" *ngFor='let pf of proposedProduct'>{{selectedProductDetails.product}} - Proposed</div>
+                        <div class="col-sm-3" style="font-weight:bold !important;text-align:center;min-width:300px !important" *ngFor='let af of alternativeProducts'>{{af.product}} - Alternative</div>
+                      </div>
+
+                      <div class="row col-container" style="padding-top:10px;padding-bottom:10px;">
+                        <div class="col-sm-3" style="font-weight:bold !important;min-width:300px !important;">Ongoing Costs</div>
+                        <div class="col-sm-3" style="min-width:300px !important;" *ngFor='let cf of currentFund'></div>
+                        <div class="col-sm-3" style="min-width:300px !important;" *ngFor='let pf of proposedProduct'></div>
+                        <div class="col-sm-3" style="min-width:300px !important;" *ngFor='let af of alternativeProducts'></div>
+                      </div>
+                      <div class="row col-container" *ngFor="let pfd of ongoing">
+
+                        <div class="col-sm-3" style="min-width:300px !important;">
+                          <label class="control-label"> {{pfd.feeName}}</label>
+                        </div>
+                        <div class="col-sm-3" style="min-width:300px !important;" *ngFor='let cf of currentFund'>
+                          <div class="row" *ngFor='let items of cf.feeDisplay | filterFee:pfd.feeName '>
+                            <div class="col-sm-2"></div>
+                            <div class="col-sm-4" style="border-right:1px solid gray;text-align:right;">
+                              <label *ngIf="items.percentage == 0 else cfPercentage"> </label> <ng-template #cfPercentage> <label>{{items.percentage}}% </label> </ng-template>
+                            </div>
+                            <div class="col-sm-4" style="text-align:right;">
+                              <label *ngIf="items.val == 0 else cfVal"> $ 0.00 </label> <ng-template #cfVal> <label>$ {{items.val | number }} </label> </ng-template>
+                            </div>
+                            <div class="col-sm-2"></div>
+                          </div>
+
+                        </div>
+                        <div class="col-sm-3" style="min-width:300px !important;" *ngFor='let pf of proposedProduct'>
+                          <div class="row" *ngFor='let items of pf.feeDisplay | filterFee:pfd.feeName '>
+                            <div class="col-sm-2"> </div>
+                            <div class="col-sm-4" style="border-right:1px solid gray;text-align:right;">
+                              <label *ngIf="items.percentage == 0 else pfPercentage"> </label> <ng-template #pfPercentage> <label>{{items.percentage}}% </label> </ng-template>
+                            </div>
+                            <div class="col-sm-4" style="text-align:right;">
+                              <label *ngIf="items.val == 0 else pfVal"> $ 0.00 </label> <ng-template #pfVal> <label>$ {{items.val | number}} </label> </ng-template>
+                            </div>
+                            <div class="col-sm-2"> </div>
+                          </div>
+
+                        </div>
+                        <div class="col-sm-3" style="min-width:300px !important;" *ngFor='let af of alternativeProducts'>
+                          <div class="row" *ngFor='let items of af.feeDisplay | filterFee:pfd.feeName '>
+                            <div class="col-sm-2"> </div>
+                            <div class="col-sm-4" style="border-right:1px solid gray;text-align:right;">
+                              <label *ngIf="items.percentage == 0 else afPercentage">  </label> <ng-template #afPercentage> <label>{{items.percentage}}% </label> </ng-template>
+                            </div>
+                            <div class="col-sm-4" style="text-align:right;">
+                              <label *ngIf="items.val == 0 else afVal"> $ 0.00 </label> <ng-template #afVal> <label>$ {{items.val | number}} </label> </ng-template>
+                            </div>
+                            <div class="col-sm-2"> </div>
+                          </div>
+
+                        </div>
+                      </div>
+
+                      <div class="row col-container">
+
+                        <div class="col-sm-3" style="min-width:300px !important;">
+                          <label class="control-label" style="font-weight:bold !important;"> Gross On-going Costs</label>
+                        </div>
+                        <div class="col-sm-3" *ngFor='let cf of currentFund' style="min-width:300px !important;">
+                          <div class="row">
+                            <div class="col-sm-2"> </div>
+                            <div class="col-sm-4" style="border-right:1px solid gray;text-align:right;">
+                              <label> </label>
+                            </div>
+                            <div class="col-sm-4" style="text-align:right;">
+
+                              <label style="font-weight:bold !important;" *ngIf="cf.gross == 0 else cfgrossVal"> $ 0.00 </label> <ng-template #cfgrossVal> <label style="font-weight:bold !important;">$ {{cf.gross | number}} </label> </ng-template>
+                            </div>
+                            <div class="col-sm-2"> </div>
+                          </div>
+                        </div>
+                        <div class="col-sm-3" *ngFor='let pf of proposedProduct' style="min-width:300px !important;">
+                          <div class="row">
+                            <div class="col-sm-2"> </div>
+                            <div class="col-sm-4" style="border-right:1px solid gray;text-align:right;">
+                              <label> </label>
+                            </div>
+                            <div class="col-sm-4" style="text-align:right;">
+
+                              <label style="font-weight:bold !important;" *ngIf="pf.gross == 0 else pfgrossVal"> $ 0.00 </label> <ng-template #pfgrossVal> <label style="font-weight:bold !important;">$ {{pf.gross | number}} </label> </ng-template>
+                            </div>
+                            <div class="col-sm-2"> </div>
+                          </div>
+
+                        </div>
+                        <div class="col-sm-3" *ngFor='let af of alternativeProducts' style="min-width:300px !important;">
+                          <div class="row">
+                            <div class="col-sm-2"> </div>
+                            <div class="col-sm-4" style="border-right:1px solid gray;text-align:right;">
+                              <label> </label>
+                            </div>
+                            <div class="col-sm-4" style="text-align:right;">
+
+                              <label style="font-weight:bold !important;" *ngIf="af.gross == 0 else afgrossVal"> $ 0.00 </label> <ng-template #afgrossVal> <label style="font-weight:bold !important;">$ {{af.gross | number}} </label> </ng-template>
+                            </div>
+                            <div class="col-sm-2"> </div>
+                          </div>
+
+                        </div>
+                      </div>
+
+
+                      <div class="row col-container" style="padding-top:10px;padding-bottom:10px;">
+                        <div class="col-sm-4" style="font-weight:bold !important;">Transactional Costs</div>
+                        <div class="col-sm-2" *ngFor='let cf of currentFund'></div>
+                        <div class="col-sm-2" *ngFor='let pf of proposedProduct'></div>
+                        <div class="col-sm-2" *ngFor='let af of alternativeProducts'></div>
+                      </div>
+                      <div class="row col-container" *ngFor="let pfd of transactional">
+
+                        <div class="col-sm-3" style="min-width:300px !important;">
+                          <label class="control-label"> {{pfd.feeName}}</label>
+                        </div>
+                        <div class="col-sm-3" *ngFor='let cf of currentFund' style="min-width:300px !important;">
+                          <div class="row" *ngFor='let items of cf.feeDisplay | filterFee:pfd.feeName '>
+                            <div class="col-sm-2"> </div>
+                            <div class="col-sm-4" style="border-right:1px solid gray;text-align:right;">
+                              <label *ngIf="items.percentage == 0 else cfPercentage"> </label> <ng-template #cfPercentage> <label>{{items.percentage}}% </label> </ng-template>
+                            </div>
+                            <div class="col-sm-4" style="text-align:right;">
+                              <label *ngIf="items.val == 0 else cfVal"> $ 0.00 </label> <ng-template #cfVal> <label>$ {{items.val | number}} </label> </ng-template>
+                            </div>
+                            <div class="col-sm-2"> </div>
+                          </div>
+                        </div>
+                        <div class="col-sm-3" *ngFor='let pf of proposedProduct' style="min-width:300px !important;">
+                          <div class="row" *ngFor='let items of pf.feeDisplay | filterFee:pfd.feeName '>
+                            <div class="col-sm-2"> </div>
+                            <div class="col-sm-4" style="border-right:1px solid gray;text-align:right;">
+                              <label *ngIf="items.percentage == 0 else pfPercentage"> </label> <ng-template #pfPercentage> <label>{{items.percentage}}% </label> </ng-template>
+                            </div>
+                            <div class="col-sm-4" style="text-align:right;">
+                              <label *ngIf="items.val == 0 else pfVal"> $ 0.00 </label> <ng-template #pfVal> <label>$ {{items.val | number}} </label> </ng-template>
+                            </div>
+                            <div class="col-sm-2"> </div>
+                          </div>
+                        </div>
+                        <div class="col-sm-3" *ngFor='let af of alternativeProducts' style="min-width:300px !important;">
+                          <div class="row" *ngFor='let items of af.feeDisplay | filterFee:pfd.feeName '>
+                            <div class="col-sm-2"> </div>
+                            <div class="col-sm-4" style="border-right:1px solid gray;text-align:right;">
+                              <label *ngIf="items.percentage == 0 else afPercentage"> </label> <ng-template #afPercentage> <label>{{items.percentage}}% </label> </ng-template>
+                            </div>
+                            <div class="col-sm-4" style="text-align:right;">
+                              <label *ngIf="items.val == 0 else afVal"> $ 0.00 </label> <ng-template #afVal> <label>$ {{items.val | number}} </label> </ng-template>
+                            </div>
+                            <div class="col-sm-2"> </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </mat-tab>
+
+                </mat-tab-group>
+
+
+                <!--<div id="Summary" style="padding-top:20px;padding-bottom:20px; ">
+                  <div class="row col-container" style="padding-top:20px;padding-bottom:20px; ">
+                    <ul class="nav nav-tabs" style="width:100vw;">
+                      <li class="active"><a data-toggle="tab" href="#AA">Asset Allocation</a></li>
+                      <li><a href="#Fee" data-toggle="tab">Fees</a></li>
+                    </ul>
+                  </div>-->
+                <!--<div class="tab-content">
+
+
+                </div>-->
+                <!--</div>-->
+
+
+
+              </mat-tab>
+            </mat-tab-group>
+          </div>
+
+          <!--<div class="row col-container" style="padding-top:20px;padding-bottom:20px; ">
+            <ul class="nav nav-tabs" id="productTabs" style="width:100vw;">
+              <li class="active"><a data-toggle="tab" href="#Proposed">Proposed</a></li>
+              <li><a href="#Current" data-toggle="tab">ROP - Current</a></li>
+              <li><a href="#Alternative" data-toggle="tab">ROP - Alternative</a></li>
+              <li><a href="#Summary" data-toggle="tab">Summary</a></li>
+            </ul>
+          </div>-->
+          <!--<div class="tab-content"> </div>-->
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display': currentProductModal}">
+    <div class="modal-dialog" role="document" style="min-width:90%;">
+      <div class="modal-content displayPopup">
+
+        <div class="modal-header">
+          <!--<button type="button" (click)="updatePlatform(pf)" class="btn btn-success ">Save</button>-->
+          <button type="button" class="close" (click)="onCloseCurrentProduct()" aria-hidden="true"><i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Close"></i></button>
+          <h4 class="modal-title" style="color:dimgrey;"></h4>
+        </div>
+        <div class="modal-body" style="overflow-y:auto;max-height:calc(100vh - 210px) !important;height:calc(100vh - 210px) !important;">
+          <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="col-sm-5">
+              <mat-form-field class="full-width">
+                <mat-select [(ngModel)]="currentProductDetails.productId"  placeholder="Product" [disabled]="selectedcurrentProduct != 0" required>
+                  <mat-option *ngFor="let prod of allProducts" [value]="prod.productId">{{prod.productName}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-sm-3">
+              <mat-form-field class="full-width">
+                <input matInput [disabled]="selectedcurrentProduct != 0" required id="productNewAmount" name="name" type="number" placeholder="Value" [(ngModel)]="currentProductDetails.value">
+              </mat-form-field>
+            </div>
+            <div class="col-sm-3">
+              <mat-form-field class="full-width">
+                <mat-select id="owner" name="owner" placeholder="Owner" [(ngModel)]="currentProductDetails.owner" required [disabled]="selectedcurrentProduct != 0">
+                  <mat-option *ngFor='let o of owner' [value]="o">{{o}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-sm-1" *ngIf="selectedcurrentProduct == 0">
+              <!--<button mat-icon-button id="btnCurrentProduct" (click)="addcurrentProduct(currentProductDetails)" class="btn btn-success btn-circle" type="button">
+                <mat-icon aria-label="Add">add</mat-icon>
+              </button>-->
+              <button id="btnCurrentProduct" (click)="addcurrentProduct(currentProductDetails)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+            </div>
+          </div>
+          <div class="line-title" *ngIf="selectedcurrentProduct != 0"><span>Underlying Fund(s)</span><hr /></div>
+          <div *ngIf="selectedcurrentProduct != 0">
+
+
+            <!--<div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;font-size:14px !important;">
+
+                <div class="col-sm-5" style="text-align:center;">
+                    Underlying Fund
+                </div>
+                <div class="col-sm-3" style="text-align:center;">
+                    Value ($)
+                </div>
+                <div class="col-sm-3" style="text-align:center;">
+                    Percentage (%)
+                </div>
+
+            </div>-->
+
+            <div class='row' style="padding-top:5px;padding-bottom:5px;">
+              <div class="col-sm-5">
+                <mat-form-field class="full-width">
+                  <input type="text" placeholder="Fund" value="" name="currentPSearch" (input)="_filterExisting($event.target.value,selectedcurrentProduct)" aria-label="Number" matInput [formControl]="myControl" [matAutocomplete]="auto" [(ngModel)]="clientcurrentFundDetails.apircode">
+                  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="applySelectFilter($event.option.value,currentProductDetails,'CP')">
+                    <mat-option style="background:gray;" [value]="New">Add New Fund</mat-option>
+                    <mat-option *ngFor="let option of funds" [value]="option.apircode">
+                      {{option.apircode}} - {{option.fundName}}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+                <!--<mat-form-field class="full-width">
+    <mat-select [(ngModel)]="clientcurrentFundDetails.apircode" placeholder="Underlying Fund">
+      <mat-option *ngFor="let fnd of funds" [value]="fnd.apircode">{{fnd.apircode}} - {{fnd.fundName}}</mat-option>
+    </mat-select>
+  </mat-form-field>-->
+              </div>
+              <div class="col-sm-3">
+                <mat-form-field class="full-width">
+                  <input matInput [disabled]="clientcurrentFundDetails.isPercentage == true" placeholder="Value ($)" (focusout)="calculateCurrentPercentage($event.target.value,0)" (input)="$event.target.value > 0 ? clientcurrentFundDetails.isValue = true : clientcurrentFundDetails.isValue = false" required id="fundNewAmount" name="name" type="number" [(ngModel)]="clientcurrentFundDetails.value">
+                </mat-form-field>
+              </div>
+              <div class="col-sm-2">
+                <mat-form-field class="full-width">
+                  <input matInput [disabled]="clientcurrentFundDetails.isValue == true" placeholder="Percentage (%)" (focusout)="calculateCurrentValue($event.target.value,0)" (input)="$event.target.value > 0 ? clientcurrentFundDetails.isPercentage = true : clientcurrentFundDetails.isPercentage = false" required id="fundNewPercentage" name="type" type="number" [(ngModel)]="clientcurrentFundDetails.percentage">
+                </mat-form-field>
+              </div>
+              <div class="col-sm-2">
+                <!--<button mat-icon-button id="btnCurrentFund" (click)="addcurrentFund(clientcurrentFundDetails)" class="btn btn-success btn-circle" type="button">
+                  <mat-icon aria-label="Add">add</mat-icon>
+                </button>-->
+                <button id="btnCurrentFund" (click)="addcurrentFund(clientcurrentFundDetails)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+              </div>
+            </div>
+            <div class='row' id="div_id" *ngFor="let item of clientcurrentFunds;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+              <div class="col-sm-1" style="display:none;"><input name="{{'Fund' + item.recId}}" [(ngModel)]="item.recId" value="{{item.recId}}" /></div>
+              <div class="col-sm-5">
+                <!--<mat-form-field class="full-width">
+    <mat-select [(ngModel)]="item.apircode" [disabled]="!item.isEditable">
+      <mat-option *ngFor="let fnd of funds" [value]="fnd.apircode">{{fnd.apircode}} - {{fnd.fundName}}</mat-option>
+    </mat-select>
+  </mat-form-field>-->
+                <!--   <ngx-select [disabled]="!item.isEditable" [items]="funds" id="funds" optionValueField="apircode" optionTextField="fundName" [(ngModel)]="item.apircode" name="{{'fund' + i}}"></ngx-select>-->
+                <mat-form-field class="full-width">
+                  <input type="text" [(ngModel)]="item.apircode" [disabled]="!item.isEditable" name="fieldName" (input)="_filterExisting($event.target.value,selectedcurrentProduct)" aria-label="Number" matInput [matAutocomplete]="auto">
+                  <mat-autocomplete #auto="matAutocomplete">
+                    <mat-option *ngFor="let option of funds" [value]="option.apircode">
+                      {{option.apircode}} - {{option.fundName}}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+              </div>
+
+              <div class="col-sm-3">
+                <mat-form-field class="full-width">
+                  <input matInput [disabled]="!item.isEditable || item.isPercentage == true" (focusout)="calculateCurrentPercentage($event.target.value,item.recId)" (input)="$event.target.value > 0 ? item.isValue = true : item.isValue = false" type="number" required id="value" name="{{'value' + i}}" [(ngModel)]="item.value">
+                </mat-form-field>
+              </div>
+              <div class="col-sm-2">
+                <mat-form-field class="full-width">
+                  <input matInput [disabled]="!item.isEditable || item.isValue == true" (focusout)="calculateCurrentValue($event.target.value,item.recId)" (input)="$event.target.value > 0 ? item.isPercentage = true : item.isPercentage = false" type="number" required id="percentage" name="{{'percentage' + i}}" [(ngModel)]="item.percentage ">
+                </mat-form-field>
+              </div>
+              <div class="col-sm-2">
+                <!--<button mat-icon-button (click)="item.isEditable = !item.isEditable" *ngIf="!item.isEditable" class="btn btn-warning btn-circle">
+                  <mat-icon aria-label="Edit">edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="editCurrentFund(item)" *ngIf="item.isEditable" class="btn btn-success btn-circle">
+                  <mat-icon aria-label="Update">check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="deleteCurrentFund(item,i)" class="btn btn-danger btn-circle">
+                  <mat-icon aria-label="Delete">trash</mat-icon>
+                </button>-->
+                <button (click)="item.isEditable = !item.isEditable" *ngIf="!item.isEditable" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+                <button (click)="editCurrentFund(item)" *ngIf="item.isEditable" class="btn btn-success btn-circle"> <i class="glyphicon glyphicon-check" style="text-decoration:none;" title="Update"></i></button>
+                <button (click)="deleteCurrentFund(item,i)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+              </div>
+            </div>
+
+            <div class="line-title"><hr /></div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':fundDisplay}" style="height:calc(100vh - 210px)">
+    <div class="modal-dialog" role="document" style="width:80%;height:100%;">
+      <div class="modal-content" style="height:100%;">
+        <div class="modal-guts">
+          <div class="modal-header">
+            <button type="button" class="close" (click)="onCloseFundDisplay()" aria-hidden="true"><i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Close"></i></button>
+            <h4 class="modal-title" style="color:dimgrey;">{{investmentDetails.apircode}} - {{investmentDetails.fundName}}</h4>
+          </div>
+          <div class="modal-body fundDisplayCss">
+            <div class='row'>
+              <div class="col-sm-4">
+                <label class="control-label" for="domesticEquity">Domestic Equity</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.domesticEquity}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+
+              <div class="col-sm-4">
+                <label class="control-label" for="internationalEquity">International Equity</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.internationalEquity}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+              <div class="col-sm-4">
+                <label class="control-label">Domestic Property</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.domesticProperty}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+
+              <div class="col-sm-4">
+                <label class="control-label" for="internationalProperty">International Property</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.internationalProperty}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+              <div class="col-sm-4">
+                <label class="control-label" for="growthAlternatives">Growth Alternatives</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.growthAlternatives}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+              <div class="col-sm-4">
+                <label class="labelAlignment" for="otherGrowth">Other Growth</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.otherGrowth}} (%)</label>
+              </div>
+
+            </div>
+
+            <div class='row'>
+
+              <div class="col-sm-4">
+                <label class="labelAlignment" for="otherGrowth" style="font-weight:bold !important;">Total Growth</label>
+                <label class="control-label" style="float:right;font-weight:bold !important;">{{investmentDetails.totalGrowth}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+
+              <div class="col-sm-4">
+                <label class="control-label" for="domesticFixedInterest">Domestic Fixed Interest</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.domesticFixedInterest}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+              <div class="col-sm-4">
+                <label class="control-label" for="internationalFixedInterest">International Fixed Interest </label>
+                <label class="control-label" style="float:right;">{{investmentDetails.internationalFixedInterest}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+              <div class="col-sm-4">
+                <label class="control-label" for="domesticCash">Domestic Cash</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.domesticCash}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+
+              <div class="col-sm-4">
+                <label class="control-label" for="internationalCash">International Cash</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.internationalCash}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+              <div class="col-sm-4">
+                <label class="control-label" for="defensiveAlternatives">Defensive Alternatives</label>
+                <label class="control-label" style="float:right;">{{investmentDetails.defensiveAlternatives}} (%)</label>
+              </div>
+            </div>
+            <div class='row'>
+
+              <div class="col-sm-4">
+                <label class="labelAlignment" for="otherGrowth" style="font-weight:bold !important;">Total Defensive </label>
+                <label class="control-label" style="float:right;font-weight:bold !important;">{{investmentDetails.totalDefensive}} (%)</label>
+              </div>
+            </div>
+            <div class='row' style="border-top:1px solid lightgray;padding-top:15px;">
+
+              <div class="col-sm-4">
+                <label class="labelAlignment" for="otherGrowth" style="font-weight:bold !important;">Total </label>
+                <label class="control-label" style="float:right;font-weight:bold !important;">{{investmentDetails.total}} (%)</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':riskProfile}" style="height:calc(100vh - 210px)">
+    <div class="modal-dialog" role="document" style="width:80%;height:100%;">
+      <div class="modal-content" style="height:100%;">
+        <div class="modal-guts">
+          <div class="modal-header">
+            <button type="button" class="close" (click)="onCloseRiskProfile()" aria-hidden="true"><i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Close"></i></button>
+            <h4 class="modal-title" style="color:dimgrey;">Risk Profile</h4>
+          </div>
+          <div class="modal-body fundDisplayCss">
+            <div class="row col-container">
+              <div class="col-sm-3 container" style="font-weight:bold;padding:10px !important;background:#efefef;">
+                <label class="control-label">Risk Profile</label>
+
+              </div>
+              <div class="col-sm-3 container" style="font-weight:bold;padding:10px !important;background:#efefef;text-align:right;">
+                <label class="control-label">Growth %</label>
+
+              </div>
+              <div class="col-sm-3 container" style="font-weight:bold;padding:10px !important;background:#efefef;text-align:right;">
+                <label class="control-label">Variance %</label>
+
+              </div>
+              <div class="col-sm-3 container" style="font-weight:bold;padding:10px !important;background:#efefef;text-align:right;">
+                <label class="control-label">Match %</label>
+
+              </div>
+            </div>
+            <div *ngFor='let rps of riskProfileMatchSummary' class="row col-container">
+              <div class="col-sm-3 container" style="padding:10px !important;">
+                <input type="radio" name="radioGroup" [value]="rps.RiskProfile" [checked]="rps.checked" (change)="onRPChange(rps)" /> {{rps.RiskProfile}}
+              </div>
+              <div class="col-sm-3 container" style="padding:10px !important;text-align:right;">
+
+                <label class="control-label">{{rps.Growth}}%</label>
+
+              </div>
+              <div class="col-sm-3 container" style="padding:10px !important;text-align:right;">
+                <label class="control-label">{{rps.Variance}}%</label>
+
+              </div>
+              <div class="col-sm-3 container" style="padding:10px !important;text-align:right;">
+                <label class="control-label">{{rps.Match}}%</label>
+
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':newfundDisplay}" style="height:calc(100vh - 210px)">
+    <div class="modal-dialog" role="document" style="width:80%;height:100%;">
+      <div class="modal-content" style="height:100%;">
+        <div class="modal-guts">
+          <div class="modal-body">
+            <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+              <div class="col-sm-3">
+                <label class="control-label" for="apircode">APIRCode</label>
+                <input id="apircode" [(ngModel)]="investmentDetails.apircode" name="apircode" required maxlength="30" class="form-control">
+              </div>
+              <div class="col-sm-3">
+                <label class="labelAlignment" for="amount">Amount</label>
+                <input id="amount" [(ngModel)]="investmentDetails.amount" name="amount" type="number" required class="form-control">
+              </div>
+              <div class="col-sm-6">
+                <label class="labelAlignment" for="fundName">Fund Name</label>
+                <input id="fundName" [(ngModel)]="investmentDetails.fundName" name="fundName" required maxlength="200" class="form-control">
+              </div>
+            </div>
+
+            <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+              <div class="col-sm-3">
+                <label class="control-label" for="buySpread">BuySpread (%)</label>
+                <input id="buySpread" [(ngModel)]="investmentDetails.buySpread" name="buySpread" required type="number" class="form-control">
+              </div>
+
+              <div class="col-sm-3">
+                <label class="labelAlignment" for="icr">ICR (%)</label>
+                <input id="icr" [(ngModel)]="investmentDetails.icr" name="icr" required type="number" class="form-control">
+              </div>
+              <div class="col-sm-3">
+                <label class="control-label" for="domesticCash">Domestic Cash (%)</label>
+                <input id="domesticCash" [(ngModel)]="investmentDetails.domesticCash" name="domesticCash" type="number" class="form-control">
+              </div>
+
+              <div class="col-sm-3">
+                <label class="control-label" for="internationalCash">International Cash (%)</label>
+                <input id="internationalCash" [(ngModel)]="investmentDetails.internationalCash" name="internationalCash" type="number" class="form-control">
+              </div>
+
+            </div>
+
+            <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+              <div class="col-sm-3">
+                <label class="control-label" for="domesticEquity">Domestic Equity (%)</label>
+                <input id="domesticEquity" [(ngModel)]="investmentDetails.domesticEquity" name="domesticEquity" type="number" class="form-control">
+              </div>
+
+              <div class="col-sm-3">
+                <label class="control-label" for="internationalEquity">International Equity (%)</label>
+                <input id="internationalEquity" [(ngModel)]="investmentDetails.internationalEquity" name="internationalEquity" type="number" class="form-control">
+              </div>
+
+              <div class="col-sm-3">
+                <label class="control-label" for="domesticProperty">Domestic Property (%)</label>
+                <input id="domesticProperty" [(ngModel)]="investmentDetails.domesticProperty" name="domesticProperty" type="number" class="form-control">
+              </div>
+
+              <div class="col-sm-3">
+                <label class="control-label" for="internationalProperty">International Property</label>
+                <input id="internationalProperty" [(ngModel)]="investmentDetails.internationalProperty" name="internationalProperty" type="number" class="form-control">
+              </div>
+            </div>
+
+            <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+              <div class="col-sm-3">
+                <label class="control-label" for="growthAlternatives">Growth Alternatives (%)</label>
+                <input id="growthAlternatives" [(ngModel)]="investmentDetails.growthAlternatives" name="growthAlternatives" type="number" class="form-control">
+              </div>
+
+              <div class="col-sm-3">
+                <label class="control-label" for="defensiveAlternatives">Defensive Alternatives (%)</label>
+                <input id="defensiveAlternatives" [(ngModel)]="investmentDetails.defensiveAlternatives" name="defensiveAlternatives" type="number" class="form-control">
+              </div>
+
+              <div class="col-sm-3">
+                <label class="control-label" for="domesticFixedInterest">Domestic Fixed Interest (%)</label>
+                <input id="domesticFixedInterest" [(ngModel)]="investmentDetails.domesticFixedInterest" name="domesticFixedInterest" type="number" class="form-control">
+              </div>
+
+              <div class="col-sm-3">
+                <label class="control-label" for="internationalFixedInterest">International Fixed Interest (%)</label>
+                <input id="internationalFixedInterest" [(ngModel)]="investmentDetails.internationalFixedInterest" name="internationalFixedInterest" type="number" class="form-control">
+              </div>
+            </div>
+
+            <div class='row' style="padding-top:5px;padding-bottom:5px;">
+              <div class="col-sm-3">
+                <label class="labelAlignment" for="otherGrowth">Other Growth (%)</label>
+                <input id="otherGrowth" [(ngModel)]="investmentDetails.otherGrowth" name="otherGrowth" type="number" class="form-control">
+              </div>
+              <div class="col-sm-3">
+                <label class="control-label" for="apircode">IsSingle</label>
+                <input id="apircode" [(ngModel)]="investmentDetails.isSingle" name="apircode" required maxlength="30" class="form-control">
+              </div>
+              <div class="col-sm-3">
+                <label class="control-label" for="apircode">InvestorProfile</label>
+                <input id="apircode" [(ngModel)]="investmentDetails.investorProfile" name="apircode" required maxlength="50" class="form-control">
+              </div>
+              <div class="col-sm-3">
+                <label class="control-label" for="apircode">IsActive</label>
+                <input id="apircode" [(ngModel)]="investmentDetails.isActive" name="apircode" required maxlength="30" class="form-control">
+              </div>
+
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <div class="form-group">
+              <div class="col-sm-12">
+                <button type="button" (click)="updateFund(investmentDetails)" class="btn btn-success ">Save</button>
+                <button type="button" class="btn btn-danger pull-right" (click)="onCloseNewFundDisplay()">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div [ngStyle]="{'display':previewDisplay}">
+  <div class="backdrop" [ngStyle]="{'display':dropOptionMain}"></div>
+  <div *ngIf="showLoadingIndicator" class="spinner"> </div>
+  <div class="col-md-12">
+    <div class="line-title"><span>Recommended Portfolio</span><hr /></div>
+
+
+    <table *ngIf="(commonClient?.length > 0 )" class="table" style="margin-top:50px;">
+      <tr style="background-color:#8f8f8f;color:white">
+        <td></td>
+        <td style="text-align:right;">Current ($)</td>
+        <td style="text-align:right;">Change ($)</td>
+        <td style="text-align:right;">Proposed ($) </td>
+      </tr>
+
+      <tr *ngIf="commonClient?.length <= 0  else clientFund"></tr>
+      <ng-template #clientFund>
+        <tr class="header">
+          <td style="border:none;font-weight:bold;" [attr.colspan]="4"> {{clientDetails.familyName}},{{clientDetails.clientName}} </td>
+          <td [attr.colspan]="3"></td>
+        </tr>
+
+
+        <ng-container *ngFor="let item of commonClient">
+          <tr> <td style="padding-left:1em !important;border:none;">{{item.product}}</td> <td [attr.colspan]="3"></td></tr>
+          <tr style="color:gray;" *ngFor=" let value of item.fundData">
+            <td style="padding-left:2em !important;border:none;">{{value.fundName}}</td>
+
+            <td style="border:none;text-align:right;">
+              <span>$ {{value.current | number}} </span>
+
+            </td>
+            <td style="border:none;text-align:right;">
+              <span>$ {{value.change | number}} </span>
+            </td>
+            <td style="border:none;text-align:right;">
+              <span>$ {{value.proposed | number}} </span>
+
+            </td>
+          </tr>
+          <tr style="font-weight:bold;" *ngFor=" let value of item.subTotal">
+            <td style="padding-left:2em !important;border:none;">{{value.fundName}}</td>
+
+            <td style="border-bottom:1px solid #dbdbdb;border-top:none;text-align:right;">
+              <span>$ {{value.current | number}} </span>
+
+            </td>
+            <td style="border-bottom:1px solid #dbdbdb;border-top:none;text-align:right;">
+              <span>$ {{value.change | number}} </span>
+            </td>
+            <td style="border-bottom:1px solid #dbdbdb;border-top:none;text-align:right;">
+              <span>$ {{value.proposed | number}} </span>
+
+            </td>
+          </tr>
+        </ng-container>
+        <tr style="background-color:#9d9b9b1c;font-weight:bold;" *ngFor="let item of totalClient">
+          <td style="padding-left:2em !important;border:none;">Total for {{clientDetails.familyName}},{{clientDetails.clientName}} </td>
+
+          <td style="border-bottom:1px solid #dbdbdb;border-top:none;text-align:right;">
+            <span>$ {{item.current | number}} </span>
+
+          </td>
+          <td style="border-bottom:1px solid #dbdbdb;border-top:none;text-align:right;">
+            <span>$ {{item.change | number}} </span>
+          </td>
+          <td style="border-bottom:1px solid #dbdbdb;border-top:none;text-align:right;">
+            <span>$ {{item.proposed | number}} </span>
+
+          </td>
+        </tr>
+      </ng-template>
+
+    </table>
+
+
+    <div class="line-title" *ngIf="clientProductReplacement.length > 0 || partnerProductReplacement.length > 0 || jointProductReplacement.length > 0"><span>Replacement of product (Like-for-like) </span><hr /></div>
+    <table *ngFor="let item of clientProductReplacement" class="table" style="margin-top:50px;">
+
+      <ng-container>
+
+        <tr style="background-color:#8f8f8f;color:white">
+          <td>Plan Costs</td>
+          <td *ngFor="let ex of item.existingProducts" style="text-align:center;">{{ex.displayName}}</td>
+          <td *ngFor="let pr of item.proposedProducts" style="text-align:center;">{{pr.displayName}}</td>
+          <td *ngFor="let al of item.alternativeProducts" style="text-align:center;">{{al.displayName}}</td>
+        </tr>
+        <tr>
+          <td style="border:none;font-weight:bold;">Account Balance</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;">{{ex.value | number}} </span>
+
+          </td>
+          <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+            <span style="text-align:center;display:block;">{{pr.value | number}} </span>
+          </td>
+          <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+            <span style="text-align:center;display:block;">{{al.value | number}} </span>
+
+          </td>
+        </tr>
+
+        <tr *ngFor="let fee of item.feeDisplay">
+          <td style="border:none;font-weight:bold;"> {{fee}}</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;">{{getFeeValue(ex,fee) | number}} </span> <span style="display:block;text-align:center;color:gray;">{{getFeePercentage(ex,fee)}}</span>
+
+          </td>
+          <td style="border:none;" *ngFor="let ex of item.proposedProducts">
+            <span style="text-align:center;display:block;">{{getFeeValue(ex,fee) | number}} </span> <span style="display:block;text-align:center;color:gray;">{{getFeePercentage(ex,fee)}}</span>
+
+          </td>
+          <td style="border:none;" *ngFor="let ex of item.alternativeProducts">
+            <span style="text-align:center;display:block;">{{getFeeValue(ex,fee) | number}} </span> <span style="display:block;text-align:center;color:gray;">{{getFeePercentage(ex,fee)}}</span>
+
+          </td>
+        </tr>
+
+        <!--<tr>
+            <td style="border:none;font-style:italic">Less Total Rebates</td>
+
+            <td style="border:none;" *ngFor="let ex of item.existingProducts">
+                <span style="text-align:center;display:block;font-style:italic">{{ex.lessTotalRebates | number}} </span>
+
+            </td>
+            <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+                <span style="text-align:center;display:block;font-style:italic">{{pr.lessTotalRebates | number}} </span>
+            </td>
+            <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+                <span style="text-align:center;display:block;font-style:italic">{{al.lessTotalRebates | number}} </span>
+
+            </td>
+        </tr>-->
+        <tr>
+          <td style="border:none;font-weight:bold;">Net Ongoing Costs (per annum)</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{ex.total | number}} </span>
+
+          </td>
+          <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{pr.total | number}} </span>
+          </td>
+          <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{al.total | number}} </span>
+
+          </td>
+        </tr>
+        <tr>
+          <td style="border:none;font-weight:bold;">Difference in ongoing costs</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;"></span>
+
+          </td>
+          <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{pr.difference}} </span>
+          </td>
+          <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{al.difference}} </span>
+
+          </td>
+        </tr>
+      </ng-container>
+
+    </table>
+    <table *ngFor="let item of partnerProductReplacement" class="table" style="margin-top:50px;">
+      <ng-container>
+
+        <tr style="background-color:#8f8f8f;color:white">
+          <td>Plan Costs</td>
+          <td *ngFor="let ex of item.existingProducts" style="text-align:center;">{{ex.displayName}}</td>
+          <td *ngFor="let pr of item.proposedProducts" style="text-align:center;">{{pr.displayName}}</td>
+          <td *ngFor="let al of item.alternativeProducts" style="text-align:center;">{{al.displayName}}</td>
+        </tr>
+        <tr>
+          <td style="border:none;font-weight:bold;">Account Balance</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;">{{ex.value | number}} </span>
+
+          </td>
+          <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+            <span style="text-align:center;display:block;">{{pr.value | number}} </span>
+          </td>
+          <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+            <span style="text-align:center;display:block;">{{al.value | number}} </span>
+
+          </td>
+        </tr>
+
+        <tr *ngFor="let fee of item.feeDisplay">
+          <td style="border:none;font-weight:bold;"> {{fee}}</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;">{{getFeeValue(ex,fee) | number}} </span> <span style="display:block;text-align:center;color:gray;">{{getFeePercentage(ex,fee)}}</span>
+
+          </td>
+          <td style="border:none;" *ngFor="let ex of item.proposedProducts">
+            <span style="text-align:center;display:block;">{{getFeeValue(ex,fee) | number}} </span> <span style="display:block;text-align:center;color:gray;">{{getFeePercentage(ex,fee)}}</span>
+
+          </td>
+          <td style="border:none;" *ngFor="let ex of item.alternativeProducts">
+            <span style="text-align:center;display:block;">{{getFeeValue(ex,fee) | number}} </span> <span style="display:block;text-align:center;color:gray;">{{getFeePercentage(ex,fee)}}</span>
+
+          </td>
+        </tr>
+
+        <!--<tr>
+            <td style="border:none;font-style:italic">Less Total Rebates</td>
+
+            <td style="border:none;" *ngFor="let ex of item.existingProducts">
+                <span style="text-align:center;display:block;font-style:italic">{{ex.lessTotalRebates | number}} </span>
+
+            </td>
+            <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+                <span style="text-align:center;display:block;font-style:italic">{{pr.lessTotalRebates | number}} </span>
+            </td>
+            <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+                <span style="text-align:center;display:block;font-style:italic">{{al.lessTotalRebates | number}} </span>
+
+            </td>
+        </tr>-->
+        <tr>
+          <td style="border:none;font-weight:bold;">Net Ongoing Costs (per annum)</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{ex.total | number}} </span>
+
+          </td>
+          <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{pr.total | number}} </span>
+          </td>
+          <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{al.total | number}} </span>
+
+          </td>
+        </tr>
+        <tr>
+          <td style="border:none;font-weight:bold;">Difference in ongoing costs</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;"></span>
+
+          </td>
+          <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{pr.difference}} </span>
+          </td>
+          <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{al.difference}} </span>
+
+          </td>
+        </tr>
+      </ng-container>
+
+
+    </table>
+    <table *ngFor="let item of jointProductReplacement" class="table" style="margin-top:50px;">
+
+      <ng-container>
+
+        <tr style="background-color:#8f8f8f;color:white">
+          <td>Plan Costs</td>
+          <td *ngFor="let ex of item.existingProducts" style="text-align:center;">{{ex.displayName}}</td>
+          <td *ngFor="let pr of item.proposedProducts" style="text-align:center;">{{pr.displayName}}</td>
+          <td *ngFor="let al of item.alternativeProducts" style="text-align:center;">{{al.displayName}}</td>
+        </tr>
+        <tr>
+          <td style="border:none;font-weight:bold;">Account Balance</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;">{{ex.value | number}} </span>
+
+          </td>
+          <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+            <span style="text-align:center;display:block;">{{pr.value | number}} </span>
+          </td>
+          <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+            <span style="text-align:center;display:block;">{{al.value | number}} </span>
+
+          </td>
+        </tr>
+
+        <tr *ngFor="let fee of item.feeDisplay">
+          <td style="border:none;font-weight:bold;"> {{fee}}</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;">{{getFeeValue(ex,fee) | number}} </span> <span style="display:block;text-align:center;color:gray;">{{getFeePercentage(ex,fee)}}</span>
+
+          </td>
+          <td style="border:none;" *ngFor="let ex of item.proposedProducts">
+            <span style="text-align:center;display:block;">{{getFeeValue(ex,fee) | number}} </span> <span style="display:block;text-align:center;color:gray;">{{getFeePercentage(ex,fee)}}</span>
+
+          </td>
+          <td style="border:none;" *ngFor="let ex of item.alternativeProducts">
+            <span style="text-align:center;display:block;">{{getFeeValue(ex,fee) | number}} </span> <span style="display:block;text-align:center;color:gray;">{{getFeePercentage(ex,fee)}}</span>
+
+          </td>
+        </tr>
+
+        <!--<tr>
+            <td style="border:none;font-style:italic">Less Total Rebates</td>
+
+            <td style="border:none;" *ngFor="let ex of item.existingProducts">
+                <span style="text-align:center;display:block;font-style:italic">{{ex.lessTotalRebates | number}} </span>
+
+            </td>
+            <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+                <span style="text-align:center;display:block;font-style:italic">{{pr.lessTotalRebates | number}} </span>
+            </td>
+            <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+                <span style="text-align:center;display:block;font-style:italic">{{al.lessTotalRebates | number}} </span>
+
+            </td>
+        </tr>-->
+        <tr>
+          <td style="border:none;font-weight:bold;">Net Ongoing Costs (per annum)</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{ex.total | number}} </span>
+
+          </td>
+          <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{pr.total | number}} </span>
+          </td>
+          <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{al.total | number}} </span>
+
+          </td>
+        </tr>
+        <tr>
+          <td style="border:none;font-weight:bold;">Difference in ongoing costs</td>
+
+          <td style="border:none;" *ngFor="let ex of item.existingProducts">
+            <span style="text-align:center;display:block;"></span>
+
+          </td>
+          <td style="border:none;" *ngFor="let pr of item.proposedProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{pr.difference}} </span>
+          </td>
+          <td style="border:none;" *ngFor="let al of item.alternativeProducts">
+            <span style="text-align:center;display:block;font-weight:bold;">{{al.difference}} </span>
+
+          </td>
+        </tr>
+      </ng-container>
+
+
+    </table>
+
+
+    <div class="line-title"><hr /></div>
+
+    <button [ngStyle]="{'display':generateWord}" (click)="generateWordDocument()" class="btn btn-success pull-right" type="button" style="margin-bottom:20px"> <i class="glyphicon glyphicon-download" style="text-decoration:none;"></i> Generate SoA</button>
+  </div>
+</div>

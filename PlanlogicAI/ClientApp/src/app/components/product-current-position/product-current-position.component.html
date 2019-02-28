@@ -1,0 +1,352 @@
+ <!--<div ng-controller="MyController" class="container" style="margin-top:50px;">
+    <div class="form-inline">
+        <input type="file" name="file" class="form-control"
+               (change)="UploadFile($event)" />
+        <input type="button" value="Import" class="btn btn-success" ng-disabled="!SelectedFileForUpload"
+               (click)="ParseExcelDataAndSave()" />
+        <br />
+        <span style="color:red">
+            {{Message}}
+        </span>
+    </div>
+</div>-->
+
+<form #ProductForm="ngForm" style="margin-top:20px;">
+    <div id="heading" >
+        <div class="line-title"><span>Platform</span><hr /></div>
+        <!--<div class="row" style="padding-top:5px;padding-bottom:5px;font-weight:bold;font-size:14px !important;">
+        <div class="col-sm-2">
+            Platform Name
+        </div>
+    </div>-->
+        <div class="row">
+            <div class="col-sm-5">
+                <select class="form-control" id="platform" #platform name="platform" required (change)="changePlatform(platform.value);">
+                    <option class='option' [value]="-1"> Select Platform </option>
+                    <option class='option' *ngFor='let pf of platforms' [value]="pf.platformId">{{pf.platformName}}</option>
+                    <option class='option' [value]="0" style="background:#ddd9;"> Add Platform &#x2b;</option>
+                </select>
+            </div>
+        </div>
+
+        <div *ngIf="platform.value != 0 && platform.value != -1">
+            <div class="line-title"><span>Product</span><hr /></div>
+            <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;font-size:14px !important;">
+                <div class="col-sm-1" style="display:none;"></div>
+                <div class="col-sm-5">
+                    Product Name
+                </div>
+                <div class="col-sm-2">
+                    Product Type
+                </div>
+            </div>
+
+            <div class='row' id="div_id" *ngFor="let item of products;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+                <div class="col-sm-1" style="display:none;"><input name="{{'Product' + item.productId}}" [(ngModel)]="item.productId" value="{{item.productId}}" /></div>
+                <div class="col-sm-5" [ngClass]="{'highlight' : item.productId == selectedProduct}" (click)="setProduct(item)">
+                    <input disabled class="form-control" required id="productName" name="{{'ProductName' + i}}" [(ngModel)]="item.productName" [disabled]="!item.isEditable">
+                </div>
+                <div class="col-sm-2" [ngClass]="{'highlight' : item.productId == selectedProduct}" (click)="setProduct(item)">
+                    <input disabled class="form-control" required id="productType" name="{{'ProductType' + i}}" [(ngModel)]="item.productType" [disabled]="!item.isEditable">
+                </div>
+                <div class="col-sm-1">
+                    <button (click)="item.isEditable = !item.isEditable" *ngIf="!item.isEditable" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+                    <button (click)="editProduct(item)" *ngIf="item.isEditable" class="btn btn-success btn-circle"> <i class="glyphicon glyphicon-check" style="text-decoration:none;" title="Update"></i></button>
+                    <button (click)="deleteProduct(item,i)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+                </div>
+            </div>
+
+            <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+                <div class="col-sm-5">
+                    <input class="form-control" required id="productNewName" name="name" type="text" [(ngModel)]="productDetails.productName">
+                </div>
+                <div class="col-sm-2">
+                    <input class="form-control" required id="productNewType" name="type" type="text" [(ngModel)]="productDetails.productType">
+                </div>
+                <div class="col-sm-1">
+                    <button id="asset" (click)="addProduct(productDetails)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div id="sub">
+        <!--*ngIf="selectedProduct != 0"-->
+        <div style="float:left;margin-left:5px;margin-right:5px;" class="btn btn-info btn-circle" (click)="goBack()"><i class="glyphicon glyphicon-arrow-left" style="text-decoration:none;"></i></div>
+        <div style="padding:5px;">{{selectedProductName}}</div><hr />
+                                                               <div class="wrapper" style="width:80% !important;">
+                                                                   <div class="row">
+                                                                       <div class="col-md-6 container " style="text-align:center;font-weight:bold;padding:10px !important;background:#efefef;border-right:none;">
+                                                                           Existing Fund(s)
+                                                                           <!--<button (click)="showNewFund()" class="btn btn-success btn-circle" style="float:right"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;" title="Add new investment fund"></i></button>-->
+                                                                           <div style="float:right" class="glyphicon glyphicon-plus" (click)="showNewFund()"></div>
+                                                                       </div>
+                                                                       <div class="col-md-6 container" style="text-align:center;font-weight:bold;padding:10px !important;background:#efefef;border-left:none;">
+                                                                           <!-- <button (click)="saveProductFund()" class="btn btn-success btn-circle" style="float:right"> <i class="glyphicon glyphicon-save" style="text-decoration:none;" title="Save"></i></button>-->
+                                                                           Selected Fund(s)
+                                                                           <div style="float:right;" class="glyphicon glyphicon-check" (click)="saveProductFund()"></div>
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="row col-container">
+                                                                       <div class="col-md-6  input-group">
+                                                                         <!--  <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>-->
+                                                                           <input type="text" id="searchExisting" class="form-control" style="width:100%;" placeholder="Search" aria-label="Search" (keyup)="Search(0)" autocomplete="off" />
+
+                                                                       </div>
+
+                                                                       <div class="col-md-6  input-group">
+                                                                          <!-- <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>-->
+                                                                           <input type="text" id="searchSelected" class="form-control" style="width:100%;" placeholder="Search" (keyup)="Search(1)" autocomplete="off" />
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="row col-container">
+                                                                       <div class="col-md-6 container" style="height:450px;overflow:auto;" [dragula]='"second-bag"' [dragulaModel]="allInvestments">
+
+                                                                         <div *ngFor='let aI of allInvestments' class="existing" (click)="onClick(aI)" draggable="true" id="{{aI.apircode}}"><span></span>{{aI.apircode}}</div>
+                                                                           <!--<div style="float:right" class="glyphicon glyphicon-plus" (click)="showNewFund()"></div>-->
+                                                                       </div>
+
+                                                                       <div class="col-md-6 container" style="height:450px;overflow:auto;" [dragula]='"second-bag"' [dragulaModel]="selectedInvestments">
+                                                                         <div *ngFor='let aI of selectedInvestments' class="selected" (click)="onClick(aI)" draggable="true" id="{{aI.apircode}}"><span></span>{{aI.apircode}}</div>
+                                                                       </div>
+                                                                   </div>
+
+
+                                                               </div>
+
+
+
+        <div class="line-title"><span>Product Fees</span><hr /></div>
+
+        <div class='row' style="padding-top:5px;padding-bottom:5px;font-weight:bold;font-size:14px !important;">
+            <div class="col-sm-1" style="display:none;"></div>
+            <div class="col-sm-2">
+                Cost Type
+            </div>
+            <div class="col-sm-2">
+                Description
+            </div>
+            <div class="col-sm-2">
+                Fee Type
+            </div>
+            <div class="col-sm-2">
+                Value
+            </div>
+        </div>
+
+        <div class='row' id="div_id" *ngFor="let item of fees;let i = index" style="padding-top:5px;padding-bottom:5px;" [attr.data-index]="i">
+
+            <div class="col-sm-1" style="display:none;"><input name="{{'Fee' + item.feeId}}" [(ngModel)]="item.feeId" value="{{item.feeId}}" /></div>
+            <div class="col-sm-2">
+                <select class="form-control" [(ngModel)]="item.costType" name="{{'CostType' + i}}" [disabled]="!item.isEditable">
+                    <option *ngFor="let c of costType" [value]="c.val">{{c.name}}</option>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <input class="form-control" required id="feeType" name="{{'feeName' + i}}" [(ngModel)]="item.feeName" [disabled]="!item.isEditable">
+            </div>
+            <div class="col-sm-2">
+                <select class="form-control" [(ngModel)]="item.feeType" name="{{'FeeType' + i}}" [disabled]="!item.isEditable">
+                    <option *ngFor="let f of feeType" [value]="f.val">{{f.name}}</option>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <input class="form-control" type="number" required id="amount" name="{{'amount' + i}}" [(ngModel)]="item.amount" [disabled]="!item.isEditable">
+            </div>
+            <div class="col-sm-1">
+                <button (click)="item.isEditable = !item.isEditable" *ngIf="!item.isEditable" class="btn btn-warning btn-circle"> <i class="glyphicon glyphicon-edit" style="text-decoration:none;" title="Edit"></i></button>
+                <button (click)="editFee(item)" *ngIf="item.isEditable" class="btn btn-success btn-circle"> <i class="glyphicon glyphicon-check" style="text-decoration:none;" title="Update"></i></button>
+                <button (click)="deleteFee(item,i)" class="btn btn-danger btn-circle"> <i class="glyphicon glyphicon-remove" style="text-decoration:none;" title="Delete"></i></button>
+            </div>
+        </div>
+
+        <div class='row' style="padding-top:5px;padding-bottom:5px;">
+            <div class="col-sm-2">
+               
+                <select class="form-control" [(ngModel)]="feeDetails.costType" name="costType">
+                    <option *ngFor="let c of costType" [value]="c.val">{{c.name}}</option>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <input class="form-control" required id="feeNewName" name="name" [(ngModel)]="feeDetails.feeName">
+            </div>
+            <div class="col-sm-2">
+                <select class="form-control" [(ngModel)]="feeDetails.feeType" name="feeType">
+                    <option *ngFor="let f of feeType" [value]="f.val">{{f.name}}</option>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <input class="form-control" required id="feeNewAmount" type="number" name="amount" [(ngModel)]="feeDetails.amount">
+            </div>
+            <div class="col-sm-1">
+              <button id="asset" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>
+              <!--<button id="asset" (click)="addFee(feeDetails)" class="btn btn-success btn-circle" type="button"> <i class="glyphicon glyphicon-plus" style="text-decoration:none;"></i></button>-->
+            </div>
+        </div>
+
+
+
+
+
+    </div>
+       
+
+</form>
+
+<div class="backdrop" [ngStyle]="{'display':backDropDisplay}"></div>
+<!--New Platform-->
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':productDisplay}">
+    <div class="modal-dialog modal-sm" role="document" style="width:30%;height:100%;">
+        <!--  <form style="padding-top:50px;" role="form" class="form-horizontal" #cashFlowIncomeDetailsForm="ngForm" ngNativeValidate>-->
+        <div class="modal-content" style="height:100%;">
+            <div class="modal-guts">
+                <div class="modal-body">
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                        
+                            <label class="labelAlignment" for="platformName">Platform</label>
+                           
+                                <input id="platformName" [(ngModel)]="pf.platformName" name="name" required maxlength="30" class="form-control">
+                           
+              
+                    </div>
+                  
+
+                </div>
+                <div class="modal-footer">
+                    <div class="form-group">
+                        <div class="col-sm-12">                         
+                            <button type="button" (click)="updatePlatform(pf)" class="btn btn-success ">Save</button>
+                            <button type="button" class="btn btn-danger pull-right" (click)="onClosePlatform()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--</form>-->
+    </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':fundDisplay}" style="height:calc(100vh - 210px)">
+    <div class="modal-dialog" role="document" style="width:80%;height:100%;">
+        <div class="modal-content" style="height:100%;">
+            <div class="modal-guts">
+                <div class="modal-body">
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="apircode">APIRCode</label>
+                            <input id="apircode" [(ngModel)]="investmentDetails.apircode" [disabled]="isEdit == true" name="apircode" required maxlength="30" class="form-control">
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="labelAlignment" for="amount">Amount</label>
+                            <input id="amount" [(ngModel)]="investmentDetails.amount" name="amount" type="number" required class="form-control">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="labelAlignment" for="fundName">Fund Name</label>
+                            <input id="fundName" [(ngModel)]="investmentDetails.fundName" name="fundName" required maxlength="200" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="buySpread">BuySpread (%)</label>
+                            <input id="buySpread" [(ngModel)]="investmentDetails.buySpread" name="buySpread" required type="number" class="form-control">
+                        </div>
+
+                        <div class="col-sm-3">
+                            <label class="labelAlignment" for="icr">ICR (%)</label>
+                            <input id="icr" [(ngModel)]="investmentDetails.icr" name="icr" required type="number" class="form-control">
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="control-label" for="domesticCash">Domestic Cash (%)</label>
+                            <input id="domesticCash" [(ngModel)]="investmentDetails.domesticCash" name="domesticCash" type="number" class="form-control">
+                        </div>
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="internationalCash">International Cash (%)</label>
+                            <input id="internationalCash" [(ngModel)]="investmentDetails.internationalCash" name="internationalCash" type="number" class="form-control">
+                        </div>
+
+                    </div>
+
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="domesticEquity">Domestic Equity (%)</label>
+                            <input id="domesticEquity" [(ngModel)]="investmentDetails.domesticEquity" name="domesticEquity" type="number" class="form-control">
+                        </div>
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="internationalEquity">International Equity (%)</label>
+                            <input id="internationalEquity" [(ngModel)]="investmentDetails.internationalEquity" name="internationalEquity" type="number" class="form-control">
+                        </div>
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="domesticProperty">Domestic Property (%)</label>
+                            <input id="domesticProperty" [(ngModel)]="investmentDetails.domesticProperty" name="domesticProperty" type="number" class="form-control">
+                        </div>
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="internationalProperty">International Property</label>
+                            <input id="internationalProperty" [(ngModel)]="investmentDetails.internationalProperty" name="internationalProperty" type="number" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="growthAlternatives">Growth Alternatives (%)</label>
+                            <input id="growthAlternatives" [(ngModel)]="investmentDetails.growthAlternatives" name="growthAlternatives" type="number" class="form-control">
+                        </div>
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="defensiveAlternatives">Defensive Alternatives (%)</label>
+                            <input id="defensiveAlternatives" [(ngModel)]="investmentDetails.defensiveAlternatives" name="defensiveAlternatives" type="number" class="form-control">
+                        </div>
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="domesticFixedInterest">Domestic Fixed Interest (%)</label>
+                            <input id="domesticFixedInterest" [(ngModel)]="investmentDetails.domesticFixedInterest" name="domesticFixedInterest" type="number" class="form-control">
+                        </div>
+
+                        <div class="col-sm-3">
+                            <label class="control-label" for="internationalFixedInterest">International Fixed Interest (%)</label>
+                            <input id="internationalFixedInterest" [(ngModel)]="investmentDetails.internationalFixedInterest" name="internationalFixedInterest" type="number" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class='row' style="padding-top:5px;padding-bottom:5px;">
+                      <div class="col-sm-3">
+                        <label class="labelAlignment" for="otherGrowth">Other Growth (%)</label>
+                        <input id="otherGrowth" [(ngModel)]="investmentDetails.otherGrowth" name="otherGrowth" type="number" class="form-control">
+                      </div>
+                      <div class="col-sm-3">
+                        <label class="control-label" for="apircode">IsSingle</label>
+                        <input id="apircode" [(ngModel)]="investmentDetails.isSingle"  name="apircode" required maxlength="30" class="form-control">
+                      </div>
+                      <div class="col-sm-3">
+                        <label class="control-label" for="apircode">InvestorProfile</label>
+                        <input id="apircode" [(ngModel)]="investmentDetails.investorProfile" name="apircode" required maxlength="50" class="form-control">
+                      </div>
+                      <div class="col-sm-3">
+                        <label class="control-label" for="apircode">IsActive</label>
+                        <input id="apircode" [(ngModel)]="investmentDetails.isActive"  name="apircode" required maxlength="30" class="form-control">
+                      </div>
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <button type="button" (click)="updateFund(investmentDetails)" class="btn btn-success ">Save</button>
+                            <button type="button" class="btn btn-danger pull-right" (click)="onCloseFund()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
