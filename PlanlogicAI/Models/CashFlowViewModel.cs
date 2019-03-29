@@ -19,5 +19,5 @@ namespace PlanlogicAI.Models
         public int? EndDate { get; set; }
     }
 
-   
+  
 }

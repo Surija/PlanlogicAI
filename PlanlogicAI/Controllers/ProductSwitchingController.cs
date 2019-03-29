@@ -226,6 +226,7 @@ namespace PlanlogicAI.Controllers
                             currentProduct.ProductId = header.ProductId;
                             currentProduct.Value = header.Value;
                             currentProduct.ProposedProduct = header.RecId;
+                            currentProduct.OriginalProduct = id;
                             currentProduct.ClientId = header.ClientId;
                             this.context.RopcurrentProducts.Add(currentProduct);
 
@@ -267,6 +268,7 @@ namespace PlanlogicAI.Controllers
                         }
                         else
                         {
+                       
                             this.mapper.Map<ProposedClientProductsViewModel, ProposedClientProducts>(_product, existingProduct);
 
                             this.context.ProposedClientProducts.Update(existingProduct);

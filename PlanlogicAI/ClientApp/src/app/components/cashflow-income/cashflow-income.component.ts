@@ -267,7 +267,8 @@ export class CashflowIncomeComponent implements OnInit {
             cfDetails.endDate = this.clientDetails.partnerRetirementYear - 1;
             }
       
-        this.cashFlowService.create(cfDetails, this.selectedClient, "I").subscribe((data: any) => {
+      this.cashFlowService.create(cfDetails, this.selectedClient, "I").subscribe((data: any) => {
+        console.log(cfDetails);
             var exist = false;
             var id$ = data.cflowId;
 

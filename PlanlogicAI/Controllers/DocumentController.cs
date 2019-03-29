@@ -39,7 +39,7 @@ namespace PlanlogicAI.Controllers
         public IConfiguration Configuration { get; }
 
 
-        public DocumentController(StrategyOptimizerPrototypeContext context,IMapper mapper, IConfiguration configuration)
+        public DocumentController(StrategyOptimizerPrototypeContext context, IMapper mapper, IConfiguration configuration)
         {
             this.context = context;
             this.mapper = mapper;
@@ -73,7 +73,7 @@ namespace PlanlogicAI.Controllers
 
                     MainDocumentPart mainPart = package.AddMainDocumentPart();
                     mainPart.Document = new Document();
-                    Body body = mainPart.Document.AppendChild(new Body());                  
+                    Body body = mainPart.Document.AppendChild(new Body());
 
                     SectionProperties sectionProperties1 = new SectionProperties() { RsidRPr = "008818E9", RsidR = "00543A0D" };
                     FooterReference footerReference1 = new FooterReference() { Type = HeaderFooterValues.Default, Id = "rId8" };
@@ -93,7 +93,7 @@ namespace PlanlogicAI.Controllers
 
                     foreach (DocumentDetails docDet in documentDetails)
                     {
-                       
+
 
                         Paragraph WhereAreYouNow = new Paragraph(new Run(new RunProperties(new Color() { Val = "ED7D27" }, new FontSize { Val = "40" }), new Text("Where you are now")));
                         body.Append(WhereAreYouNow);
@@ -128,7 +128,7 @@ namespace PlanlogicAI.Controllers
 
                         ParagraphProperties paragraphProperties14 = new ParagraphProperties();
                         SuppressAutoHyphens suppressAutoHyphens14 = new SuppressAutoHyphens();
-                       
+
                         SpacingBetweenLines spacingBetweenLines14 = new SpacingBetweenLines() { Before = "120", After = "120", Line = "240", LineRule = LineSpacingRuleValues.Auto };
                         Justification justification4 = new Justification() { Val = JustificationValues.Both };
 
@@ -156,21 +156,21 @@ namespace PlanlogicAI.Controllers
                         body.Append(RiskProfile);
 
                         AddRiskProfile(mainPart, body, docDet.clientDetails, orange, docDet.proposedAssets);
-                       // body.AppendChild((Paragraph)paragraph14.CloneNode(true));
+                        // body.AppendChild((Paragraph)paragraph14.CloneNode(true));
 
-                        AddInvestmentRecommendation(body, docDet.clientDetails, docDet.proposedAssets , docDet.clientWeights,docDet.partnerWeights,docDet.jointWeights);
-
-
-
-                        AddRecommemdedPortfolio(body, docDet.currentOriginalAssests, docDet.proposedAssets, docDet.clientDetails);
+                        AddInvestmentRecommendation(body, docDet.clientDetails, docDet.proposedAssets, docDet.clientWeights, docDet.partnerWeights, docDet.jointWeights);
 
 
-                       
-                       
+
+                        AddRecommemdedPortfolio(body, docDet.currentAssests, docDet.proposedAssets, docDet.clientDetails);
+
+
+
+
 
                         if (docDet.clientWeights.Length > 0)
                         {
-                            AddProposedAllocation(body, docDet.clientWeights, orange, docDet.clientRiskProfile,"C", docDet.proposedAssets, docDet.clientDetails);
+                            AddProposedAllocation(body, docDet.clientWeights, orange, docDet.clientRiskProfile, "C", docDet.proposedAssets, docDet.clientDetails);
                         }
 
                         Run linebreak = new Run(new Break());
@@ -249,20 +249,20 @@ namespace PlanlogicAI.Controllers
 
                 return File(ms.ToArray(), "application/octet-stream", "test");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
         }
 
-       
+
         private void AddInvestmentRecommendation(Body body1, BasicDetails clientDetails, PF[] proposedAssets, AssetDetails[] clientWeights, AssetDetails[] partnerWeights, AssetDetails[] jointWeights)
         {
             var platforms = new List<PlatformViewModel>();
             foreach (PF product in proposedAssets)
             {
                 PlatformViewModel platform = this.mapper.Map<IEnumerable<PlatformViewModel>>(from s in this.context.Product.AsEnumerable() join sa in this.context.Platform.AsEnumerable() on s.PlatformId equals sa.PlatformId where s.ProductId == product.productId select sa).FirstOrDefault();
-                if (platform.PlatformId != 0)
+                if (platform.PlatformId != 0 && platform.PlatformName != "Cash")
                 {
                     // if(!(platforms.Contains(platform)))
                     //if((platforms.Where(p => p.PlatformId == platform.PlatformId).Count() <= 0));
@@ -3040,56 +3040,56 @@ namespace PlanlogicAI.Controllers
                     }
                 }
 
-                foreach(string s in existingGreater)
-                { 
-                Paragraph paragraph32 = new Paragraph() { RsidParagraphMarkRevision = "00482D19", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
+                foreach (string s in existingGreater)
+                {
+                    Paragraph paragraph32 = new Paragraph() { RsidParagraphMarkRevision = "00482D19", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
 
-                ParagraphProperties paragraphProperties32 = new ParagraphProperties();
+                    ParagraphProperties paragraphProperties32 = new ParagraphProperties();
 
-                NumberingProperties numberingProperties5 = new NumberingProperties();
-                NumberingLevelReference numberingLevelReference5 = new NumberingLevelReference() { Val = 0 };
-                NumberingId numberingId5 = new NumberingId() { Val = 4 };
+                    NumberingProperties numberingProperties5 = new NumberingProperties();
+                    NumberingLevelReference numberingLevelReference5 = new NumberingLevelReference() { Val = 0 };
+                    NumberingId numberingId5 = new NumberingId() { Val = 4 };
 
-                numberingProperties5.Append(numberingLevelReference5);
-                numberingProperties5.Append(numberingId5);
-                SuppressAutoHyphens suppressAutoHyphens32 = new SuppressAutoHyphens();
-                SpacingBetweenLines spacingBetweenLines32 = new SpacingBetweenLines() { Before = "120", After = "120", Line = "240", LineRule = LineSpacingRuleValues.Auto };
-                Justification justification15 = new Justification() { Val = JustificationValues.Both };
+                    numberingProperties5.Append(numberingLevelReference5);
+                    numberingProperties5.Append(numberingId5);
+                    SuppressAutoHyphens suppressAutoHyphens32 = new SuppressAutoHyphens();
+                    SpacingBetweenLines spacingBetweenLines32 = new SpacingBetweenLines() { Before = "120", After = "120", Line = "240", LineRule = LineSpacingRuleValues.Auto };
+                    Justification justification15 = new Justification() { Val = JustificationValues.Both };
 
-                ParagraphMarkRunProperties paragraphMarkRunProperties31 = new ParagraphMarkRunProperties();
-                RunFonts runFonts83 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                Color color32 = new Color() { Val = "000000" };
-                FontSize fontSize82 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript56 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages80 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    ParagraphMarkRunProperties paragraphMarkRunProperties31 = new ParagraphMarkRunProperties();
+                    RunFonts runFonts83 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    Color color32 = new Color() { Val = "000000" };
+                    FontSize fontSize82 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript56 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages80 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                paragraphMarkRunProperties31.Append(runFonts83);
-                paragraphMarkRunProperties31.Append(color32);
-                paragraphMarkRunProperties31.Append(fontSize82);
-                paragraphMarkRunProperties31.Append(fontSizeComplexScript56);
-                paragraphMarkRunProperties31.Append(languages80);
+                    paragraphMarkRunProperties31.Append(runFonts83);
+                    paragraphMarkRunProperties31.Append(color32);
+                    paragraphMarkRunProperties31.Append(fontSize82);
+                    paragraphMarkRunProperties31.Append(fontSizeComplexScript56);
+                    paragraphMarkRunProperties31.Append(languages80);
 
-                paragraphProperties32.Append(numberingProperties5);
-                paragraphProperties32.Append(suppressAutoHyphens32);
-                paragraphProperties32.Append(spacingBetweenLines32);
-                paragraphProperties32.Append(justification15);
-                paragraphProperties32.Append(paragraphMarkRunProperties31);
+                    paragraphProperties32.Append(numberingProperties5);
+                    paragraphProperties32.Append(suppressAutoHyphens32);
+                    paragraphProperties32.Append(spacingBetweenLines32);
+                    paragraphProperties32.Append(justification15);
+                    paragraphProperties32.Append(paragraphMarkRunProperties31);
 
-               
 
-                Run run54 = new Run() { RsidRunProperties = "00482D19" };
 
-                RunProperties runProperties54 = new RunProperties();
-                RunFonts runFonts85 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize84 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript58 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages82 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    Run run54 = new Run() { RsidRunProperties = "00482D19" };
 
-                runProperties54.Append(runFonts85);
-                runProperties54.Append(fontSize84);
-                runProperties54.Append(fontSizeComplexScript58);
-                runProperties54.Append(languages82);
-                Text text53 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+                    RunProperties runProperties54 = new RunProperties();
+                    RunFonts runFonts85 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize84 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript58 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages82 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+                    runProperties54.Append(runFonts85);
+                    runProperties54.Append(fontSize84);
+                    runProperties54.Append(fontSizeComplexScript58);
+                    runProperties54.Append(languages82);
+                    Text text53 = new Text() { Space = SpaceProcessingModeValues.Preserve };
                     if (s == "Joint")
                     {
                         text53.Text = clientDetails.ClientName + " and " + clientDetails.PartnerName + ", Your current portfolio is highly concentrated in growth assets, thereby exposing yourself to excessive risk. Investing the funds as per ";
@@ -3105,79 +3105,79 @@ namespace PlanlogicAI.Controllers
 
 
                     run54.Append(runProperties54);
-                run54.Append(text53);
+                    run54.Append(text53);
 
-                Run run55 = new Run() { RsidRunProperties = "00551D0F" };
+                    Run run55 = new Run() { RsidRunProperties = "00551D0F" };
 
-                RunProperties runProperties55 = new RunProperties();
-                RunFonts runFonts86 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize85 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript59 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages83 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    RunProperties runProperties55 = new RunProperties();
+                    RunFonts runFonts86 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize85 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript59 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages83 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                runProperties55.Append(runFonts86);
-                runProperties55.Append(fontSize85);
-                runProperties55.Append(fontSizeComplexScript59);
-                runProperties55.Append(languages83);
-                Text text54 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text54.Text = "our ";
+                    runProperties55.Append(runFonts86);
+                    runProperties55.Append(fontSize85);
+                    runProperties55.Append(fontSizeComplexScript59);
+                    runProperties55.Append(languages83);
+                    Text text54 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+                    text54.Text = "our ";
 
-                run55.Append(runProperties55);
-                run55.Append(text54);
+                    run55.Append(runProperties55);
+                    run55.Append(text54);
 
-                Run run56 = new Run() { RsidRunProperties = "00551D0F" };
+                    Run run56 = new Run() { RsidRunProperties = "00551D0F" };
 
-                RunProperties runProperties56 = new RunProperties();
-                RunFonts runFonts87 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                Color color33 = new Color() { Val = "FF0000" };
-                FontSize fontSize86 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript60 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages84 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    RunProperties runProperties56 = new RunProperties();
+                    RunFonts runFonts87 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    Color color33 = new Color() { Val = "FF0000" };
+                    FontSize fontSize86 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript60 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages84 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                runProperties56.Append(runFonts87);
-                runProperties56.Append(color33);
-                runProperties56.Append(fontSize86);
-                runProperties56.Append(fontSizeComplexScript60);
-                runProperties56.Append(languages84);
-                Text text55 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text55.Text = "model / recommended portfolio ";
+                    runProperties56.Append(runFonts87);
+                    runProperties56.Append(color33);
+                    runProperties56.Append(fontSize86);
+                    runProperties56.Append(fontSizeComplexScript60);
+                    runProperties56.Append(languages84);
+                    Text text55 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+                    text55.Text = "model / recommended portfolio ";
 
-                run56.Append(runProperties56);
-                run56.Append(text55);
+                    run56.Append(runProperties56);
+                    run56.Append(text55);
 
-                Run run57 = new Run() { RsidRunProperties = "00482D19" };
+                    Run run57 = new Run() { RsidRunProperties = "00482D19" };
 
-                RunProperties runProperties57 = new RunProperties();
-                RunFonts runFonts88 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize87 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript61 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages85 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    RunProperties runProperties57 = new RunProperties();
+                    RunFonts runFonts88 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize87 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript61 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages85 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                runProperties57.Append(runFonts88);
-                runProperties57.Append(fontSize87);
-                runProperties57.Append(fontSizeComplexScript61);
-                runProperties57.Append(languages85);
-                Text text56 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text56.Text = "will align your portfolio towards your ";
+                    runProperties57.Append(runFonts88);
+                    runProperties57.Append(fontSize87);
+                    runProperties57.Append(fontSizeComplexScript61);
+                    runProperties57.Append(languages85);
+                    Text text56 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+                    text56.Text = "will align your portfolio towards your ";
 
-                run57.Append(runProperties57);
-                run57.Append(text56);
+                    run57.Append(runProperties57);
+                    run57.Append(text56);
 
-                Run run58 = new Run() { RsidRunProperties = "00482D19" };
+                    Run run58 = new Run() { RsidRunProperties = "00482D19" };
 
-                RunProperties runProperties58 = new RunProperties();
-                RunFonts runFonts89 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize88 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript62 = new FontSizeComplexScript() { Val = "18" };
-                Highlight highlight12 = new Highlight() { Val = HighlightColorValues.Yellow };
-                Languages languages86 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    RunProperties runProperties58 = new RunProperties();
+                    RunFonts runFonts89 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize88 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript62 = new FontSizeComplexScript() { Val = "18" };
+                    Highlight highlight12 = new Highlight() { Val = HighlightColorValues.Yellow };
+                    Languages languages86 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                runProperties58.Append(runFonts89);
-                runProperties58.Append(fontSize88);
-                runProperties58.Append(fontSizeComplexScript62);
-             
-                runProperties58.Append(languages86);
-                Text text57 = new Text();
+                    runProperties58.Append(runFonts89);
+                    runProperties58.Append(fontSize88);
+                    runProperties58.Append(fontSizeComplexScript62);
+
+                    runProperties58.Append(languages86);
+                    Text text57 = new Text();
                     if (s == "Joint")
                     {
                         text57.Text = clientDetails.JointRiskProfile;
@@ -3190,41 +3190,41 @@ namespace PlanlogicAI.Controllers
                     {
                         text57.Text = clientDetails.PartnerRiskProfile;
                     }
-                  
 
-                run58.Append(runProperties58);
-                run58.Append(text57);
 
-                Run run59 = new Run() { RsidRunProperties = "00482D19" };
+                    run58.Append(runProperties58);
+                    run58.Append(text57);
 
-                RunProperties runProperties59 = new RunProperties();
-                RunFonts runFonts90 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize89 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript63 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages87 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    Run run59 = new Run() { RsidRunProperties = "00482D19" };
 
-                runProperties59.Append(runFonts90);
-                runProperties59.Append(fontSize89);
-                runProperties59.Append(fontSizeComplexScript63);
-                runProperties59.Append(languages87);
-                Text text58 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text58.Text = " risk profile. ";
+                    RunProperties runProperties59 = new RunProperties();
+                    RunFonts runFonts90 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize89 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript63 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages87 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                run59.Append(runProperties59);
-                run59.Append(text58);
+                    runProperties59.Append(runFonts90);
+                    runProperties59.Append(fontSize89);
+                    runProperties59.Append(fontSizeComplexScript63);
+                    runProperties59.Append(languages87);
+                    Text text58 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+                    text58.Text = " risk profile. ";
 
-                paragraph32.Append(paragraphProperties32);
-              
-                paragraph32.Append(run54);
-                paragraph32.Append(run55);
-                paragraph32.Append(run56);
-                paragraph32.Append(run57);
-                paragraph32.Append(run58);
-                paragraph32.Append(run59);
+                    run59.Append(runProperties59);
+                    run59.Append(text58);
 
-                tableCell9.Append(paragraph32);
-            
-            }
+                    paragraph32.Append(paragraphProperties32);
+
+                    paragraph32.Append(run54);
+                    paragraph32.Append(run55);
+                    paragraph32.Append(run56);
+                    paragraph32.Append(run57);
+                    paragraph32.Append(run58);
+                    paragraph32.Append(run59);
+
+                    tableCell9.Append(paragraph32);
+
+                }
 
                 //Paragraph paragraph33 = new Paragraph() { RsidParagraphMarkRevision = "00551D0F", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
 
@@ -4938,173 +4938,173 @@ namespace PlanlogicAI.Controllers
                 //paragraph41.Append(run131);
 
 
-                if(isPension == true)
-                { 
-                Paragraph paragraph42 = new Paragraph() { RsidParagraphMarkRevision = "00482D19", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
+                if (isPension == true)
+                {
+                    Paragraph paragraph42 = new Paragraph() { RsidParagraphMarkRevision = "00482D19", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
 
-                ParagraphProperties paragraphProperties42 = new ParagraphProperties();
+                    ParagraphProperties paragraphProperties42 = new ParagraphProperties();
 
-                NumberingProperties numberingProperties15 = new NumberingProperties();
-                NumberingLevelReference numberingLevelReference15 = new NumberingLevelReference() { Val = 0 };
-                NumberingId numberingId15 = new NumberingId() { Val = 1 };
+                    NumberingProperties numberingProperties15 = new NumberingProperties();
+                    NumberingLevelReference numberingLevelReference15 = new NumberingLevelReference() { Val = 0 };
+                    NumberingId numberingId15 = new NumberingId() { Val = 1 };
 
-                numberingProperties15.Append(numberingLevelReference15);
-                numberingProperties15.Append(numberingId15);
+                    numberingProperties15.Append(numberingLevelReference15);
+                    numberingProperties15.Append(numberingId15);
 
-                Tabs tabs6 = new Tabs();
-                TabStop tabStop6 = new TabStop() { Val = TabStopValues.Left, Position = 720 };
+                    Tabs tabs6 = new Tabs();
+                    TabStop tabStop6 = new TabStop() { Val = TabStopValues.Left, Position = 720 };
 
-                tabs6.Append(tabStop6);
-                SuppressAutoHyphens suppressAutoHyphens42 = new SuppressAutoHyphens();
-                SpacingBetweenLines spacingBetweenLines42 = new SpacingBetweenLines() { Before = "120", After = "120", Line = "240", LineRule = LineSpacingRuleValues.Auto };
-                Justification justification25 = new Justification() { Val = JustificationValues.Both };
+                    tabs6.Append(tabStop6);
+                    SuppressAutoHyphens suppressAutoHyphens42 = new SuppressAutoHyphens();
+                    SpacingBetweenLines spacingBetweenLines42 = new SpacingBetweenLines() { Before = "120", After = "120", Line = "240", LineRule = LineSpacingRuleValues.Auto };
+                    Justification justification25 = new Justification() { Val = JustificationValues.Both };
 
-                ParagraphMarkRunProperties paragraphMarkRunProperties41 = new ParagraphMarkRunProperties();
-                RunFonts runFonts172 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize171 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript145 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages169 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    ParagraphMarkRunProperties paragraphMarkRunProperties41 = new ParagraphMarkRunProperties();
+                    RunFonts runFonts172 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize171 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript145 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages169 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                paragraphMarkRunProperties41.Append(runFonts172);
-                paragraphMarkRunProperties41.Append(fontSize171);
-                paragraphMarkRunProperties41.Append(fontSizeComplexScript145);
-                paragraphMarkRunProperties41.Append(languages169);
+                    paragraphMarkRunProperties41.Append(runFonts172);
+                    paragraphMarkRunProperties41.Append(fontSize171);
+                    paragraphMarkRunProperties41.Append(fontSizeComplexScript145);
+                    paragraphMarkRunProperties41.Append(languages169);
 
-                paragraphProperties42.Append(numberingProperties15);
-                paragraphProperties42.Append(tabs6);
-                paragraphProperties42.Append(suppressAutoHyphens42);
-                paragraphProperties42.Append(spacingBetweenLines42);
-                paragraphProperties42.Append(justification25);
-                paragraphProperties42.Append(paragraphMarkRunProperties41);
+                    paragraphProperties42.Append(numberingProperties15);
+                    paragraphProperties42.Append(tabs6);
+                    paragraphProperties42.Append(suppressAutoHyphens42);
+                    paragraphProperties42.Append(spacingBetweenLines42);
+                    paragraphProperties42.Append(justification25);
+                    paragraphProperties42.Append(paragraphMarkRunProperties41);
 
-               
-                Run run133 = new Run() { RsidRunProperties = "00482D19" };
 
-                RunProperties runProperties133 = new RunProperties();
-                RunFonts runFonts174 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize173 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript147 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages171 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    Run run133 = new Run() { RsidRunProperties = "00482D19" };
 
-                runProperties133.Append(runFonts174);
-                runProperties133.Append(fontSize173);
-                runProperties133.Append(fontSizeComplexScript147);
-                runProperties133.Append(languages171);
-                Text text132 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text132.Text = "We have adjusted our portfolio and allocated additional funds to the ";
+                    RunProperties runProperties133 = new RunProperties();
+                    RunFonts runFonts174 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize173 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript147 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages171 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                run133.Append(runProperties133);
-                run133.Append(text132);
+                    runProperties133.Append(runFonts174);
+                    runProperties133.Append(fontSize173);
+                    runProperties133.Append(fontSizeComplexScript147);
+                    runProperties133.Append(languages171);
+                    Text text132 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+                    text132.Text = "We have adjusted our portfolio and allocated additional funds to the ";
 
-                Run run134 = new Run();
+                    run133.Append(runProperties133);
+                    run133.Append(text132);
 
-                RunProperties runProperties134 = new RunProperties();
-                RunFonts runFonts175 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                Color color54 = new Color() { Val = "FF0000" };
-                FontSize fontSize174 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript148 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages172 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    Run run134 = new Run();
 
-                runProperties134.Append(runFonts175);
-                runProperties134.Append(color54);
-                runProperties134.Append(fontSize174);
-                runProperties134.Append(fontSizeComplexScript148);
-                runProperties134.Append(languages172);
-                Text text133 = new Text();
-                text133.Text = "[Fund name]";
+                    RunProperties runProperties134 = new RunProperties();
+                    RunFonts runFonts175 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    Color color54 = new Color() { Val = "FF0000" };
+                    FontSize fontSize174 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript148 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages172 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                run134.Append(runProperties134);
-                run134.Append(text133);
+                    runProperties134.Append(runFonts175);
+                    runProperties134.Append(color54);
+                    runProperties134.Append(fontSize174);
+                    runProperties134.Append(fontSizeComplexScript148);
+                    runProperties134.Append(languages172);
+                    Text text133 = new Text();
+                    text133.Text = "[Fund name]";
 
-                Run run135 = new Run() { RsidRunProperties = "00A85351" };
+                    run134.Append(runProperties134);
+                    run134.Append(text133);
 
-                RunProperties runProperties135 = new RunProperties();
-                RunFonts runFonts176 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                Color color55 = new Color() { Val = "FF0000" };
-                FontSize fontSize175 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript149 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages173 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    Run run135 = new Run() { RsidRunProperties = "00A85351" };
 
-                runProperties135.Append(runFonts176);
-                runProperties135.Append(color55);
-                runProperties135.Append(fontSize175);
-                runProperties135.Append(fontSizeComplexScript149);
-                runProperties135.Append(languages173);
-                Text text134 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text134.Text = " ";
+                    RunProperties runProperties135 = new RunProperties();
+                    RunFonts runFonts176 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    Color color55 = new Color() { Val = "FF0000" };
+                    FontSize fontSize175 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript149 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages173 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                run135.Append(runProperties135);
-                run135.Append(text134);
+                    runProperties135.Append(runFonts176);
+                    runProperties135.Append(color55);
+                    runProperties135.Append(fontSize175);
+                    runProperties135.Append(fontSizeComplexScript149);
+                    runProperties135.Append(languages173);
+                    Text text134 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+                    text134.Text = " ";
 
-                Run run136 = new Run() { RsidRunProperties = "00482D19" };
+                    run135.Append(runProperties135);
+                    run135.Append(text134);
 
-                RunProperties runProperties136 = new RunProperties();
-                RunFonts runFonts177 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize176 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript150 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages174 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    Run run136 = new Run() { RsidRunProperties = "00482D19" };
 
-                runProperties136.Append(runFonts177);
-                runProperties136.Append(fontSize176);
-                runProperties136.Append(fontSizeComplexScript150);
-                runProperties136.Append(languages174);
-                Text text135 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text135.Text = "to ensure there are sufficient liquid funds readily available to meet your pension payment requirements for the ";
+                    RunProperties runProperties136 = new RunProperties();
+                    RunFonts runFonts177 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize176 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript150 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages174 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                run136.Append(runProperties136);
-                run136.Append(text135);
+                    runProperties136.Append(runFonts177);
+                    runProperties136.Append(fontSize176);
+                    runProperties136.Append(fontSizeComplexScript150);
+                    runProperties136.Append(languages174);
+                    Text text135 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+                    text135.Text = "to ensure there are sufficient liquid funds readily available to meet your pension payment requirements for the ";
 
-                Run run137 = new Run() { RsidRunProperties = "00A85351" };
+                    run136.Append(runProperties136);
+                    run136.Append(text135);
 
-                RunProperties runProperties137 = new RunProperties();
-                RunFonts runFonts178 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                Color color56 = new Color() { Val = "FF0000" };
-                FontSize fontSize177 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript151 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages175 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    Run run137 = new Run() { RsidRunProperties = "00A85351" };
 
-                runProperties137.Append(runFonts178);
-                runProperties137.Append(color56);
-                runProperties137.Append(fontSize177);
-                runProperties137.Append(fontSizeComplexScript151);
-                runProperties137.Append(languages175);
-                Text text136 = new Text();
-                text136.Text = "next 1 and a half years";
+                    RunProperties runProperties137 = new RunProperties();
+                    RunFonts runFonts178 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    Color color56 = new Color() { Val = "FF0000" };
+                    FontSize fontSize177 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript151 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages175 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                run137.Append(runProperties137);
-                run137.Append(text136);
+                    runProperties137.Append(runFonts178);
+                    runProperties137.Append(color56);
+                    runProperties137.Append(fontSize177);
+                    runProperties137.Append(fontSizeComplexScript151);
+                    runProperties137.Append(languages175);
+                    Text text136 = new Text();
+                    text136.Text = "next 1 and a half years";
 
-                Run run138 = new Run() { RsidRunProperties = "00482D19" };
+                    run137.Append(runProperties137);
+                    run137.Append(text136);
 
-                RunProperties runProperties138 = new RunProperties();
-                RunFonts runFonts179 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize178 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript152 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages176 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    Run run138 = new Run() { RsidRunProperties = "00482D19" };
 
-                runProperties138.Append(runFonts179);
-                runProperties138.Append(fontSize178);
-                runProperties138.Append(fontSizeComplexScript152);
-                runProperties138.Append(languages176);
-                Text text137 = new Text();
-                text137.Text = ".";
+                    RunProperties runProperties138 = new RunProperties();
+                    RunFonts runFonts179 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize178 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript152 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages176 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                run138.Append(runProperties138);
-                run138.Append(text137);
+                    runProperties138.Append(runFonts179);
+                    runProperties138.Append(fontSize178);
+                    runProperties138.Append(fontSizeComplexScript152);
+                    runProperties138.Append(languages176);
+                    Text text137 = new Text();
+                    text137.Text = ".";
 
-                paragraph42.Append(paragraphProperties42);
-                paragraph42.Append(run133);
-                paragraph42.Append(run134);
-                paragraph42.Append(run135);
-                paragraph42.Append(run136);
-                paragraph42.Append(run137);
-                paragraph42.Append(run138);
+                    run138.Append(runProperties138);
+                    run138.Append(text137);
 
-                tableCell9.Append(paragraph42);
+                    paragraph42.Append(paragraphProperties42);
+                    paragraph42.Append(run133);
+                    paragraph42.Append(run134);
+                    paragraph42.Append(run135);
+                    paragraph42.Append(run136);
+                    paragraph42.Append(run137);
+                    paragraph42.Append(run138);
+
+                    tableCell9.Append(paragraph42);
                 }
 
                 //TODO - Test
-                if(!(clientDetails.ClientRiskProfile == "Preservation" || clientDetails.ClientRiskProfile == "Defensive") && !(clientDetails.PartnerRiskProfile == "Preservation" || clientDetails.PartnerRiskProfile == "Defensive"))
+                if (!(clientDetails.ClientRiskProfile == "Preservation" || clientDetails.ClientRiskProfile == "Defensive") && !(clientDetails.PartnerRiskProfile == "Preservation" || clientDetails.PartnerRiskProfile == "Defensive"))
                 {
                     if (totalSum < ((decimal)0.25 * productSum))
                     {
@@ -5202,7 +5202,7 @@ namespace PlanlogicAI.Controllers
                         run143.Append(text142);
 
                         paragraph43.Append(paragraphProperties43);
-                      
+
                         paragraph43.Append(run141);
                         paragraph43.Append(run142);
                         paragraph43.Append(run143);
@@ -5245,7 +5245,7 @@ namespace PlanlogicAI.Controllers
                     paragraphProperties44.Append(justification27);
                     paragraphProperties44.Append(paragraphMarkRunProperties43);
 
-                   
+
 
                     Run run145 = new Run() { RsidRunProperties = "00482D19" };
 
@@ -5271,7 +5271,7 @@ namespace PlanlogicAI.Controllers
                 }
 
                 if ((totalSum >= ((decimal)0.25 * productSum)) && (totalSum <= ((decimal)0.75 * productSum)))
-                { 
+                {
                     Paragraph paragraph45 = new Paragraph() { RsidParagraphMarkRevision = "00482D19", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
 
                     ParagraphProperties paragraphProperties45 = new ParagraphProperties();
@@ -5305,7 +5305,7 @@ namespace PlanlogicAI.Controllers
                     paragraphProperties45.Append(justification28);
                     paragraphProperties45.Append(paragraphMarkRunProperties44);
 
-                  
+
 
                     Run run147 = new Run() { RsidRunProperties = "00482D19" };
 
@@ -5330,64 +5330,64 @@ namespace PlanlogicAI.Controllers
                     tableCell9.Append(paragraph45);
                 }
 
-                if(isPension == false && hasEquityInvestment == true)
+                if (isPension == false && hasEquityInvestment == true)
                 {
-                   
-                        Paragraph paragraph46 = new Paragraph() { RsidParagraphMarkRevision = "00482D19", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
 
-                        ParagraphProperties paragraphProperties46 = new ParagraphProperties();
+                    Paragraph paragraph46 = new Paragraph() { RsidParagraphMarkRevision = "00482D19", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
 
-                        NumberingProperties numberingProperties19 = new NumberingProperties();
-                        NumberingLevelReference numberingLevelReference19 = new NumberingLevelReference() { Val = 0 };
-                        NumberingId numberingId19 = new NumberingId() { Val = 1 };
+                    ParagraphProperties paragraphProperties46 = new ParagraphProperties();
 
-                        numberingProperties19.Append(numberingLevelReference19);
-                        numberingProperties19.Append(numberingId19);
-                        SuppressAutoHyphens suppressAutoHyphens46 = new SuppressAutoHyphens();
-                        SpacingBetweenLines spacingBetweenLines46 = new SpacingBetweenLines() { Before = "120", After = "120", Line = "240", LineRule = LineSpacingRuleValues.Auto };
-                        Justification justification29 = new Justification() { Val = JustificationValues.Both };
+                    NumberingProperties numberingProperties19 = new NumberingProperties();
+                    NumberingLevelReference numberingLevelReference19 = new NumberingLevelReference() { Val = 0 };
+                    NumberingId numberingId19 = new NumberingId() { Val = 1 };
 
-                        ParagraphMarkRunProperties paragraphMarkRunProperties45 = new ParagraphMarkRunProperties();
-                        RunFonts runFonts192 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                        FontSize fontSize191 = new FontSize() { Val = "18" };
-                        FontSizeComplexScript fontSizeComplexScript165 = new FontSizeComplexScript() { Val = "18" };
-                        Languages languages189 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+                    numberingProperties19.Append(numberingLevelReference19);
+                    numberingProperties19.Append(numberingId19);
+                    SuppressAutoHyphens suppressAutoHyphens46 = new SuppressAutoHyphens();
+                    SpacingBetweenLines spacingBetweenLines46 = new SpacingBetweenLines() { Before = "120", After = "120", Line = "240", LineRule = LineSpacingRuleValues.Auto };
+                    Justification justification29 = new Justification() { Val = JustificationValues.Both };
 
-                        paragraphMarkRunProperties45.Append(runFonts192);
-                        paragraphMarkRunProperties45.Append(fontSize191);
-                        paragraphMarkRunProperties45.Append(fontSizeComplexScript165);
-                        paragraphMarkRunProperties45.Append(languages189);
+                    ParagraphMarkRunProperties paragraphMarkRunProperties45 = new ParagraphMarkRunProperties();
+                    RunFonts runFonts192 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize191 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript165 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages189 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                        paragraphProperties46.Append(numberingProperties19);
-                        paragraphProperties46.Append(suppressAutoHyphens46);
-                        paragraphProperties46.Append(spacingBetweenLines46);
-                        paragraphProperties46.Append(justification29);
-                        paragraphProperties46.Append(paragraphMarkRunProperties45);
+                    paragraphMarkRunProperties45.Append(runFonts192);
+                    paragraphMarkRunProperties45.Append(fontSize191);
+                    paragraphMarkRunProperties45.Append(fontSizeComplexScript165);
+                    paragraphMarkRunProperties45.Append(languages189);
 
-                     
+                    paragraphProperties46.Append(numberingProperties19);
+                    paragraphProperties46.Append(suppressAutoHyphens46);
+                    paragraphProperties46.Append(spacingBetweenLines46);
+                    paragraphProperties46.Append(justification29);
+                    paragraphProperties46.Append(paragraphMarkRunProperties45);
 
-                        Run run150 = new Run() { RsidRunProperties = "00482D19" };
 
-                        RunProperties runProperties150 = new RunProperties();
-                        RunFonts runFonts195 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                        FontSize fontSize194 = new FontSize() { Val = "18" };
-                        FontSizeComplexScript fontSizeComplexScript168 = new FontSizeComplexScript() { Val = "18" };
-                        Languages languages192 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                        runProperties150.Append(runFonts195);
-                        runProperties150.Append(fontSize194);
-                        runProperties150.Append(fontSizeComplexScript168);
-                        runProperties150.Append(languages192);
-                        Text text149 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                        text149.Text = "The proposed portfolio has exposure to equity which has the potential for higher investment returns and also provides a tax-effective return through capital gain discounts and income that may include franking credits.";
+                    Run run150 = new Run() { RsidRunProperties = "00482D19" };
 
-                        run150.Append(runProperties150);
-                        run150.Append(text149);
+                    RunProperties runProperties150 = new RunProperties();
+                    RunFonts runFonts195 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+                    FontSize fontSize194 = new FontSize() { Val = "18" };
+                    FontSizeComplexScript fontSizeComplexScript168 = new FontSizeComplexScript() { Val = "18" };
+                    Languages languages192 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
 
-                        paragraph46.Append(paragraphProperties46);
-                        paragraph46.Append(run150);
+                    runProperties150.Append(runFonts195);
+                    runProperties150.Append(fontSize194);
+                    runProperties150.Append(fontSizeComplexScript168);
+                    runProperties150.Append(languages192);
+                    Text text149 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+                    text149.Text = "The proposed portfolio has exposure to equity which has the potential for higher investment returns and also provides a tax-effective return through capital gain discounts and income that may include franking credits.";
 
-                        tableCell9.Append(paragraph46);
+                    run150.Append(runProperties150);
+                    run150.Append(text149);
+
+                    paragraph46.Append(paragraphProperties46);
+                    paragraph46.Append(run150);
+
+                    tableCell9.Append(paragraph46);
                 }
 
                 //Paragraph paragraph47 = new Paragraph() { RsidParagraphMarkRevision = "00482D19", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
@@ -5851,7 +5851,7 @@ namespace PlanlogicAI.Controllers
 
 
 
-               
+
                 //tableCell9.Append(paragraph28);
                 //tableCell9.Append(paragraph29);
                 //tableCell9.Append(paragraph30);
@@ -6021,7 +6021,7 @@ namespace PlanlogicAI.Controllers
                 tableCellProperties11.Append(shading7);
                 tableCell11.Append(tableCellProperties11);
 
-               
+
                 if (totalSum < ((decimal)0.25 * productSum))
                 {
                     Paragraph paragraph55 = new Paragraph() { RsidParagraphMarkRevision = "00482D19", RsidParagraphAddition = "001A4A50", RsidParagraphProperties = "001A4A50", RsidRunAdditionDefault = "001A4A50" };
@@ -8159,7 +8159,7 @@ namespace PlanlogicAI.Controllers
 
                 paragraph76.Append(paragraphProperties76);
                 paragraph76.Append(run254);
-              //  paragraph76.Append(run255);
+                //  paragraph76.Append(run255);
                 paragraph76.Append(run256);
                 paragraph76.Append(run257);
                 paragraph76.Append(run258);
@@ -8167,7 +8167,7 @@ namespace PlanlogicAI.Controllers
                 paragraph76.Append(run260);
                 paragraph76.Append(run261);
 
-            
+
 
                 ////tableCell11.Append(tableCellProperties11);
                 ////tableCell11.Append(paragraph53);
@@ -8963,7 +8963,7 @@ namespace PlanlogicAI.Controllers
 
         //end
 
-        public void add(Paragraph body)
+        private void add(Paragraph body)
         {
             AlternateContentChoice alternateContentChoice1 = new AlternateContentChoice() { Requires = "wps" };
 
@@ -9794,19 +9794,19 @@ namespace PlanlogicAI.Controllers
 
         }
 
-        public void GenerateBody(Body body)
+        private void GenerateBody(Body body)
         {
             Table table1 = new Table();
 
             TableProperties tableProperties1 = new TableProperties();
             TableWidth tableWidth1 = new TableWidth() { Width = "11319", Type = TableWidthUnitValues.Dxa };
             TableIndentation tableIndentation1 = new TableIndentation() { Width = -1310, Type = TableWidthUnitValues.Dxa };
-          //  TableLayout tableLayout1 = new TableLayout() { Type = TableLayoutValues.Fixed };
+            //  TableLayout tableLayout1 = new TableLayout() { Type = TableLayoutValues.Fixed };
             TableLook tableLook1 = new TableLook() { Val = "0000", FirstRow = false, LastRow = false, FirstColumn = false, LastColumn = false, NoHorizontalBand = false, NoVerticalBand = false };
 
             tableProperties1.Append(tableWidth1);
             tableProperties1.Append(tableIndentation1);
-          //  tableProperties1.Append(tableLayout1);
+            //  tableProperties1.Append(tableLayout1);
             tableProperties1.Append(tableLook1);
 
             TableGrid tableGrid1 = new TableGrid();
@@ -10179,7 +10179,7 @@ namespace PlanlogicAI.Controllers
 
         private static void AlterTableType(List<Table> t, List<Paragraph> p, WordprocessingDocument document)
         {
-          
+
 
 
 
@@ -10202,13 +10202,13 @@ namespace PlanlogicAI.Controllers
                     tableCellMarginDefault1.Append(tableCellRightMargin1);
 
                     var tableMarg = tableProp.Descendants<TableCellMarginDefault>().ToList().FirstOrDefault();
-                    if(tableMarg != null)
+                    if (tableMarg != null)
                     {
                         tableProp.ReplaceChild<TableCellMarginDefault>(tableCellMarginDefault1, tableMarg);
                     }
                     else
                     {
-                        
+
                         tableProp.Append(tableCellMarginDefault1);
                     }
                 }
@@ -10227,7 +10227,7 @@ namespace PlanlogicAI.Controllers
                     tableCellMarginDefault1.Append(bottomMargin1);
                     tableCellMarginDefault1.Append(tableCellRightMargin1);
                     tableProperties1.Append(tableCellMarginDefault1);
-                   // tableProperties1.Append(tl);
+                    // tableProperties1.Append(tl);
                 }
 
 
@@ -10238,7 +10238,7 @@ namespace PlanlogicAI.Controllers
                     foreach (Paragraph run in subRun)
                     {
                         var subRnProp = run.Descendants<ParagraphProperties>().ToList().FirstOrDefault();
-                       // SpacingBetweenLines spacing = new SpacingBetweenLines() { LineRule = LineSpacingRuleValues.Auto, Before = "6", After = "6" };
+                        // SpacingBetweenLines spacing = new SpacingBetweenLines() { LineRule = LineSpacingRuleValues.Auto, Before = "6", After = "6" };
                         SpacingBetweenLines spacingBetweenLines1 = new SpacingBetweenLines() { After = "120", Before = "120", Line = "240", LineRule = LineSpacingRuleValues.Auto };
 
                         if (subRnProp != null)
@@ -10254,7 +10254,7 @@ namespace PlanlogicAI.Controllers
                                 //run.AppendChild<RunProperties>(subRnProp);
                             }
 
-                           
+
                         }
                         else
                         {
@@ -10271,7 +10271,7 @@ namespace PlanlogicAI.Controllers
 
 
                     var tableRowProp = row.Descendants<TableRowProperties>().ToList().FirstOrDefault();
-                    if(tableRowProp != null)
+                    if (tableRowProp != null)
                     {
                         TableRowHeight tableRowHeight1 = new TableRowHeight() { Val = (UInt32Value)312U };
                         var tableP = tableRowProp.Descendants<TableRowHeight>().ToList().FirstOrDefault();
@@ -10288,9 +10288,9 @@ namespace PlanlogicAI.Controllers
                     else
                     {
                         TableRowProperties trp = new TableRowProperties();
-                       // CantSplit split = new CantSplit();
+                        // CantSplit split = new CantSplit();
                         TableRowHeight tableRowHeight1 = new TableRowHeight() { Val = (UInt32Value)312U };
-                       // trp.Append(split);
+                        // trp.Append(split);
                         trp.Append(tableRowHeight1);
                         row.AppendChild(trp);
                     }
@@ -10308,13 +10308,13 @@ namespace PlanlogicAI.Controllers
                 Justification justification1 = new Justification() { Val = JustificationValues.Both };
 
                 ParagraphProperties pp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "0" });
-              
-     
+
+
 
                 if (spacingProp != null)
                 {
                     var sp = spacingProp.Descendants<SpacingBetweenLines>().FirstOrDefault();
-                    if(sp == null)
+                    if (sp == null)
                     {
                         spacingProp.Append((SpacingBetweenLines)spacingBetweenLines1.CloneNode(true));
                     }
@@ -10328,11 +10328,11 @@ namespace PlanlogicAI.Controllers
                 }
                 else
                 {
-                   
+
                     ParagraphProperties tmpSubRunProp = new ParagraphProperties();
                     tmpSubRunProp.AppendChild((SpacingBetweenLines)spacingBetweenLines1.CloneNode(true));
                     tmpSubRunProp.AppendChild((Justification)justification1.CloneNode(true));
-                    
+
                     para.PrependChild<ParagraphProperties>((ParagraphProperties)tmpSubRunProp.CloneNode(true));
                 }
 
@@ -10386,14 +10386,14 @@ namespace PlanlogicAI.Controllers
                 }
             }
 
-          
 
-       
+
+
         }
 
-        public void GenerateAlternateContentChoice(Paragraph body)
+        private void GenerateAlternateContentChoice(Paragraph body)
         {
-            
+
             AlternateContentChoice alternateContentChoice1 = new AlternateContentChoice() { Requires = "wps" };
 
             W.Drawing drawing1 = new W.Drawing();
@@ -10778,546 +10778,546 @@ namespace PlanlogicAI.Controllers
             Run run = new Run();
             run.AppendChild(drawing1);
             Run linebreak = new Run(new Break());
-            body.Append(new OpenXmlElement[] { (Run)linebreak.CloneNode(true),(Run)linebreak.CloneNode(true), (Run)run.CloneNode(true),(Run)linebreak.CloneNode(true), (Run)linebreak.CloneNode(true) , (Run)linebreak.CloneNode(true) });
-        
+            body.Append(new OpenXmlElement[] { (Run)linebreak.CloneNode(true), (Run)linebreak.CloneNode(true), (Run)run.CloneNode(true), (Run)linebreak.CloneNode(true), (Run)linebreak.CloneNode(true), (Run)linebreak.CloneNode(true) });
+
 
         }
 
         private void GeneratePartContent(FooterPart part)
-            {
-                Footer footer1 = new Footer() { MCAttributes = new MarkupCompatibilityAttributes() { Ignorable = "w14 w15 wp14" } };
-                footer1.AddNamespaceDeclaration("wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas");
-                footer1.AddNamespaceDeclaration("mc", "http://schemas.openxmlformats.org/markup-compatibility/2006");
-                footer1.AddNamespaceDeclaration("o", "urn:schemas-microsoft-com:office:office");
-                footer1.AddNamespaceDeclaration("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
-                footer1.AddNamespaceDeclaration("m", "http://schemas.openxmlformats.org/officeDocument/2006/math");
-                footer1.AddNamespaceDeclaration("v", "urn:schemas-microsoft-com:vml");
-                footer1.AddNamespaceDeclaration("wp14", "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing");
-                footer1.AddNamespaceDeclaration("wp", "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing");
-                footer1.AddNamespaceDeclaration("w10", "urn:schemas-microsoft-com:office:word");
-                footer1.AddNamespaceDeclaration("w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main");
-                footer1.AddNamespaceDeclaration("w14", "http://schemas.microsoft.com/office/word/2010/wordml");
-                footer1.AddNamespaceDeclaration("w15", "http://schemas.microsoft.com/office/word/2012/wordml");
-                footer1.AddNamespaceDeclaration("wpg", "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup");
-                footer1.AddNamespaceDeclaration("wpi", "http://schemas.microsoft.com/office/word/2010/wordprocessingInk");
-                footer1.AddNamespaceDeclaration("wne", "http://schemas.microsoft.com/office/word/2006/wordml");
-                footer1.AddNamespaceDeclaration("wps", "http://schemas.microsoft.com/office/word/2010/wordprocessingShape");
-
-                Paragraph paragraph1 = new Paragraph() { RsidParagraphAddition = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "332566C5", TextId = "77777777" };
-
-                ParagraphProperties paragraphProperties1 = new ParagraphProperties();
-
-                ParagraphMarkRunProperties paragraphMarkRunProperties1 = new ParagraphMarkRunProperties();
-                FontSize fontSize1 = new FontSize() { Val = "16" };
-
-                paragraphMarkRunProperties1.Append(fontSize1);
-
-                paragraphProperties1.Append(paragraphMarkRunProperties1);
-
-                paragraph1.Append(paragraphProperties1);
-
-                Table table1 = new Table();
-
-                TableProperties tableProperties1 = new TableProperties();
-                TableWidth tableWidth1 = new TableWidth() { Width = "0", Type = TableWidthUnitValues.Auto };
-                TableIndentation tableIndentation1 = new TableIndentation() { Width = -318, Type = TableWidthUnitValues.Dxa };
-                //  TableLayout tableLayout1 = new TableLayout() { Type = TableLayoutValues.Fixed };
-
-                TableCellMarginDefault tableCellMarginDefault1 = new TableCellMarginDefault();
-                TableCellRightMargin tableCellRightMargin1 = new TableCellRightMargin() { Width = 0, Type = TableWidthValues.Dxa };
-
-                tableCellMarginDefault1.Append(tableCellRightMargin1);
-                TableLook tableLook1 = new TableLook() { Val = "0000", FirstRow = false, LastRow = false, FirstColumn = false, LastColumn = false, NoHorizontalBand = false, NoVerticalBand = false };
-
-                tableProperties1.Append(tableWidth1);
-                tableProperties1.Append(tableIndentation1);
-                // tableProperties1.Append(tableLayout1);
-                tableProperties1.Append(tableCellMarginDefault1);
-                tableProperties1.Append(tableLook1);
-
-                TableGrid tableGrid1 = new TableGrid();
-                GridColumn gridColumn1 = new GridColumn() { Width = "568" };
-                GridColumn gridColumn2 = new GridColumn() { Width = "8081" };
-                GridColumn gridColumn3 = new GridColumn() { Width = "1415" };
-
-                tableGrid1.Append(gridColumn1);
-                tableGrid1.Append(gridColumn2);
-                tableGrid1.Append(gridColumn3);
-
-                TableRow tableRow1 = new TableRow() { RsidTableRowMarkRevision = "00682DA0", RsidTableRowAddition = "00682DA0", RsidTableRowProperties = "00F76E86", ParagraphId = "08E0D757", TextId = "77777777" };
-
-                TableCell tableCell1 = new TableCell();
-
-                TableCellProperties tableCellProperties1 = new TableCellProperties();
-                TableCellWidth tableCellWidth1 = new TableCellWidth() { Width = "568", Type = TableWidthUnitValues.Dxa };
-                Shading shading1 = new Shading() { Val = ShadingPatternValues.Clear, Color = "auto", Fill = "auto" };
-                TableCellVerticalAlignment tableCellVerticalAlignment1 = new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Bottom };
-
-                tableCellProperties1.Append(tableCellWidth1);
-                tableCellProperties1.Append(shading1);
-                tableCellProperties1.Append(tableCellVerticalAlignment1);
-
-                Paragraph paragraph2 = new Paragraph() { RsidParagraphMarkRevision = "00682DA0", RsidParagraphAddition = "00682DA0", RsidParagraphProperties = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "28E68A06", TextId = "77777777" };
-
-                ParagraphProperties paragraphProperties2 = new ParagraphProperties();
-
-                Tabs tabs1 = new Tabs();
-                TabStop tabStop1 = new TabStop() { Val = TabStopValues.Center, Position = 4513 };
-                TabStop tabStop2 = new TabStop() { Val = TabStopValues.Right, Position = 9026 };
-
-                tabs1.Append(tabStop1);
-                tabs1.Append(tabStop2);
-                SuppressAutoHyphens suppressAutoHyphens1 = new SuppressAutoHyphens();
-                SpacingBetweenLines spacingBetweenLines1 = new SpacingBetweenLines() { After = "0", Line = "100", LineRule = LineSpacingRuleValues.AtLeast };
-                Justification justification1 = new Justification() { Val = JustificationValues.Right };
-
-                ParagraphMarkRunProperties paragraphMarkRunProperties2 = new ParagraphMarkRunProperties();
-                RunFonts runFonts1 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize2 = new FontSize() { Val = "16" };
-                Languages languages1 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                paragraphMarkRunProperties2.Append(runFonts1);
-                paragraphMarkRunProperties2.Append(fontSize2);
-                paragraphMarkRunProperties2.Append(languages1);
-
-                paragraphProperties2.Append(tabs1);
-                paragraphProperties2.Append(suppressAutoHyphens1);
-                paragraphProperties2.Append(spacingBetweenLines1);
-                paragraphProperties2.Append(justification1);
-                paragraphProperties2.Append(paragraphMarkRunProperties2);
-
-                Run run1 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties1 = new RunProperties();
-                RunFonts runFonts2 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
-                Color color1 = new Color() { Val = "F58426" };
-                FontSize fontSize3 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript1 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages2 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties1.Append(runFonts2);
-                runProperties1.Append(color1);
-                runProperties1.Append(fontSize3);
-                runProperties1.Append(fontSizeComplexScript1);
-                runProperties1.Append(languages2);
-                FieldChar fieldChar1 = new FieldChar() { FieldCharType = FieldCharValues.Begin };
-
-                run1.Append(runProperties1);
-                run1.Append(fieldChar1);
-
-                Run run2 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties2 = new RunProperties();
-                RunFonts runFonts3 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
-                Color color2 = new Color() { Val = "F58426" };
-                FontSize fontSize4 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript2 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages3 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties2.Append(runFonts3);
-                runProperties2.Append(color2);
-                runProperties2.Append(fontSize4);
-                runProperties2.Append(fontSizeComplexScript2);
-                runProperties2.Append(languages3);
-                FieldCode fieldCode1 = new FieldCode() { Space = SpaceProcessingModeValues.Preserve };
-                fieldCode1.Text = " PAGE ";
-
-                run2.Append(runProperties2);
-                run2.Append(fieldCode1);
-
-                Run run3 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties3 = new RunProperties();
-                RunFonts runFonts4 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
-                Color color3 = new Color() { Val = "F58426" };
-                FontSize fontSize5 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript3 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages4 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties3.Append(runFonts4);
-                runProperties3.Append(color3);
-                runProperties3.Append(fontSize5);
-                runProperties3.Append(fontSizeComplexScript3);
-                runProperties3.Append(languages4);
-                FieldChar fieldChar2 = new FieldChar() { FieldCharType = FieldCharValues.Separate };
-
-                run3.Append(runProperties3);
-                run3.Append(fieldChar2);
-
-                Run run4 = new Run() { RsidRunAddition = "008818E9" };
-
-                RunProperties runProperties4 = new RunProperties();
-                RunFonts runFonts5 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
-                NoProof noProof1 = new NoProof();
-                Color color4 = new Color() { Val = "F58426" };
-                FontSize fontSize6 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript4 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages5 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties4.Append(runFonts5);
-                runProperties4.Append(noProof1);
-                runProperties4.Append(color4);
-                runProperties4.Append(fontSize6);
-                runProperties4.Append(fontSizeComplexScript4);
-                runProperties4.Append(languages5);
-                Text text1 = new Text();
-                text1.Text = "1";
-
-                run4.Append(runProperties4);
-                run4.Append(text1);
-
-                Run run5 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties5 = new RunProperties();
-                RunFonts runFonts6 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
-                Color color5 = new Color() { Val = "F58426" };
-                FontSize fontSize7 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript5 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages6 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties5.Append(runFonts6);
-                runProperties5.Append(color5);
-                runProperties5.Append(fontSize7);
-                runProperties5.Append(fontSizeComplexScript5);
-                runProperties5.Append(languages6);
-                FieldChar fieldChar3 = new FieldChar() { FieldCharType = FieldCharValues.End };
-
-                run5.Append(runProperties5);
-                run5.Append(fieldChar3);
-
-                Run run6 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties6 = new RunProperties();
-                RunFonts runFonts7 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Verdana", ComplexScript = "Verdana" };
-                Color color6 = new Color() { Val = "72CDF4" };
-                FontSize fontSize8 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript6 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages7 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties6.Append(runFonts7);
-                runProperties6.Append(color6);
-                runProperties6.Append(fontSize8);
-                runProperties6.Append(fontSizeComplexScript6);
-                runProperties6.Append(languages7);
-                Text text2 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text2.Text = " ";
-
-                run6.Append(runProperties6);
-                run6.Append(text2);
-
-                Run run7 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties7 = new RunProperties();
-                RunFonts runFonts8 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
-                Color color7 = new Color() { Val = "808080" };
-                FontSize fontSize9 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript7 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages8 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties7.Append(runFonts8);
-                runProperties7.Append(color7);
-                runProperties7.Append(fontSize9);
-                runProperties7.Append(fontSizeComplexScript7);
-                runProperties7.Append(languages8);
-                Text text3 = new Text();
-                text3.Text = "|";
-
-                run7.Append(runProperties7);
-                run7.Append(text3);
-
-                Run run8 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties8 = new RunProperties();
-                RunFonts runFonts9 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
-                Color color8 = new Color() { Val = "72CDF4" };
-                FontSize fontSize10 = new FontSize() { Val = "18" };
-                FontSizeComplexScript fontSizeComplexScript8 = new FontSizeComplexScript() { Val = "18" };
-                Languages languages9 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties8.Append(runFonts9);
-                runProperties8.Append(color8);
-                runProperties8.Append(fontSize10);
-                runProperties8.Append(fontSizeComplexScript8);
-                runProperties8.Append(languages9);
-                Text text4 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text4.Text = " ";
-
-                run8.Append(runProperties8);
-                run8.Append(text4);
-
-                paragraph2.Append(paragraphProperties2);
-                paragraph2.Append(run1);
-                paragraph2.Append(run2);
-                paragraph2.Append(run3);
-                paragraph2.Append(run4);
-                paragraph2.Append(run5);
-                paragraph2.Append(run6);
-                paragraph2.Append(run7);
-                paragraph2.Append(run8);
-
-                tableCell1.Append(tableCellProperties1);
-                tableCell1.Append(paragraph2);
-
-                TableCell tableCell2 = new TableCell();
-
-                TableCellProperties tableCellProperties2 = new TableCellProperties();
-                TableCellWidth tableCellWidth2 = new TableCellWidth() { Width = "8081", Type = TableWidthUnitValues.Dxa };
-                Shading shading2 = new Shading() { Val = ShadingPatternValues.Clear, Color = "auto", Fill = "auto" };
-                TableCellVerticalAlignment tableCellVerticalAlignment2 = new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Bottom };
-
-                tableCellProperties2.Append(tableCellWidth2);
-                tableCellProperties2.Append(shading2);
-                tableCellProperties2.Append(tableCellVerticalAlignment2);
-
-                Paragraph paragraph3 = new Paragraph() { RsidParagraphMarkRevision = "00682DA0", RsidParagraphAddition = "00682DA0", RsidParagraphProperties = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "2F49C805", TextId = "74311658" };
-
-                ParagraphProperties paragraphProperties3 = new ParagraphProperties();
-                SuppressAutoHyphens suppressAutoHyphens2 = new SuppressAutoHyphens();
-                SpacingBetweenLines spacingBetweenLines2 = new SpacingBetweenLines() { After = "40", Line = "240", LineRule = LineSpacingRuleValues.Auto };
-
-                ParagraphMarkRunProperties paragraphMarkRunProperties3 = new ParagraphMarkRunProperties();
-                RunFonts runFonts10 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                Color color9 = new Color() { Val = "FF0000" };
-                FontSize fontSize11 = new FontSize() { Val = "16" };
-                Languages languages10 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                paragraphMarkRunProperties3.Append(runFonts10);
-                paragraphMarkRunProperties3.Append(color9);
-                paragraphMarkRunProperties3.Append(fontSize11);
-                paragraphMarkRunProperties3.Append(languages10);
-
-                paragraphProperties3.Append(suppressAutoHyphens2);
-                paragraphProperties3.Append(spacingBetweenLines2);
-                paragraphProperties3.Append(paragraphMarkRunProperties3);
-
-                Run run9 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties9 = new RunProperties();
-                RunFonts runFonts11 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize12 = new FontSize() { Val = "16" };
-                Languages languages11 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties9.Append(runFonts11);
-                runProperties9.Append(fontSize12);
-                runProperties9.Append(languages11);
-                Text text5 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text5.Text = "Confidential Statement of Advice Prepared for :";
-
-                run9.Append(runProperties9);
-                run9.Append(text5);
-
-                Run run10 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties10 = new RunProperties();
-                RunFonts runFonts12 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                Color color10 = new Color() { Val = "FF0000" };
-                FontSize fontSize13 = new FontSize() { Val = "16" };
-                Languages languages12 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties10.Append(runFonts12);
-                runProperties10.Append(color10);
-                runProperties10.Append(fontSize13);
-                runProperties10.Append(languages12);
-                Text text6 = new Text();
-                text6.Text = "[Client/Partner Name]";
-
-                run10.Append(runProperties10);
-                run10.Append(text6);
-
-                paragraph3.Append(paragraphProperties3);
-                paragraph3.Append(run9);
-                paragraph3.Append(run10);
-
-                Paragraph paragraph4 = new Paragraph() { RsidParagraphMarkRevision = "00682DA0", RsidParagraphAddition = "00682DA0", RsidParagraphProperties = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "3C8B385D", TextId = "77777777" };
-
-                ParagraphProperties paragraphProperties4 = new ParagraphProperties();
-                SuppressAutoHyphens suppressAutoHyphens3 = new SuppressAutoHyphens();
-                SpacingBetweenLines spacingBetweenLines3 = new SpacingBetweenLines() { After = "40", Line = "240", LineRule = LineSpacingRuleValues.Auto };
-
-                ParagraphMarkRunProperties paragraphMarkRunProperties4 = new ParagraphMarkRunProperties();
-                RunFonts runFonts13 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize14 = new FontSize() { Val = "14" };
-                Languages languages13 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                paragraphMarkRunProperties4.Append(runFonts13);
-                paragraphMarkRunProperties4.Append(fontSize14);
-                paragraphMarkRunProperties4.Append(languages13);
-
-                paragraphProperties4.Append(suppressAutoHyphens3);
-                paragraphProperties4.Append(spacingBetweenLines3);
-                paragraphProperties4.Append(paragraphMarkRunProperties4);
-
-                Run run11 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties11 = new RunProperties();
-                RunFonts runFonts14 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize15 = new FontSize() { Val = "16" };
-                Languages languages14 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties11.Append(runFonts14);
-                runProperties11.Append(fontSize15);
-                runProperties11.Append(languages14);
-                Text text7 = new Text() { Space = SpaceProcessingModeValues.Preserve };
-                text7.Text = "Provided by: ";
-
-                run11.Append(runProperties11);
-                run11.Append(text7);
-
-                Run run12 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties12 = new RunProperties();
-                RunFonts runFonts15 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                Color color11 = new Color() { Val = "FF0000" };
-                FontSize fontSize16 = new FontSize() { Val = "16" };
-                Languages languages15 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties12.Append(runFonts15);
-                runProperties12.Append(color11);
-                runProperties12.Append(fontSize16);
-                runProperties12.Append(languages15);
-                Text text8 = new Text();
-                text8.Text = "[Practice]";
-
-                run12.Append(runProperties12);
-                run12.Append(text8);
-
-                Run run13 = new Run() { RsidRunProperties = "00682DA0" };
-
-                RunProperties runProperties13 = new RunProperties();
-                RunFonts runFonts16 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize17 = new FontSize() { Val = "16" };
-                Languages languages16 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                runProperties13.Append(runFonts16);
-                runProperties13.Append(fontSize17);
-                runProperties13.Append(languages16);
-                Text text9 = new Text();
-                text9.Text = ", a Corporate Authorised Representative of RI Advice Group Pty Ltd";
-
-                run13.Append(runProperties13);
-                run13.Append(text9);
-
-                paragraph4.Append(paragraphProperties4);
-                paragraph4.Append(run11);
-                paragraph4.Append(run12);
-                paragraph4.Append(run13);
-
-                tableCell2.Append(tableCellProperties2);
-                tableCell2.Append(paragraph3);
-                tableCell2.Append(paragraph4);
-
-                TableCell tableCell3 = new TableCell();
-
-                TableCellProperties tableCellProperties3 = new TableCellProperties();
-                TableCellWidth tableCellWidth3 = new TableCellWidth() { Width = "1415", Type = TableWidthUnitValues.Dxa };
-                Shading shading3 = new Shading() { Val = ShadingPatternValues.Clear, Color = "auto", Fill = "auto" };
-                TableCellVerticalAlignment tableCellVerticalAlignment3 = new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Bottom };
-
-                tableCellProperties3.Append(tableCellWidth3);
-                tableCellProperties3.Append(shading3);
-                tableCellProperties3.Append(tableCellVerticalAlignment3);
-
-                Paragraph paragraph5 = new Paragraph() { RsidParagraphMarkRevision = "00682DA0", RsidParagraphAddition = "00682DA0", RsidParagraphProperties = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "43FE2BBD", TextId = "77777777" };
-
-                ParagraphProperties paragraphProperties5 = new ParagraphProperties();
-
-                Tabs tabs2 = new Tabs();
-                TabStop tabStop3 = new TabStop() { Val = TabStopValues.Left, Position = 7080 };
-
-                tabs2.Append(tabStop3);
-                SuppressAutoHyphens suppressAutoHyphens4 = new SuppressAutoHyphens();
-                SnapToGrid snapToGrid1 = new SnapToGrid() { Val = false };
-                SpacingBetweenLines spacingBetweenLines4 = new SpacingBetweenLines() { After = "0", Line = "240", LineRule = LineSpacingRuleValues.Auto };
-                Justification justification2 = new Justification() { Val = JustificationValues.Right };
-
-                ParagraphMarkRunProperties paragraphMarkRunProperties5 = new ParagraphMarkRunProperties();
-                RunFonts runFonts17 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
-                FontSize fontSize18 = new FontSize() { Val = "14" };
-                Languages languages17 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
-
-                paragraphMarkRunProperties5.Append(runFonts17);
-                paragraphMarkRunProperties5.Append(fontSize18);
-                paragraphMarkRunProperties5.Append(languages17);
-
-                paragraphProperties5.Append(tabs2);
-                paragraphProperties5.Append(suppressAutoHyphens4);
-                paragraphProperties5.Append(snapToGrid1);
-                paragraphProperties5.Append(spacingBetweenLines4);
-                paragraphProperties5.Append(justification2);
-                paragraphProperties5.Append(paragraphMarkRunProperties5);
-
-                paragraph5.Append(paragraphProperties5);
-
-                tableCell3.Append(tableCellProperties3);
-                tableCell3.Append(paragraph5);
-
-                tableRow1.Append(tableCell1);
-                tableRow1.Append(tableCell2);
-                tableRow1.Append(tableCell3);
-
-                table1.Append(tableProperties1);
-                table1.Append(tableGrid1);
-                table1.Append(tableRow1);
-
-                Paragraph paragraph6 = new Paragraph() { RsidParagraphAddition = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "08103970", TextId = "77777777" };
-
-                ParagraphProperties paragraphProperties6 = new ParagraphProperties();
-                ParagraphStyleId paragraphStyleId1 = new ParagraphStyleId() { Val = "Footer" };
-
-                Tabs tabs3 = new Tabs();
-                TabStop tabStop4 = new TabStop() { Val = TabStopValues.Left, Position = 3433 };
-
-                tabs3.Append(tabStop4);
-
-                paragraphProperties6.Append(paragraphStyleId1);
-                paragraphProperties6.Append(tabs3);
-
-                Run run14 = new Run();
-
-                RunProperties runProperties14 = new RunProperties();
-                FontSize fontSize19 = new FontSize() { Val = "2" };
-                FontSizeComplexScript fontSizeComplexScript9 = new FontSizeComplexScript() { Val = "2" };
-
-                runProperties14.Append(fontSize19);
-                runProperties14.Append(fontSizeComplexScript9);
-                TabChar tabChar1 = new TabChar();
-
-                run14.Append(runProperties14);
-                run14.Append(tabChar1);
-
-                paragraph6.Append(paragraphProperties6);
-                paragraph6.Append(run14);
-
-                footer1.Append(paragraph1);
-                footer1.Append(table1);
-                footer1.Append(paragraph6);
-
-                part.Footer = footer1;
-            
+        {
+            Footer footer1 = new Footer() { MCAttributes = new MarkupCompatibilityAttributes() { Ignorable = "w14 w15 wp14" } };
+            footer1.AddNamespaceDeclaration("wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas");
+            footer1.AddNamespaceDeclaration("mc", "http://schemas.openxmlformats.org/markup-compatibility/2006");
+            footer1.AddNamespaceDeclaration("o", "urn:schemas-microsoft-com:office:office");
+            footer1.AddNamespaceDeclaration("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+            footer1.AddNamespaceDeclaration("m", "http://schemas.openxmlformats.org/officeDocument/2006/math");
+            footer1.AddNamespaceDeclaration("v", "urn:schemas-microsoft-com:vml");
+            footer1.AddNamespaceDeclaration("wp14", "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing");
+            footer1.AddNamespaceDeclaration("wp", "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing");
+            footer1.AddNamespaceDeclaration("w10", "urn:schemas-microsoft-com:office:word");
+            footer1.AddNamespaceDeclaration("w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main");
+            footer1.AddNamespaceDeclaration("w14", "http://schemas.microsoft.com/office/word/2010/wordml");
+            footer1.AddNamespaceDeclaration("w15", "http://schemas.microsoft.com/office/word/2012/wordml");
+            footer1.AddNamespaceDeclaration("wpg", "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup");
+            footer1.AddNamespaceDeclaration("wpi", "http://schemas.microsoft.com/office/word/2010/wordprocessingInk");
+            footer1.AddNamespaceDeclaration("wne", "http://schemas.microsoft.com/office/word/2006/wordml");
+            footer1.AddNamespaceDeclaration("wps", "http://schemas.microsoft.com/office/word/2010/wordprocessingShape");
+
+            Paragraph paragraph1 = new Paragraph() { RsidParagraphAddition = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "332566C5", TextId = "77777777" };
+
+            ParagraphProperties paragraphProperties1 = new ParagraphProperties();
+
+            ParagraphMarkRunProperties paragraphMarkRunProperties1 = new ParagraphMarkRunProperties();
+            FontSize fontSize1 = new FontSize() { Val = "16" };
+
+            paragraphMarkRunProperties1.Append(fontSize1);
+
+            paragraphProperties1.Append(paragraphMarkRunProperties1);
+
+            paragraph1.Append(paragraphProperties1);
+
+            Table table1 = new Table();
+
+            TableProperties tableProperties1 = new TableProperties();
+            TableWidth tableWidth1 = new TableWidth() { Width = "0", Type = TableWidthUnitValues.Auto };
+            TableIndentation tableIndentation1 = new TableIndentation() { Width = -318, Type = TableWidthUnitValues.Dxa };
+            //  TableLayout tableLayout1 = new TableLayout() { Type = TableLayoutValues.Fixed };
+
+            TableCellMarginDefault tableCellMarginDefault1 = new TableCellMarginDefault();
+            TableCellRightMargin tableCellRightMargin1 = new TableCellRightMargin() { Width = 0, Type = TableWidthValues.Dxa };
+
+            tableCellMarginDefault1.Append(tableCellRightMargin1);
+            TableLook tableLook1 = new TableLook() { Val = "0000", FirstRow = false, LastRow = false, FirstColumn = false, LastColumn = false, NoHorizontalBand = false, NoVerticalBand = false };
+
+            tableProperties1.Append(tableWidth1);
+            tableProperties1.Append(tableIndentation1);
+            // tableProperties1.Append(tableLayout1);
+            tableProperties1.Append(tableCellMarginDefault1);
+            tableProperties1.Append(tableLook1);
+
+            TableGrid tableGrid1 = new TableGrid();
+            GridColumn gridColumn1 = new GridColumn() { Width = "568" };
+            GridColumn gridColumn2 = new GridColumn() { Width = "8081" };
+            GridColumn gridColumn3 = new GridColumn() { Width = "1415" };
+
+            tableGrid1.Append(gridColumn1);
+            tableGrid1.Append(gridColumn2);
+            tableGrid1.Append(gridColumn3);
+
+            TableRow tableRow1 = new TableRow() { RsidTableRowMarkRevision = "00682DA0", RsidTableRowAddition = "00682DA0", RsidTableRowProperties = "00F76E86", ParagraphId = "08E0D757", TextId = "77777777" };
+
+            TableCell tableCell1 = new TableCell();
+
+            TableCellProperties tableCellProperties1 = new TableCellProperties();
+            TableCellWidth tableCellWidth1 = new TableCellWidth() { Width = "568", Type = TableWidthUnitValues.Dxa };
+            Shading shading1 = new Shading() { Val = ShadingPatternValues.Clear, Color = "auto", Fill = "auto" };
+            TableCellVerticalAlignment tableCellVerticalAlignment1 = new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Bottom };
+
+            tableCellProperties1.Append(tableCellWidth1);
+            tableCellProperties1.Append(shading1);
+            tableCellProperties1.Append(tableCellVerticalAlignment1);
+
+            Paragraph paragraph2 = new Paragraph() { RsidParagraphMarkRevision = "00682DA0", RsidParagraphAddition = "00682DA0", RsidParagraphProperties = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "28E68A06", TextId = "77777777" };
+
+            ParagraphProperties paragraphProperties2 = new ParagraphProperties();
+
+            Tabs tabs1 = new Tabs();
+            TabStop tabStop1 = new TabStop() { Val = TabStopValues.Center, Position = 4513 };
+            TabStop tabStop2 = new TabStop() { Val = TabStopValues.Right, Position = 9026 };
+
+            tabs1.Append(tabStop1);
+            tabs1.Append(tabStop2);
+            SuppressAutoHyphens suppressAutoHyphens1 = new SuppressAutoHyphens();
+            SpacingBetweenLines spacingBetweenLines1 = new SpacingBetweenLines() { After = "0", Line = "100", LineRule = LineSpacingRuleValues.AtLeast };
+            Justification justification1 = new Justification() { Val = JustificationValues.Right };
+
+            ParagraphMarkRunProperties paragraphMarkRunProperties2 = new ParagraphMarkRunProperties();
+            RunFonts runFonts1 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+            FontSize fontSize2 = new FontSize() { Val = "16" };
+            Languages languages1 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            paragraphMarkRunProperties2.Append(runFonts1);
+            paragraphMarkRunProperties2.Append(fontSize2);
+            paragraphMarkRunProperties2.Append(languages1);
+
+            paragraphProperties2.Append(tabs1);
+            paragraphProperties2.Append(suppressAutoHyphens1);
+            paragraphProperties2.Append(spacingBetweenLines1);
+            paragraphProperties2.Append(justification1);
+            paragraphProperties2.Append(paragraphMarkRunProperties2);
+
+            Run run1 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties1 = new RunProperties();
+            RunFonts runFonts2 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
+            Color color1 = new Color() { Val = "F58426" };
+            FontSize fontSize3 = new FontSize() { Val = "18" };
+            FontSizeComplexScript fontSizeComplexScript1 = new FontSizeComplexScript() { Val = "18" };
+            Languages languages2 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties1.Append(runFonts2);
+            runProperties1.Append(color1);
+            runProperties1.Append(fontSize3);
+            runProperties1.Append(fontSizeComplexScript1);
+            runProperties1.Append(languages2);
+            FieldChar fieldChar1 = new FieldChar() { FieldCharType = FieldCharValues.Begin };
+
+            run1.Append(runProperties1);
+            run1.Append(fieldChar1);
+
+            Run run2 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties2 = new RunProperties();
+            RunFonts runFonts3 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
+            Color color2 = new Color() { Val = "F58426" };
+            FontSize fontSize4 = new FontSize() { Val = "18" };
+            FontSizeComplexScript fontSizeComplexScript2 = new FontSizeComplexScript() { Val = "18" };
+            Languages languages3 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties2.Append(runFonts3);
+            runProperties2.Append(color2);
+            runProperties2.Append(fontSize4);
+            runProperties2.Append(fontSizeComplexScript2);
+            runProperties2.Append(languages3);
+            FieldCode fieldCode1 = new FieldCode() { Space = SpaceProcessingModeValues.Preserve };
+            fieldCode1.Text = " PAGE ";
+
+            run2.Append(runProperties2);
+            run2.Append(fieldCode1);
+
+            Run run3 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties3 = new RunProperties();
+            RunFonts runFonts4 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
+            Color color3 = new Color() { Val = "F58426" };
+            FontSize fontSize5 = new FontSize() { Val = "18" };
+            FontSizeComplexScript fontSizeComplexScript3 = new FontSizeComplexScript() { Val = "18" };
+            Languages languages4 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties3.Append(runFonts4);
+            runProperties3.Append(color3);
+            runProperties3.Append(fontSize5);
+            runProperties3.Append(fontSizeComplexScript3);
+            runProperties3.Append(languages4);
+            FieldChar fieldChar2 = new FieldChar() { FieldCharType = FieldCharValues.Separate };
+
+            run3.Append(runProperties3);
+            run3.Append(fieldChar2);
+
+            Run run4 = new Run() { RsidRunAddition = "008818E9" };
+
+            RunProperties runProperties4 = new RunProperties();
+            RunFonts runFonts5 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
+            NoProof noProof1 = new NoProof();
+            Color color4 = new Color() { Val = "F58426" };
+            FontSize fontSize6 = new FontSize() { Val = "18" };
+            FontSizeComplexScript fontSizeComplexScript4 = new FontSizeComplexScript() { Val = "18" };
+            Languages languages5 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties4.Append(runFonts5);
+            runProperties4.Append(noProof1);
+            runProperties4.Append(color4);
+            runProperties4.Append(fontSize6);
+            runProperties4.Append(fontSizeComplexScript4);
+            runProperties4.Append(languages5);
+            Text text1 = new Text();
+            text1.Text = "1";
+
+            run4.Append(runProperties4);
+            run4.Append(text1);
+
+            Run run5 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties5 = new RunProperties();
+            RunFonts runFonts6 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
+            Color color5 = new Color() { Val = "F58426" };
+            FontSize fontSize7 = new FontSize() { Val = "18" };
+            FontSizeComplexScript fontSizeComplexScript5 = new FontSizeComplexScript() { Val = "18" };
+            Languages languages6 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties5.Append(runFonts6);
+            runProperties5.Append(color5);
+            runProperties5.Append(fontSize7);
+            runProperties5.Append(fontSizeComplexScript5);
+            runProperties5.Append(languages6);
+            FieldChar fieldChar3 = new FieldChar() { FieldCharType = FieldCharValues.End };
+
+            run5.Append(runProperties5);
+            run5.Append(fieldChar3);
+
+            Run run6 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties6 = new RunProperties();
+            RunFonts runFonts7 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Verdana", ComplexScript = "Verdana" };
+            Color color6 = new Color() { Val = "72CDF4" };
+            FontSize fontSize8 = new FontSize() { Val = "18" };
+            FontSizeComplexScript fontSizeComplexScript6 = new FontSizeComplexScript() { Val = "18" };
+            Languages languages7 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties6.Append(runFonts7);
+            runProperties6.Append(color6);
+            runProperties6.Append(fontSize8);
+            runProperties6.Append(fontSizeComplexScript6);
+            runProperties6.Append(languages7);
+            Text text2 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+            text2.Text = " ";
+
+            run6.Append(runProperties6);
+            run6.Append(text2);
+
+            Run run7 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties7 = new RunProperties();
+            RunFonts runFonts8 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
+            Color color7 = new Color() { Val = "808080" };
+            FontSize fontSize9 = new FontSize() { Val = "18" };
+            FontSizeComplexScript fontSizeComplexScript7 = new FontSizeComplexScript() { Val = "18" };
+            Languages languages8 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties7.Append(runFonts8);
+            runProperties7.Append(color7);
+            runProperties7.Append(fontSize9);
+            runProperties7.Append(fontSizeComplexScript7);
+            runProperties7.Append(languages8);
+            Text text3 = new Text();
+            text3.Text = "|";
+
+            run7.Append(runProperties7);
+            run7.Append(text3);
+
+            Run run8 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties8 = new RunProperties();
+            RunFonts runFonts9 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Calibri" };
+            Color color8 = new Color() { Val = "72CDF4" };
+            FontSize fontSize10 = new FontSize() { Val = "18" };
+            FontSizeComplexScript fontSizeComplexScript8 = new FontSizeComplexScript() { Val = "18" };
+            Languages languages9 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties8.Append(runFonts9);
+            runProperties8.Append(color8);
+            runProperties8.Append(fontSize10);
+            runProperties8.Append(fontSizeComplexScript8);
+            runProperties8.Append(languages9);
+            Text text4 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+            text4.Text = " ";
+
+            run8.Append(runProperties8);
+            run8.Append(text4);
+
+            paragraph2.Append(paragraphProperties2);
+            paragraph2.Append(run1);
+            paragraph2.Append(run2);
+            paragraph2.Append(run3);
+            paragraph2.Append(run4);
+            paragraph2.Append(run5);
+            paragraph2.Append(run6);
+            paragraph2.Append(run7);
+            paragraph2.Append(run8);
+
+            tableCell1.Append(tableCellProperties1);
+            tableCell1.Append(paragraph2);
+
+            TableCell tableCell2 = new TableCell();
+
+            TableCellProperties tableCellProperties2 = new TableCellProperties();
+            TableCellWidth tableCellWidth2 = new TableCellWidth() { Width = "8081", Type = TableWidthUnitValues.Dxa };
+            Shading shading2 = new Shading() { Val = ShadingPatternValues.Clear, Color = "auto", Fill = "auto" };
+            TableCellVerticalAlignment tableCellVerticalAlignment2 = new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Bottom };
+
+            tableCellProperties2.Append(tableCellWidth2);
+            tableCellProperties2.Append(shading2);
+            tableCellProperties2.Append(tableCellVerticalAlignment2);
+
+            Paragraph paragraph3 = new Paragraph() { RsidParagraphMarkRevision = "00682DA0", RsidParagraphAddition = "00682DA0", RsidParagraphProperties = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "2F49C805", TextId = "74311658" };
+
+            ParagraphProperties paragraphProperties3 = new ParagraphProperties();
+            SuppressAutoHyphens suppressAutoHyphens2 = new SuppressAutoHyphens();
+            SpacingBetweenLines spacingBetweenLines2 = new SpacingBetweenLines() { After = "40", Line = "240", LineRule = LineSpacingRuleValues.Auto };
+
+            ParagraphMarkRunProperties paragraphMarkRunProperties3 = new ParagraphMarkRunProperties();
+            RunFonts runFonts10 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+            Color color9 = new Color() { Val = "FF0000" };
+            FontSize fontSize11 = new FontSize() { Val = "16" };
+            Languages languages10 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            paragraphMarkRunProperties3.Append(runFonts10);
+            paragraphMarkRunProperties3.Append(color9);
+            paragraphMarkRunProperties3.Append(fontSize11);
+            paragraphMarkRunProperties3.Append(languages10);
+
+            paragraphProperties3.Append(suppressAutoHyphens2);
+            paragraphProperties3.Append(spacingBetweenLines2);
+            paragraphProperties3.Append(paragraphMarkRunProperties3);
+
+            Run run9 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties9 = new RunProperties();
+            RunFonts runFonts11 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+            FontSize fontSize12 = new FontSize() { Val = "16" };
+            Languages languages11 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties9.Append(runFonts11);
+            runProperties9.Append(fontSize12);
+            runProperties9.Append(languages11);
+            Text text5 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+            text5.Text = "Confidential Statement of Advice Prepared for :";
+
+            run9.Append(runProperties9);
+            run9.Append(text5);
+
+            Run run10 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties10 = new RunProperties();
+            RunFonts runFonts12 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+            Color color10 = new Color() { Val = "FF0000" };
+            FontSize fontSize13 = new FontSize() { Val = "16" };
+            Languages languages12 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties10.Append(runFonts12);
+            runProperties10.Append(color10);
+            runProperties10.Append(fontSize13);
+            runProperties10.Append(languages12);
+            Text text6 = new Text();
+            text6.Text = "[Client/Partner Name]";
+
+            run10.Append(runProperties10);
+            run10.Append(text6);
+
+            paragraph3.Append(paragraphProperties3);
+            paragraph3.Append(run9);
+            paragraph3.Append(run10);
+
+            Paragraph paragraph4 = new Paragraph() { RsidParagraphMarkRevision = "00682DA0", RsidParagraphAddition = "00682DA0", RsidParagraphProperties = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "3C8B385D", TextId = "77777777" };
+
+            ParagraphProperties paragraphProperties4 = new ParagraphProperties();
+            SuppressAutoHyphens suppressAutoHyphens3 = new SuppressAutoHyphens();
+            SpacingBetweenLines spacingBetweenLines3 = new SpacingBetweenLines() { After = "40", Line = "240", LineRule = LineSpacingRuleValues.Auto };
+
+            ParagraphMarkRunProperties paragraphMarkRunProperties4 = new ParagraphMarkRunProperties();
+            RunFonts runFonts13 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+            FontSize fontSize14 = new FontSize() { Val = "14" };
+            Languages languages13 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            paragraphMarkRunProperties4.Append(runFonts13);
+            paragraphMarkRunProperties4.Append(fontSize14);
+            paragraphMarkRunProperties4.Append(languages13);
+
+            paragraphProperties4.Append(suppressAutoHyphens3);
+            paragraphProperties4.Append(spacingBetweenLines3);
+            paragraphProperties4.Append(paragraphMarkRunProperties4);
+
+            Run run11 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties11 = new RunProperties();
+            RunFonts runFonts14 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+            FontSize fontSize15 = new FontSize() { Val = "16" };
+            Languages languages14 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties11.Append(runFonts14);
+            runProperties11.Append(fontSize15);
+            runProperties11.Append(languages14);
+            Text text7 = new Text() { Space = SpaceProcessingModeValues.Preserve };
+            text7.Text = "Provided by: ";
+
+            run11.Append(runProperties11);
+            run11.Append(text7);
+
+            Run run12 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties12 = new RunProperties();
+            RunFonts runFonts15 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+            Color color11 = new Color() { Val = "FF0000" };
+            FontSize fontSize16 = new FontSize() { Val = "16" };
+            Languages languages15 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties12.Append(runFonts15);
+            runProperties12.Append(color11);
+            runProperties12.Append(fontSize16);
+            runProperties12.Append(languages15);
+            Text text8 = new Text();
+            text8.Text = "[Practice]";
+
+            run12.Append(runProperties12);
+            run12.Append(text8);
+
+            Run run13 = new Run() { RsidRunProperties = "00682DA0" };
+
+            RunProperties runProperties13 = new RunProperties();
+            RunFonts runFonts16 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+            FontSize fontSize17 = new FontSize() { Val = "16" };
+            Languages languages16 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            runProperties13.Append(runFonts16);
+            runProperties13.Append(fontSize17);
+            runProperties13.Append(languages16);
+            Text text9 = new Text();
+            text9.Text = ", a Corporate Authorised Representative of RI Advice Group Pty Ltd";
+
+            run13.Append(runProperties13);
+            run13.Append(text9);
+
+            paragraph4.Append(paragraphProperties4);
+            paragraph4.Append(run11);
+            paragraph4.Append(run12);
+            paragraph4.Append(run13);
+
+            tableCell2.Append(tableCellProperties2);
+            tableCell2.Append(paragraph3);
+            tableCell2.Append(paragraph4);
+
+            TableCell tableCell3 = new TableCell();
+
+            TableCellProperties tableCellProperties3 = new TableCellProperties();
+            TableCellWidth tableCellWidth3 = new TableCellWidth() { Width = "1415", Type = TableWidthUnitValues.Dxa };
+            Shading shading3 = new Shading() { Val = ShadingPatternValues.Clear, Color = "auto", Fill = "auto" };
+            TableCellVerticalAlignment tableCellVerticalAlignment3 = new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Bottom };
+
+            tableCellProperties3.Append(tableCellWidth3);
+            tableCellProperties3.Append(shading3);
+            tableCellProperties3.Append(tableCellVerticalAlignment3);
+
+            Paragraph paragraph5 = new Paragraph() { RsidParagraphMarkRevision = "00682DA0", RsidParagraphAddition = "00682DA0", RsidParagraphProperties = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "43FE2BBD", TextId = "77777777" };
+
+            ParagraphProperties paragraphProperties5 = new ParagraphProperties();
+
+            Tabs tabs2 = new Tabs();
+            TabStop tabStop3 = new TabStop() { Val = TabStopValues.Left, Position = 7080 };
+
+            tabs2.Append(tabStop3);
+            SuppressAutoHyphens suppressAutoHyphens4 = new SuppressAutoHyphens();
+            SnapToGrid snapToGrid1 = new SnapToGrid() { Val = false };
+            SpacingBetweenLines spacingBetweenLines4 = new SpacingBetweenLines() { After = "0", Line = "240", LineRule = LineSpacingRuleValues.Auto };
+            Justification justification2 = new Justification() { Val = JustificationValues.Right };
+
+            ParagraphMarkRunProperties paragraphMarkRunProperties5 = new ParagraphMarkRunProperties();
+            RunFonts runFonts17 = new RunFonts() { Ascii = "Verdana", HighAnsi = "Verdana", EastAsia = "Calibri", ComplexScript = "Verdana" };
+            FontSize fontSize18 = new FontSize() { Val = "14" };
+            Languages languages17 = new Languages() { Val = "en-AU", EastAsia = "zh-CN" };
+
+            paragraphMarkRunProperties5.Append(runFonts17);
+            paragraphMarkRunProperties5.Append(fontSize18);
+            paragraphMarkRunProperties5.Append(languages17);
+
+            paragraphProperties5.Append(tabs2);
+            paragraphProperties5.Append(suppressAutoHyphens4);
+            paragraphProperties5.Append(snapToGrid1);
+            paragraphProperties5.Append(spacingBetweenLines4);
+            paragraphProperties5.Append(justification2);
+            paragraphProperties5.Append(paragraphMarkRunProperties5);
+
+            paragraph5.Append(paragraphProperties5);
+
+            tableCell3.Append(tableCellProperties3);
+            tableCell3.Append(paragraph5);
+
+            tableRow1.Append(tableCell1);
+            tableRow1.Append(tableCell2);
+            tableRow1.Append(tableCell3);
+
+            table1.Append(tableProperties1);
+            table1.Append(tableGrid1);
+            table1.Append(tableRow1);
+
+            Paragraph paragraph6 = new Paragraph() { RsidParagraphAddition = "00682DA0", RsidRunAdditionDefault = "00682DA0", ParagraphId = "08103970", TextId = "77777777" };
+
+            ParagraphProperties paragraphProperties6 = new ParagraphProperties();
+            ParagraphStyleId paragraphStyleId1 = new ParagraphStyleId() { Val = "Footer" };
+
+            Tabs tabs3 = new Tabs();
+            TabStop tabStop4 = new TabStop() { Val = TabStopValues.Left, Position = 3433 };
+
+            tabs3.Append(tabStop4);
+
+            paragraphProperties6.Append(paragraphStyleId1);
+            paragraphProperties6.Append(tabs3);
+
+            Run run14 = new Run();
+
+            RunProperties runProperties14 = new RunProperties();
+            FontSize fontSize19 = new FontSize() { Val = "2" };
+            FontSizeComplexScript fontSizeComplexScript9 = new FontSizeComplexScript() { Val = "2" };
+
+            runProperties14.Append(fontSize19);
+            runProperties14.Append(fontSizeComplexScript9);
+            TabChar tabChar1 = new TabChar();
+
+            run14.Append(runProperties14);
+            run14.Append(tabChar1);
+
+            paragraph6.Append(paragraphProperties6);
+            paragraph6.Append(run14);
+
+            footer1.Append(paragraph1);
+            footer1.Append(table1);
+            footer1.Append(paragraph6);
+
+            part.Footer = footer1;
+
         }
 
-        private void InsertImage(MainDocumentPart mainPart,TableCell body, string fileName)
+        private void InsertImage(MainDocumentPart mainPart, TableCell body, string fileName)
         {
             ImagePart imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);
             using (FileStream stream = new FileStream(fileName, FileMode.Open))
             {
                 imagePart.FeedData(stream);
             }
-            AddImageToBody(body,mainPart.GetIdOfPart(imagePart),fileName);
+            AddImageToBody(body, mainPart.GetIdOfPart(imagePart), fileName);
 
-             
+
         }
 
-        private void AddImageToBody(TableCell body,string relationshipId,string fileName)
+        private void AddImageToBody(TableCell body, string relationshipId, string fileName)
         {
             long iWidth = 0;
             long iHeight = 0;
             using (System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(fileName))
             {
-                iWidth = (long) bmp.Width * (long)((float) 914400 / bmp.HorizontalResolution);
+                iWidth = (long)bmp.Width * (long)((float)914400 / bmp.HorizontalResolution);
                 iHeight = (long)bmp.Height * (long)((float)914400 / bmp.VerticalResolution);
             }
-          
+
             // Define the reference of the image.
             var element =
                      new Drawing(
@@ -11366,7 +11366,7 @@ namespace PlanlogicAI.Controllers
                                          new PIC.ShapeProperties(
                                              new A.Transform2D(
                                                  new A.Offset() { X = 0L, Y = 0L },
-                                               new A.Extents() { Cx = iWidth , Cy = iHeight }),
+                                               new A.Extents() { Cx = iWidth, Cy = iHeight }),
                                              new A.PresetGeometry(
                                                  new A.AdjustValueList()
                                              )
@@ -11386,7 +11386,7 @@ namespace PlanlogicAI.Controllers
             body.AppendChild(new Paragraph(new Run(element)));
 
         }
-        public void AddBasicDetails(Body body,BasicDetails details, Color orange)
+        private void AddBasicDetails(Body body, BasicDetails details, Color orange)
         {
             Color red = new Color() { Val = "FF0000" };
 
@@ -11422,7 +11422,7 @@ namespace PlanlogicAI.Controllers
                 TableCellProperties hcp1 = new TableCellProperties(new TableCellWidth { Width = "2390", Type = TableWidthUnitValues.Auto }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
 
                 ParagraphProperties hpp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
-               Justification centerJustify = new Justification() { Val = JustificationValues.Center };
+                Justification centerJustify = new Justification() { Val = JustificationValues.Center };
                 hpp.AppendChild((Justification)centerJustify.CloneNode(true));
 
                 TableCellBorders hcb = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 20, Color = "ED7D27" } };
@@ -11440,7 +11440,7 @@ namespace PlanlogicAI.Controllers
                 TableCell h2 = new TableCell();
                 h2.AppendChild((ParagraphProperties)hpp.CloneNode(true));
                 h2.Append((TableCellProperties)hcp1.CloneNode(true));
-                h2.Append(new Paragraph(new Run(new RunProperties(new Bold()) , new Text(details.ClientName))));
+                h2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(details.ClientName))));
                 if (details.MaritalStatus != "S")
                 {
                     TableCell h3 = new TableCell();
@@ -11453,7 +11453,7 @@ namespace PlanlogicAI.Controllers
                 {
                     header.Append(h1, h2);
                 }
-                
+
                 table.Append(header);
                 ////Body
 
@@ -11477,7 +11477,7 @@ namespace PlanlogicAI.Controllers
                 if (details.ClientName != "" || details.PartnerName != "")
                 {
                     TableRow tr = new TableRow();
-                    TableCell tc1 = new TableCell((TableCellProperties)tcp.CloneNode(true), (ParagraphProperties)pp1.CloneNode(true) , new Paragraph(new Run(new RunProperties(new Bold()), new Text("Given Name"))));
+                    TableCell tc1 = new TableCell((TableCellProperties)tcp.CloneNode(true), (ParagraphProperties)pp1.CloneNode(true), new Paragraph(new Run(new RunProperties(new Bold()), new Text("Given Name"))));
                     TableCell tc2 = new TableCell((TableCellProperties)tcpN.CloneNode(true), (ParagraphProperties)pp.CloneNode(true), new Paragraph(new Run(new RunProperties(), new Text(details.ClientName))));
                     if (details.MaritalStatus != "S")
                     {
@@ -11548,7 +11548,7 @@ namespace PlanlogicAI.Controllers
                     TableCell tc2 = new TableCell((TableCellProperties)tcpN.CloneNode(true), (ParagraphProperties)pp.CloneNode(true), new Paragraph(new Run(new RunProperties(), new Text(details.MaritalStatus == "S" ? "Single" : "Married"))));
                     if (details.MaritalStatus != "S")
                     {
-                        TableCell tc3 = new TableCell((TableCellProperties)tcpN.CloneNode(true), (ParagraphProperties)pp.CloneNode(true), new Paragraph(new Run(new RunProperties(), new Text("Married / De Facto"))));
+                        TableCell tc3 = new TableCell((TableCellProperties)tcpN.CloneNode(true), (ParagraphProperties)pp.CloneNode(true), new Paragraph(new Run(new RunProperties(), new Text("Married"))));
                         tr.Append(tc1, tc2, tc3);
                     }
                     else
@@ -11628,7 +11628,7 @@ namespace PlanlogicAI.Controllers
                     }
                     table.AppendChild(tr);
                 }
-              
+
 
             }
 
@@ -11653,14 +11653,14 @@ namespace PlanlogicAI.Controllers
             paragraphProperties14.Append(justification4);
             paragraphProperties14.Append(paragraphMarkRunProperties14);
             body.AppendChild(paragraph14);
- 
+
 
             if (details != null)
             {
 
                 Paragraph s1 = body.AppendChild(new Paragraph());
                 Run r1 = s1.AppendChild(new Run());
-                RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(),new FontSize { Val = "20" }));
+                RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(), new FontSize { Val = "20" }));
                 Color black = new Color() { Val = "000000" };
                 runProperties1.AppendChild(black);
                 r1.AppendChild(new Text("Children and dependants"));
@@ -11727,7 +11727,7 @@ namespace PlanlogicAI.Controllers
                 TableCellMargin tcm = new TableCellMargin() { RightMargin = new RightMargin() { Width = "50", Type = TableWidthUnitValues.Dxa }, LeftMargin = new LeftMargin() { Width = "50", Type = TableWidthUnitValues.Dxa } };
                 ParagraphProperties pp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "0" });
 
-              
+
                 tcpN.Append((TableCellBorders)tcbN.CloneNode(true), (TableCellMargin)tcm.CloneNode(true));
 
 
@@ -11744,7 +11744,7 @@ namespace PlanlogicAI.Controllers
                 tc2.Append(new Paragraph(new Run(new Text(""))));
 
 
-        
+
                 TableCell tc3 = new TableCell();
                 tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
                 tc3.Append((TableCellProperties)tcpN.CloneNode(true));
@@ -11764,7 +11764,7 @@ namespace PlanlogicAI.Controllers
             //paragraph1.Append(new OpenXmlElement[] { linebreak1 });
             //body.Append(paragraph1);
         }
-        public void AddIncomeAndExpenses(Body body, CashFlow[] income,CashFlow[] expenses, LifestyleAsset[] lifestyleAssets ,Color orange)
+        private void AddIncomeAndExpenses(Body body, CashFlow[] income, CashFlow[] expenses, LifestyleAsset[] lifestyleAssets, Color orange)
         {
             Color red = new Color() { Val = "FF0000" };
 
@@ -11788,11 +11788,11 @@ namespace PlanlogicAI.Controllers
             paragraphProperties14.Append(spacingBetweenLines14);
             paragraphProperties14.Append(justification4);
             paragraphProperties14.Append(paragraphMarkRunProperties14);
-          
+
 
             if (income != null || expenses != null)
             {
-               
+
                 Paragraph s1 = body.AppendChild(new Paragraph());
                 Run r1 = s1.AppendChild(new Run());
                 RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(), new FontSize { Val = "20" }));
@@ -11801,9 +11801,9 @@ namespace PlanlogicAI.Controllers
                 r1.AppendChild(new Text("Your income and expenses"));
             }
             if (income != null)
-                {
+            {
 
-                    //New Table
+                //New Table
 
                 Table table = body.AppendChild(new Table());
                 TableProperties tableProp = new TableProperties();
@@ -11842,7 +11842,7 @@ namespace PlanlogicAI.Controllers
                 h1.Append(hcp);
 
                 h1.AppendChild((ParagraphProperties)hppLeft.CloneNode(true));
-                h1.Append(new Paragraph(new Run(new RunProperties(new Bold()),new Text("Income"))));
+                h1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Income"))));
 
                 TableCell h2 = new TableCell();
                 h2.AppendChild((ParagraphProperties)hppCenter.CloneNode(true));
@@ -11876,8 +11876,8 @@ namespace PlanlogicAI.Controllers
                 tcp.Append(tcbL, tcm);
                 tcpN.Append((TableCellBorders)tcbN.CloneNode(true), (TableCellMargin)tcm.CloneNode(true));
 
-             
-                foreach (CashFlow inc in income) 
+
+                foreach (CashFlow inc in income)
                 {
 
                     TableRow tr = new TableRow();
@@ -11899,14 +11899,14 @@ namespace PlanlogicAI.Controllers
                     TableCell tc3 = new TableCell();
                     tc3.AppendChild((ParagraphProperties)pp2.CloneNode(true));
                     tc3.Append((TableCellProperties)tcpN.CloneNode(true));
-                    tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}",inc.Value)))));
+                    tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", inc.Value)))));
 
                     tr.Append(tc1, tc2, tc3);
 
                     table.AppendChild(tr);
                 }
 
-                if(income != null)
+                if (income != null)
                 {
                     TableRow tr = new TableRow();
                     TableCell tc1 = new TableCell();
@@ -12077,12 +12077,12 @@ namespace PlanlogicAI.Controllers
 
                 Paragraph s1 = body.AppendChild(new Paragraph());
                 Run r1 = s1.AppendChild(new Run());
-                RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(),new FontSize { Val = "20"}));
+                RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(), new FontSize { Val = "20" }));
                 Color black = new Color() { Val = "000000" };
                 runProperties1.AppendChild(black);
                 r1.AppendChild(new Text("Your personal assets"));
 
-              
+
 
                 Table table = body.AppendChild(new Table());
                 TableProperties tableProp = new TableProperties();
@@ -12214,11 +12214,11 @@ namespace PlanlogicAI.Controllers
                 }
             }
 
-          
+
             body.AppendChild((Paragraph)paragraph14.CloneNode(true));
 
         }
-        public void AddInvestmentPortfolio(Body body, OriginalCF[] currentInvestments, BasicDetails docDet, Color orange)
+        private void AddInvestmentPortfolio(Body body, OriginalCF[] currentInvestments, BasicDetails docDet, Color orange)
         {
             Color red = new Color() { Val = "FF0000" };
 
@@ -12227,7 +12227,7 @@ namespace PlanlogicAI.Controllers
 
                 Paragraph s1 = body.AppendChild(new Paragraph());
                 Run r1 = s1.AppendChild(new Run());
-                RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(),new FontSize { Val = "20"}));
+                RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(), new FontSize { Val = "20" }));
                 Color black = new Color() { Val = "000000" };
                 runProperties1.AppendChild(black);
                 r1.AppendChild(new Text("Your investment portfolio assets"));
@@ -12336,7 +12336,7 @@ namespace PlanlogicAI.Controllers
                         TableRow tr1 = new TableRow();
                         TableCell t1 = new TableCell();
 
-                      
+
                         t1.Append((TableCellProperties)tcp.CloneNode(true));
                         t1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
                         t1.Append(new Paragraph(new Run(new RunProperties(), new Text(data.FundName))));
@@ -12349,7 +12349,7 @@ namespace PlanlogicAI.Controllers
                         tr1.Append(t1, t2);
                         table.AppendChild(tr1);
                     }
-                    if(cf.data.Length != 0)
+                    if (cf.data.Length != 0)
                     {
                         TableRow tr1 = new TableRow();
                         TableCell t1 = new TableCell();
@@ -12362,7 +12362,7 @@ namespace PlanlogicAI.Controllers
                         TableCell t2 = new TableCell();
                         t2.AppendChild((ParagraphProperties)pp2.CloneNode(true));
                         t2.Append((TableCellProperties)tcpN.CloneNode(true));
-                        t2.Append(new Paragraph(new Run(new RunProperties(new Bold()),new Text(String.Format("{0:n0}", cf.data.Sum(item => item.Value))))));
+                        t2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(String.Format("{0:n0}", cf.data.Sum(item => item.Value))))));
                         tr1.Append(t1, t2);
                         table.AppendChild(tr1);
                         total += cf.data.Sum(item => item.Value);
@@ -12377,7 +12377,7 @@ namespace PlanlogicAI.Controllers
 
                     tc1.Append((TableCellProperties)tcp.CloneNode(true));
                     tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                    if(docDet.MaritalStatus == "S")
+                    if (docDet.MaritalStatus == "S")
                     {
                         tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total"))));
                     }
@@ -12385,7 +12385,7 @@ namespace PlanlogicAI.Controllers
                     {
                         tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total (" + docDet.ClientName + ")"))));
                     }
-                   
+
 
                     tcpN.Append((TableCellBorders)tcbR.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
 
@@ -12757,9 +12757,9 @@ namespace PlanlogicAI.Controllers
                 }
             }
 
-      
+
         }
-        public void AddLiabilities(Body body, Liability[] liability, Color orange)
+        private void AddLiabilities(Body body, Liability[] liability, Color orange)
         {
             Color red = new Color() { Val = "FF0000" };
 
@@ -12790,11 +12790,11 @@ namespace PlanlogicAI.Controllers
 
                 Paragraph s1 = body.AppendChild(new Paragraph());
                 Run r1 = s1.AppendChild(new Run());
-                RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(),new FontSize { Val="20"}));
+                RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(), new FontSize { Val = "20" }));
                 Color black = new Color() { Val = "000000" };
                 runProperties1.AppendChild(black);
                 r1.AppendChild(new Text("Your liabilities"));
-           
+
                 //New Table
 
                 Table table = body.AppendChild(new Table());
@@ -12929,10 +12929,10 @@ namespace PlanlogicAI.Controllers
 
 
 
-           
+
         }
 
-        public void AddEstatePlanningDetails(Body body, BasicDetails details, Color orange)
+        private void AddEstatePlanningDetails(Body body, BasicDetails details, Color orange)
         {
             Color red = new Color() { Val = "FF0000" };
 
@@ -13039,7 +13039,7 @@ namespace PlanlogicAI.Controllers
                 tcp.Append(tcbL, tcm);
                 tcpN.Append((TableCellBorders)tcbR.CloneNode(true), (TableCellMargin)tcm.CloneNode(true));
 
-               
+
                 //Will
                 if (details.ClientName != "")
                 {
@@ -13130,7 +13130,7 @@ namespace PlanlogicAI.Controllers
 
             }
 
-         
+
         }
 
 
@@ -13141,7 +13141,7 @@ namespace PlanlogicAI.Controllers
 
 
 
-        public void AddRiskProfile(MainDocumentPart mainPart,Body body, BasicDetails clientDetails, Color orange, PF[] proposedAssets)
+        private void AddRiskProfile(MainDocumentPart mainPart, Body body, BasicDetails clientDetails, Color orange, PF[] proposedAssets)
         {
             var clientproposedAssets = proposedAssets.Where(c => c.owner == "Client").ToArray();
             var partnerproposedAssets = proposedAssets.Where(c => c.owner == "Partner").ToArray();
@@ -13250,7 +13250,7 @@ namespace PlanlogicAI.Controllers
                     tcp.Append(tcbL, tcm);
                     tcpN.Append((TableCellBorders)tcbN.CloneNode(true), (TableCellMargin)tcm.CloneNode(true));
 
-                    if(clientDetails.MaritalStatus == "S")
+                    if (clientDetails.MaritalStatus == "S")
                     {
                         TableRow tr = new TableRow();
                         TableCell tc1 = new TableCell();
@@ -13272,7 +13272,7 @@ namespace PlanlogicAI.Controllers
                     else
                     {
 
-                        
+
 
                         if (clientDetails.ClientRiskProfile != "")
                         {
@@ -13333,29 +13333,29 @@ namespace PlanlogicAI.Controllers
                         }
                     }
 
-                 
+
                     body.AppendChild((Paragraph)paragraph14.CloneNode(true));
 
-                    if(clientDetails.MaritalStatus == "S" || clientDetails.MaritalStatus == "M")
+                    if (clientDetails.MaritalStatus == "S" || clientDetails.MaritalStatus == "M")
                     {
-                           printRiskProfile(mainPart, body, Environment.CurrentDirectory + @"\wwwroot\RiskProfile\Balanced.png", clientDetails.ClientRiskProfile.Trim());
+                        printRiskProfile(mainPart, body, Environment.CurrentDirectory + @"\wwwroot\RiskProfile\Balanced.png", clientDetails.ClientRiskProfile.Trim());
                         //printRiskProfile(mainPart, body, @"Balanced.png", clientDetails.ClientRiskProfile.Trim());
                     }
                     //}
 
                     if (clientDetails.MaritalStatus == "M" && (clientDetails.ClientRiskProfile != clientDetails.PartnerRiskProfile) && partnerproposedAssets.Any())
                     {
-                        if(clientDetails.PartnerRiskProfile != "")
+                        if (clientDetails.PartnerRiskProfile != "")
                         {
                             printRiskProfile(mainPart, body, Environment.CurrentDirectory + @"\wwwroot\RiskProfile\Balanced.png", clientDetails.PartnerRiskProfile.Trim());
-                           // printRiskProfile(mainPart, body, @"Balanced.png", clientDetails.PartnerRiskProfile.Trim());
+                            // printRiskProfile(mainPart, body, @"Balanced.png", clientDetails.PartnerRiskProfile.Trim());
                         }
-                        
+
                     }
 
                     if (clientDetails.MaritalStatus == "M" && (clientDetails.ClientRiskProfile != clientDetails.JointRiskProfile) && (clientDetails.PartnerRiskProfile != clientDetails.JointRiskProfile) && jointproposedAssets.Any())
                     {
-                       
+
                         if (clientDetails.JointRiskProfile != "")
                         {
                             printRiskProfile(mainPart, body, Environment.CurrentDirectory + @"\wwwroot\RiskProfile\Balanced.png", clientDetails.JointRiskProfile.Trim());
@@ -13367,8 +13367,8 @@ namespace PlanlogicAI.Controllers
 
 
             }
-        }     
-        public void printRiskProfile(MainDocumentPart mainPart,Body body,string fileName,string riskProfile)
+        }
+        private void printRiskProfile(MainDocumentPart mainPart, Body body, string fileName, string riskProfile)
         {
 
             Table table = body.AppendChild(new Table());
@@ -13380,7 +13380,7 @@ namespace PlanlogicAI.Controllers
             tableProp.Append(tableStyle, tableWidth);
             table.AppendChild(tableProp);
 
-            TableCellProperties tcp = new TableCellProperties(new TableCellWidth { Width = "2390", Type = TableWidthUnitValues.Auto }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });    
+            TableCellProperties tcp = new TableCellProperties(new TableCellWidth { Width = "2390", Type = TableWidthUnitValues.Auto }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
             TableCellMargin tcm = new TableCellMargin() { RightMargin = new RightMargin() { Width = "50", Type = TableWidthUnitValues.Dxa }, LeftMargin = new LeftMargin() { Width = "50", Type = TableWidthUnitValues.Dxa } };
             ParagraphProperties pp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "0" });
             tcp.Append(tcm);
@@ -13403,10 +13403,10 @@ namespace PlanlogicAI.Controllers
 
 
                 InsertImage(mainPart, tc2, Environment.CurrentDirectory + @"\wwwroot\RiskProfile\Preservation.png");
-             
+
                 tr.Append(tc1, tc2);
                 table.AppendChild(tr);
-                
+
             }
             else if (riskProfile == "Defensive")
             {
@@ -13424,7 +13424,7 @@ namespace PlanlogicAI.Controllers
                 tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
 
                 InsertImage(mainPart, tc2, Environment.CurrentDirectory + @"\wwwroot\RiskProfile\Defensive.png");
-                        
+
                 tr.Append(tc1, tc2);
                 table.AppendChild(tr);
             }
@@ -13484,11 +13484,11 @@ namespace PlanlogicAI.Controllers
 
 
                 InsertImage(mainPart, tc2, Environment.CurrentDirectory + @"\wwwroot\RiskProfile\Growth.png");
-              
+
                 tr.Append(tc1, tc2);
                 table.AppendChild(tr);
             }
-            else if (riskProfile == "HighGrowth")
+            else if (riskProfile == "High Growth")
             {
                 TableRow tr = new TableRow();
                 TableCell tc1 = new TableCell();
@@ -13505,7 +13505,7 @@ namespace PlanlogicAI.Controllers
 
 
                 InsertImage(mainPart, tc2, Environment.CurrentDirectory + @"\wwwroot\RiskProfile\HighGrowth.png");
-             
+
                 tr.Append(tc1, tc2);
                 table.AppendChild(tr);
             }
@@ -13516,7 +13516,1159 @@ namespace PlanlogicAI.Controllers
             body.Append(paragraph);
 
         }
-        public void AddRecommemdedPortfolio(Body body, OriginalCF[] currentInvestments, PF[] proposedInvestments, BasicDetails clientDetails)
+
+        private class sub
+        {
+            public int productId { get; set; }
+            public int currentId { get; set; }
+            public int proposedId { get; set; }
+            public string type { get; set; }
+        }
+
+        //private void AddRecommemdedPortfolio(Body body, OriginalCF[] currentInvestments, PF[] proposedInvestments, BasicDetails clientDetails)
+        //{
+        //    ////Paragraph break3 = new Paragraph(new Run(new Break() { Type = BreakValues.Page }));
+
+        //    ////body.AppendChild(break3);
+        //    Paragraph s1 = body.AppendChild(new Paragraph());
+        //    Run r1 = s1.AppendChild(new Run());
+        //    RunProperties runProperties1 = r1.AppendChild(new RunProperties(new Bold(), new FontSize { Val = "22" }));
+        //    Color black = new Color() { Val = "000000" };
+        //    runProperties1.AppendChild(black);
+        //    if (clientDetails.MaritalStatus == "S")
+        //    {
+        //        r1.AppendChild(new Text("Recommended portfolio for " + clientDetails.ClientName));
+        //    }
+        //    else
+        //    {
+        //        r1.AppendChild(new Text("Recommended portfolio"));
+        //    }
+
+        //    if (proposedInvestments == null)
+        //    {
+        //        var t = new List<PF>();
+        //        proposedInvestments = t.ToArray();
+        //    }
+
+        //    Paragraph description = body.AppendChild(new Paragraph(new Run(new Text("The following table outlines our recommendations for your investment portfolio. This table may include other existing investments or products you hold which we have not addressed as part of our advice."))));
+
+        //    IList<OriginalCF> clientCurrent = new List<OriginalCF>(currentInvestments.Where(c => c.Owner == "Client").ToArray());
+        //    IList<OriginalCF> partnerCurrent = new List<OriginalCF>(currentInvestments.Where(c => c.Owner == "Partner").ToArray());
+        //    IList<OriginalCF> jointCurrent = new List<OriginalCF>(currentInvestments.Where(c => c.Owner == "Joint").ToArray());
+
+        //    IList<PF> clientProposed = new List<PF>(proposedInvestments.Where(c => c.owner == "Client").ToArray());
+        //    IList<PF> partnerProposed = new List<PF>(proposedInvestments.Where(c => c.owner == "Partner").ToArray());
+        //    IList<PF> jointProposed = new List<PF>(proposedInvestments.Where(c => c.owner == "Joint").ToArray());
+
+        //    var commonClient = clientCurrent.Select(s => s.ProductId).ToList().Union(clientProposed.Select(p => p.productId).ToList()).ToList();
+        //    var commonPartner = partnerCurrent.Select(s => s.ProductId).ToList().Union(partnerProposed.Select(p => p.productId).ToList()).ToList();
+        //    var commonJoint = jointCurrent.Select(s => s.ProductId).ToList().Union(jointProposed.Select(p => p.productId).ToList()).ToList();
+
+
+        //    Table table = body.AppendChild(new Table());
+        //    TableProperties tableProp = new TableProperties();
+        //    TableStyle tableStyle = new TableStyle() { Val = "TableGrid" };
+
+        //    TableWidth tableWidth = new TableWidth() { Width = "5000", Type = TableWidthUnitValues.Pct };
+
+        //    tableProp.Append(tableStyle, tableWidth);
+        //    table.AppendChild(tableProp);
+
+        //    ////Header
+        //    TableRow header = new TableRow();
+        //    TableCell h1 = new TableCell();
+
+        //    TableCellProperties hcp = new TableCellProperties(new TableCellWidth { Width = "2000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //    TableCellProperties hcp1 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+
+        //    ParagraphProperties hpp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
+        //    ParagraphProperties hpp1 = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
+
+        //    Justification rightJustify = new Justification() { Val = JustificationValues.Right };
+        //    hpp1.AppendChild((Justification)rightJustify.CloneNode(true));
+
+
+
+        //    TableCellBorders hcb = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 20, Color = "ED7D27" } };
+
+        //    Shading hs1 = new Shading() { Color = "auto", Fill = "393939", Val = ShadingPatternValues.Clear };
+        //    TableCellMargin hcm1 = new TableCellMargin() { RightMargin = new RightMargin() { Width = "50", Type = TableWidthUnitValues.Dxa }, LeftMargin = new LeftMargin() { Width = "50", Type = TableWidthUnitValues.Dxa } };
+
+        //    hcp.Append(hcm1, hs1, hcb);
+        //    hcp1.Append((TableCellMargin)hcm1.CloneNode(true), (Shading)hs1.CloneNode(true), (TableCellBorders)hcb.CloneNode(true));
+        //    h1.Append(hcp);
+
+        //    h1.AppendChild((ParagraphProperties)hpp.CloneNode(true));
+        //    h1.Append(new Paragraph(new Run(new Text(""))));
+
+        //    TableCell h2 = new TableCell();
+        //    h2.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
+        //    h2.Append((TableCellProperties)hcp1.CloneNode(true));
+        //    h2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Current ($)"))));
+
+        //    TableCell h3 = new TableCell();
+        //    h3.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
+        //    h3.Append((TableCellProperties)hcp1.CloneNode(true));
+        //    h3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Change ($)"))));
+
+        //    TableCell h4 = new TableCell();
+        //    h4.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
+        //    h4.Append((TableCellProperties)hcp1.CloneNode(true));
+        //    h4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Proposed ($)"))));
+        //    header.Append(h1, h2, h3, h4);
+
+        //    table.Append(header);
+        //    //Body
+
+        //    TableCellProperties tcp1 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //    TableCellProperties tcp = new TableCellProperties(new TableCellWidth { Width = "2000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //    TableCellProperties tcpN = new TableCellProperties(new TableCellWidth { Width = "2000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+
+        //    TableCellBorders tcbL = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, TopBorder = new TopBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, RightBorder = new RightBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" } };
+        //    TableCellBorders tcbR = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, TopBorder = new TopBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, LeftBorder = new LeftBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" } };
+        //    TableCellBorders tcbN = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, TopBorder = new TopBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" } };
+
+        //    TableCellMargin tcm = new TableCellMargin() { RightMargin = new RightMargin() { Width = "50", Type = TableWidthUnitValues.Dxa }, LeftMargin = new LeftMargin() { Width = "50", Type = TableWidthUnitValues.Dxa } };
+
+        //    ParagraphProperties pp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
+        //    ParagraphProperties pp1 = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
+
+        //    pp.AppendChild((Justification)rightJustify.CloneNode(true));
+        //    tcp.Append(tcbL, tcm);
+        //    tcpN.Append((TableCellBorders)tcbN.CloneNode(true), (TableCellMargin)tcm.CloneNode(true));
+
+
+        //    decimal currentOverallTotal = 0;
+        //    decimal proposedOverallTotal = 0;
+
+        //    //Client
+        //    if (commonClient != null && (commonClient.Any()))
+        //    {
+        //        if (clientDetails.ClientName != "")
+        //        {
+        //            TableRow tr = new TableRow();
+        //            TableCell tc1 = new TableCell();
+
+        //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //            tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+
+        //            tc1.Append((TableCellProperties)tcpN.CloneNode(true));
+        //            tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //            if (clientDetails.MaritalStatus == "S")
+        //            {
+        //                tc1.Append(new Paragraph(new Run(new Text(""))));
+        //            }
+        //            else
+        //            {
+
+        //                Paragraph para = new Paragraph();
+        //                Run run = para.AppendChild(new Run());
+        //                RunProperties runProperties = run.AppendChild(new RunProperties());
+        //                Caps caps = new Caps();
+        //                Bold bold = new Bold();
+        //                caps.Val = OnOffValue.FromBoolean(true);
+        //                runProperties.AppendChild(caps);
+        //                runProperties.AppendChild(bold);
+        //                run.AppendChild(new Text(clientDetails.FamilyName + ", " + clientDetails.ClientName));
+        //                tc1.Append(para);
+        //                //tc1.Append(new Paragraph(new Run(new RunProperties(new Bold(),new Caps()), new Text(clientDetails.FamilyName + " , " + clientDetails.ClientName))));
+        //            }
+
+        //            TableCell tc2 = new TableCell();
+        //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc2.Append((TableCellProperties)tcp2.CloneNode(true));
+        //            tc2.Append(new Paragraph(new Run(new Text(""))));
+
+
+
+
+        //            TableCell tc3 = new TableCell();
+        //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc3.Append((TableCellProperties)tcp2.CloneNode(true));
+        //            tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+        //            TableCell tc4 = new TableCell();
+        //            tc4.Append((TableCellProperties)tcp2.CloneNode(true));
+        //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc4.Append(new Paragraph(new Run(new Text(""))));
+
+        //            tr.Append(tc1, tc2, tc3, tc4);
+
+        //            if (clientDetails.MaritalStatus != "S")
+        //            {
+        //                table.AppendChild(tr);
+        //            }
+        //        }
+
+        //        decimal currentTotal = 0;
+        //        decimal proposedTotal = 0;
+        //        foreach (int propertytId in commonClient)
+        //        {
+        //            var current = (clientCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId).FirstOrDefault();
+        //            var proposed = (clientProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId).FirstOrDefault();
+
+        //            if (current != null && (current.Product != ""))
+        //            {
+        //                TableRow tr = new TableRow();
+        //                TableCell tc1 = new TableCell();
+
+        //                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                tc1.Append((TableCellProperties)tcpN.CloneNode(true));
+        //                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Product))));
+
+
+        //                TableCell tc2 = new TableCell();
+        //                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc2.Append((TableCellProperties)tcp2.CloneNode(true));
+        //                tc2.Append(new Paragraph(new Run(new Text(""))));
+
+
+
+
+        //                TableCell tc3 = new TableCell();
+        //                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc3.Append((TableCellProperties)tcp2.CloneNode(true));
+        //                tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+        //                TableCell tc4 = new TableCell();
+        //                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc4.Append((TableCellProperties)tcp2.CloneNode(true));
+        //                tc4.Append(new Paragraph(new Run(new Text(""))));
+
+
+        //                tr.Append(tc1, tc2, tc3, tc4);
+
+        //                table.AppendChild(tr);
+
+
+        //            }
+        //            else
+        //            {
+        //                TableRow tr = new TableRow();
+        //                TableCell tc1 = new TableCell();
+
+        //                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                tc1.Append((TableCellProperties)tcpN.CloneNode(true));
+        //                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposed.product))));
+
+
+        //                TableCell tc2 = new TableCell();
+        //                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc2.Append((TableCellProperties)tcp2.CloneNode(true));
+        //                tc2.Append(new Paragraph(new Run(new Text(""))));
+
+        //                TableCell tc3 = new TableCell();
+        //                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc3.Append((TableCellProperties)tcp2.CloneNode(true));
+        //                tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+
+        //                TableCell tc4 = new TableCell();
+        //                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc4.Append((TableCellProperties)tcp2.CloneNode(true));
+        //                tc4.Append(new Paragraph(new Run(new Text(""))));
+
+        //                tr.Append(tc1, tc2, tc3, tc4);
+
+        //                table.AppendChild(tr);
+
+        //            }
+
+        //            var commonFund = new List<string>();
+        //            if (current != null || proposed != null)
+        //            {
+        //                if (current != null && proposed != null)
+        //                {
+        //                    commonFund = current.data.Select(s => s.Apircode).ToList().Union(proposed.data.Select(p => p.Apircode).ToList()).ToList();
+        //                }
+        //                else if (current == null)
+        //                {
+        //                    commonFund = proposed.data.Select(p => p.Apircode).ToList();
+        //                }
+        //                else
+        //                {
+        //                    commonFund = current.data.Select(p => p.Apircode).ToList();
+        //                }
+        //                foreach (string APIR in commonFund)
+        //                {
+
+        //                    var currentFund = current == null ? null : (current.data ?? Enumerable.Empty<CurrentClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+        //                    var proposedFund = proposed == null ? null : (proposed.data ?? Enumerable.Empty<ProposedClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+        //                    if (currentFund != null && (currentFund.FundName != ""))
+        //                    {
+        //                        TableRow tr = new TableRow();
+        //                        TableCell tc1 = new TableCell();
+
+        //                        tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                        tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(currentFund.FundName))));
+
+
+        //                        TableCell tc2 = new TableCell();
+        //                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc2.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", currentFund.Value)))));
+
+
+
+
+        //                        TableCell tc3 = new TableCell();
+        //                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", ((proposedFund == null ? 0 : proposedFund.Value) - currentFund.Value))))));
+
+
+        //                        TableCell tc4 = new TableCell();
+        //                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc4.Append(tcp2);
+        //                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc4.Append(new Paragraph(new Run(new Text(proposedFund == null ? "0" : String.Format("{0:n0}", proposedFund.Value)))));
+
+        //                        tr.Append(tc1, tc2, tc3, tc4);
+
+        //                        table.AppendChild(tr);
+
+
+        //                    }
+        //                    else
+        //                    {
+        //                        TableRow tr = new TableRow();
+        //                        TableCell tc1 = new TableCell();
+
+        //                        tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                        tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(proposedFund.FundName))));
+
+
+        //                        TableCell tc2 = new TableCell();
+        //                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc2.Append(new Paragraph(new Run(new Text(currentFund == null ? "0" : String.Format("{0:n0}", currentFund.Value)))));
+
+        //                        TableCell tc3 = new TableCell();
+        //                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", (proposedFund.Value - (currentFund == null ? 0 : currentFund.Value)))))));
+
+
+        //                        TableCell tc4 = new TableCell();
+        //                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc4.Append(tcp2);
+        //                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc4.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", proposedFund.Value)))));
+
+        //                        tr.Append(tc1, tc2, tc3, tc4);
+
+        //                        table.AppendChild(tr);
+
+        //                    }
+
+
+
+        //                }
+
+        //                // Sub Total
+        //                if (current != null || proposed != null)
+        //                {
+        //                    TableRow tr = new TableRow();
+        //                    TableCell tc1 = new TableCell();
+
+        //                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                    tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Sub Total"))));
+
+
+        //                    TableCell tc2 = new TableCell();
+        //                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                    tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+
+        //                    currentTotal += current == null ? 0 : current.data.Sum(items => items.Value);
+
+
+
+        //                    TableCell tc3 = new TableCell();
+        //                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                    tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", ((proposed == null ? 0 : proposed.data.Sum(items => items.Value))) - (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+
+
+        //                    TableCell tc4 = new TableCell();
+        //                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                    tc4.Append(tcp2);
+        //                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (proposed == null ? 0 : proposed.data.Sum(items => items.Value)))))));
+
+        //                    proposedTotal += proposed == null ? 0 : proposed.data.Sum(items => items.Value);
+
+
+
+        //                    tr.Append(tc1, tc2, tc3, tc4);
+
+        //                    table.AppendChild(tr);
+        //                }
+
+
+        //            }
+        //        }
+
+        //        //Client Total
+        //        if (commonClient.Any())
+        //        {
+        //            TableRow tr = new TableRow();
+        //            TableCell tc1 = new TableCell();
+
+        //            tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+
+        //            if (clientDetails.MaritalStatus == "S")
+        //            {
+        //                tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total"))));
+        //            }
+        //            else
+        //            {
+        //                tc1.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+
+        //                Paragraph para = new Paragraph();
+        //                Run run = para.AppendChild(new Run());
+        //                RunProperties runProperties = run.AppendChild(new RunProperties());
+        //                Bold bold = new Bold();
+
+        //                runProperties.AppendChild(bold);
+        //                run.AppendChild(new Text { Text = "Total for ", Space = SpaceProcessingModeValues.Preserve });
+
+        //                Run run1 = para.AppendChild(new Run());
+        //                RunProperties runPropertiesA = run1.AppendChild(new RunProperties());
+        //                Caps caps = new Caps();
+        //                caps.Val = OnOffValue.FromBoolean(true);
+        //                runPropertiesA.AppendChild(caps);
+        //                runPropertiesA.AppendChild((Bold)bold.CloneNode(true));
+        //                run1.AppendChild(new Text(clientDetails.FamilyName + ", " + clientDetails.ClientName));
+        //                tc1.Append(para);
+
+        //                // tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total for " + clientDetails.FamilyName + ", " + clientDetails.ClientName))));
+        //            }
+
+        //            currentOverallTotal += currentTotal;
+        //            proposedOverallTotal += proposedTotal;
+        //            TableCell tc2 = new TableCell();
+        //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //            tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", currentTotal)))));
+
+
+
+
+        //            TableCell tc3 = new TableCell();
+        //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //            tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal - currentTotal)))));
+
+
+        //            TableCell tc4 = new TableCell();
+        //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //            tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //            tc4.Append(tcp2);
+        //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal)))));
+
+        //            tr.Append(tc1, tc2, tc3, tc4);
+
+        //            table.AppendChild(tr);
+        //        }
+        //    }
+        //    //Partner
+        //    if (commonPartner != null && (commonPartner.Any()))
+        //    {
+        //        if (clientDetails.PartnerName != "")
+        //        {
+        //            TableRow tr = new TableRow();
+        //            TableCell tc1 = new TableCell();
+
+        //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //            tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //            tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //            tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+
+        //            Paragraph para = new Paragraph();
+        //            Run run = para.AppendChild(new Run());
+        //            RunProperties runProperties = run.AppendChild(new RunProperties());
+        //            Caps caps = new Caps();
+        //            Bold bold = new Bold();
+        //            caps.Val = OnOffValue.FromBoolean(true);
+        //            runProperties.AppendChild(caps);
+        //            runProperties.AppendChild(bold);
+        //            run.AppendChild(new Text(clientDetails.FamilyName + ", " + clientDetails.PartnerName));
+        //            tc1.Append(para);
+
+        //            // tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(clientDetails.FamilyName + ", " + clientDetails.PartnerName))));
+
+
+        //            TableCell tc2 = new TableCell();
+        //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc2.Append((TableCellProperties)tcp2.CloneNode(true));
+        //            tc2.Append(new Paragraph(new Run(new Text(""))));
+
+
+
+
+        //            TableCell tc3 = new TableCell();
+        //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc3.Append((TableCellProperties)tcp2.CloneNode(true));
+        //            tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+        //            TableCell tc4 = new TableCell();
+        //            tc4.Append((TableCellProperties)tcp2.CloneNode(true));
+        //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc4.Append(new Paragraph(new Run(new Text(""))));
+
+        //            tr.Append(tc1, tc2, tc3, tc4);
+
+        //            table.AppendChild(tr);
+        //        }
+
+        //        decimal currentTotal = 0;
+        //        decimal proposedTotal = 0;
+        //        foreach (int propertytId in commonPartner)
+        //        {
+        //            var current = (partnerCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId).FirstOrDefault();
+        //            var proposed = (partnerProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId).FirstOrDefault();
+
+        //            if (current != null && (current.Product != ""))
+        //            {
+        //                TableRow tr = new TableRow();
+        //                TableCell tc1 = new TableCell();
+
+        //                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+
+        //                tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Product))));
+
+
+        //                TableCell tc2 = new TableCell();
+        //                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc2.Append(new Paragraph(new Run(new Text(""))));
+
+
+
+
+        //                TableCell tc3 = new TableCell();
+        //                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+        //                TableCell tc4 = new TableCell();
+        //                tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc4.Append(new Paragraph(new Run(new Text(""))));
+
+        //                tr.Append(tc1, tc2, tc3, tc4);
+
+        //                table.AppendChild(tr);
+
+
+        //            }
+        //            else
+        //            {
+        //                TableRow tr = new TableRow();
+        //                TableCell tc1 = new TableCell();
+
+        //                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposed.product))));
+
+
+        //                TableCell tc2 = new TableCell();
+        //                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc2.Append(new Paragraph(new Run(new Text(""))));
+
+        //                TableCell tc3 = new TableCell();
+        //                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+        //                TableCell tc4 = new TableCell();
+        //                tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc4.Append(new Paragraph(new Run(new Text(""))));
+
+        //                tr.Append(tc1, tc2, tc3, tc4);
+
+        //                table.AppendChild(tr);
+
+        //            }
+
+        //            var commonFund = new List<string>();
+        //            if (current != null || proposed != null)
+        //            {
+        //                if (current != null && proposed != null)
+        //                {
+        //                    commonFund = current.data.Select(s => s.Apircode).ToList().Union(proposed.data.Select(p => p.Apircode).ToList()).ToList();
+        //                }
+        //                else if (current == null)
+        //                {
+        //                    commonFund = proposed.data.Select(p => p.Apircode).ToList();
+        //                }
+        //                else
+        //                {
+        //                    commonFund = current.data.Select(p => p.Apircode).ToList();
+        //                }
+        //                foreach (string APIR in commonFund)
+        //                {
+
+        //                    var currentFund = current == null ? null : (current.data ?? Enumerable.Empty<CurrentClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+        //                    var proposedFund = proposed == null ? null : (proposed.data ?? Enumerable.Empty<ProposedClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+        //                    if (currentFund != null && (currentFund.FundName != ""))
+        //                    {
+        //                        TableRow tr = new TableRow();
+        //                        TableCell tc1 = new TableCell();
+
+        //                        tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                        tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(currentFund.FundName))));
+
+
+        //                        TableCell tc2 = new TableCell();
+        //                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc2.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", currentFund.Value)))));
+
+
+
+
+        //                        TableCell tc3 = new TableCell();
+        //                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", ((proposedFund == null ? 0 : proposedFund.Value) - currentFund.Value))))));
+
+
+        //                        TableCell tc4 = new TableCell();
+        //                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc4.Append(tcp2);
+        //                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc4.Append(new Paragraph(new Run(new Text(proposedFund == null ? "0" : String.Format("{0:n0}", proposedFund.Value)))));
+
+        //                        tr.Append(tc1, tc2, tc3, tc4);
+
+        //                        table.AppendChild(tr);
+
+
+        //                    }
+        //                    else
+        //                    {
+        //                        TableRow tr = new TableRow();
+        //                        TableCell tc1 = new TableCell();
+
+        //                        tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                        tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(proposedFund.FundName))));
+
+
+        //                        TableCell tc2 = new TableCell();
+        //                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc2.Append(new Paragraph(new Run(new Text(currentFund == null ? "0" : String.Format("{0:n0}", currentFund.Value)))));
+
+        //                        TableCell tc3 = new TableCell();
+        //                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", (proposedFund.Value - (currentFund == null ? 0 : currentFund.Value)))))));
+
+
+        //                        TableCell tc4 = new TableCell();
+        //                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc4.Append(tcp2);
+        //                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc4.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", proposedFund.Value)))));
+
+        //                        tr.Append(tc1, tc2, tc3, tc4);
+
+        //                        table.AppendChild(tr);
+
+        //                    }
+
+
+
+        //                }
+
+        //                // Sub Total
+        //                if (current != null || proposed != null)
+        //                {
+        //                    TableRow tr = new TableRow();
+        //                    TableCell tc1 = new TableCell();
+
+        //                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                    tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Sub Total"))));
+
+
+        //                    TableCell tc2 = new TableCell();
+        //                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                    tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+
+        //                    currentTotal += current == null ? 0 : current.data.Sum(items => items.Value);
+        //                    // currentOverallTotal += currentTotal;
+
+
+
+        //                    TableCell tc3 = new TableCell();
+        //                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                    tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", ((proposed == null ? 0 : proposed.data.Sum(items => items.Value))) - (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+
+
+        //                    TableCell tc4 = new TableCell();
+        //                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                    tc4.Append(tcp2);
+        //                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (proposed == null ? 0 : proposed.data.Sum(items => items.Value)))))));
+
+        //                    proposedTotal += proposed == null ? 0 : proposed.data.Sum(items => items.Value);
+
+        //                    tr.Append(tc1, tc2, tc3, tc4);
+
+        //                    table.AppendChild(tr);
+        //                }
+
+
+        //            }
+        //        }
+
+        //        //Client Total
+        //        if (commonPartner.Any())
+        //        {
+        //            TableRow tr = new TableRow();
+        //            TableCell tc1 = new TableCell();
+
+        //            tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //            tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //            tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+
+
+        //            Paragraph para = new Paragraph();
+        //            Run run = para.AppendChild(new Run());
+        //            RunProperties runProperties = run.AppendChild(new RunProperties());
+        //            Bold bold = new Bold();
+        //            runProperties.AppendChild(bold);
+        //            run.AppendChild(new Text { Text = "Total for ", Space = SpaceProcessingModeValues.Preserve });
+
+        //            Run run1 = para.AppendChild(new Run());
+        //            RunProperties runPropertiesA = run1.AppendChild(new RunProperties());
+        //            Caps caps = new Caps();
+        //            caps.Val = OnOffValue.FromBoolean(true);
+        //            runPropertiesA.AppendChild(caps);
+        //            runPropertiesA.AppendChild((Bold)bold.CloneNode(true));
+        //            run1.AppendChild(new Text(clientDetails.FamilyName + ", " + clientDetails.PartnerName));
+        //            tc1.Append(para);
+        //            //tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total for " + clientDetails.FamilyName + " , " + clientDetails.PartnerName))));
+
+        //            currentOverallTotal += currentTotal;
+        //            proposedOverallTotal += proposedTotal;
+        //            TableCell tc2 = new TableCell();
+        //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //            tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", currentTotal)))));
+
+
+
+
+        //            TableCell tc3 = new TableCell();
+        //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //            tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal - currentTotal)))));
+
+
+        //            TableCell tc4 = new TableCell();
+        //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //            tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //            tc4.Append(tcp2);
+        //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal)))));
+
+        //            tr.Append(tc1, tc2, tc3, tc4);
+
+        //            table.AppendChild(tr);
+        //        }
+        //    }
+        //    //Joint
+        //    if (commonJoint != null && (commonJoint.Any()))
+        //    {
+        //        if (clientDetails.MaritalStatus != "S")
+        //        {
+        //            TableRow tr = new TableRow();
+        //            TableCell tc1 = new TableCell();
+
+        //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //            tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //            tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //            tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Joint"))));
+
+
+        //            TableCell tc2 = new TableCell();
+        //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //            tc2.Append(new Paragraph(new Run(new Text(""))));
+
+
+
+
+        //            TableCell tc3 = new TableCell();
+        //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //            tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+        //            TableCell tc4 = new TableCell();
+        //            tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+        //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc4.Append(new Paragraph(new Run(new Text(""))));
+
+        //            tr.Append(tc1, tc2, tc3, tc4);
+
+        //            table.AppendChild(tr);
+        //        }
+
+        //        decimal currentTotal = 0;
+        //        decimal proposedTotal = 0;
+        //        foreach (int propertytId in commonJoint)
+        //        {
+        //            var current = (partnerCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId).FirstOrDefault();
+        //            var proposed = (partnerProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId).FirstOrDefault();
+
+        //            if (current != null && (current.Product != ""))
+        //            {
+        //                TableRow tr = new TableRow();
+        //                TableCell tc1 = new TableCell();
+
+        //                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Product))));
+
+
+        //                TableCell tc2 = new TableCell();
+        //                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc2.Append(new Paragraph(new Run(new Text(""))));
+
+
+
+
+        //                TableCell tc3 = new TableCell();
+        //                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+        //                TableCell tc4 = new TableCell();
+        //                tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc4.Append(new Paragraph(new Run(new Text(""))));
+
+        //                tr.Append(tc1, tc2, tc3, tc4);
+
+        //                table.AppendChild(tr);
+
+
+        //            }
+        //            else
+        //            {
+        //                TableRow tr = new TableRow();
+        //                TableCell tc1 = new TableCell();
+
+        //                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+
+        //                tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposed.product))));
+
+
+        //                TableCell tc2 = new TableCell();
+        //                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc2.Append(new Paragraph(new Run(new Text(""))));
+
+        //                TableCell tc3 = new TableCell();
+        //                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+        //                TableCell tc4 = new TableCell();
+        //                tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                tc4.Append(new Paragraph(new Run(new Text(""))));
+
+        //                tr.Append(tc1, tc2, tc3, tc4);
+
+        //                table.AppendChild(tr);
+
+        //            }
+
+        //            var commonFund = new List<string>();
+        //            if (current != null || proposed != null)
+        //            {
+        //                if (current != null && proposed != null)
+        //                {
+        //                    commonFund = current.data.Select(s => s.Apircode).ToList().Union(proposed.data.Select(p => p.Apircode).ToList()).ToList();
+        //                }
+        //                else if (current == null)
+        //                {
+        //                    commonFund = proposed.data.Select(p => p.Apircode).ToList();
+        //                }
+        //                else
+        //                {
+        //                    commonFund = current.data.Select(p => p.Apircode).ToList();
+        //                }
+        //                foreach (string APIR in commonFund)
+        //                {
+
+        //                    var currentFund = current == null ? null : (current.data ?? Enumerable.Empty<CurrentClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+        //                    var proposedFund = proposed == null ? null : (proposed.data ?? Enumerable.Empty<ProposedClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+        //                    if (currentFund != null && (currentFund.FundName != ""))
+        //                    {
+        //                        TableRow tr = new TableRow();
+        //                        TableCell tc1 = new TableCell();
+
+        //                        tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                        tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(currentFund.FundName))));
+
+
+        //                        TableCell tc2 = new TableCell();
+        //                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc2.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", currentFund.Value)))));
+
+
+
+
+        //                        TableCell tc3 = new TableCell();
+        //                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", ((proposedFund == null ? 0 : proposedFund.Value) - currentFund.Value))))));
+
+
+        //                        TableCell tc4 = new TableCell();
+        //                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc4.Append(tcp2);
+        //                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc4.Append(new Paragraph(new Run(new Text(proposedFund == null ? "0" : String.Format("{0:n0}", proposedFund.Value)))));
+
+        //                        tr.Append(tc1, tc2, tc3, tc4);
+
+        //                        table.AppendChild(tr);
+
+
+        //                    }
+        //                    else
+        //                    {
+        //                        TableRow tr = new TableRow();
+        //                        TableCell tc1 = new TableCell();
+
+        //                        tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //                        tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(proposedFund.FundName))));
+
+
+        //                        TableCell tc2 = new TableCell();
+        //                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc2.Append(new Paragraph(new Run(new Text(currentFund == null ? "0" : String.Format("{0:n0}", currentFund.Value)))));
+
+        //                        TableCell tc3 = new TableCell();
+        //                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                        tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", (proposedFund.Value - (currentFund == null ? 0 : currentFund.Value)))))));
+
+
+        //                        TableCell tc4 = new TableCell();
+        //                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                        tc4.Append(tcp2);
+        //                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                        tc4.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", proposedFund.Value)))));
+
+        //                        tr.Append(tc1, tc2, tc3, tc4);
+
+        //                        table.AppendChild(tr);
+
+        //                    }
+
+
+
+        //                }
+
+        //                // Sub Total
+        //                if (current != null || proposed != null)
+        //                {
+        //                    TableRow tr = new TableRow();
+        //                    TableCell tc1 = new TableCell();
+
+        //                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //                    tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Sub Total"))));
+
+
+        //                    TableCell tc2 = new TableCell();
+        //                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                    tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+
+        //                    currentTotal += current == null ? 0 : current.data.Sum(items => items.Value);
+        //                    // currentOverallTotal += currentTotal;
+
+        //                    TableCell tc3 = new TableCell();
+        //                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //                    tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", ((proposed == null ? 0 : proposed.data.Sum(items => items.Value))) - (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+
+
+        //                    TableCell tc4 = new TableCell();
+        //                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //                    tc4.Append(tcp2);
+        //                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //                    tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (proposed == null ? 0 : proposed.data.Sum(items => items.Value)))))));
+
+        //                    proposedTotal += proposed == null ? 0 : proposed.data.Sum(items => items.Value);
+
+
+        //                    tr.Append(tc1, tc2, tc3, tc4);
+
+        //                    table.AppendChild(tr);
+        //                }
+
+
+        //            }
+        //        }
+
+        //        //Client Total
+        //        if (commonJoint.Any())
+        //        {
+        //            TableRow tr = new TableRow();
+        //            TableCell tc1 = new TableCell();
+
+        //            tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //            tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //            tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total for Joint"))));
+
+
+        //            TableCell tc2 = new TableCell();
+        //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //            tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", currentTotal)))));
+
+
+        //            currentOverallTotal += currentTotal;
+        //            proposedOverallTotal += proposedTotal;
+
+        //            TableCell tc3 = new TableCell();
+        //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //            tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal - currentTotal)))));
+
+
+        //            TableCell tc4 = new TableCell();
+        //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //            tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //            tc4.Append(tcp2);
+        //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //            tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal)))));
+
+        //            tr.Append(tc1, tc2, tc3, tc4);
+
+        //            table.AppendChild(tr);
+        //        }
+        //    }
+
+
+        //    if (clientDetails.MaritalStatus == "M" && (commonPartner.Any() || commonJoint.Any()))
+        //    {
+        //        TableRow tr = new TableRow();
+        //        TableCell tc1 = new TableCell();
+
+        //        tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+
+
+        //        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+        //        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+        //        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total"))));
+
+
+        //        TableCell tc2 = new TableCell();
+        //        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+        //        tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", currentOverallTotal)))));
+
+
+
+
+        //        TableCell tc3 = new TableCell();
+        //        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+        //        tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedOverallTotal - currentOverallTotal)))));
+
+
+        //        TableCell tc4 = new TableCell();
+        //        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+        //        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+        //        tc4.Append(tcp2);
+        //        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+        //        tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedOverallTotal)))));
+
+        //        tr.Append(tc1, tc2, tc3, tc4);
+
+        //        table.AppendChild(tr);
+        //    }
+
+
+        //    Run linebreak = new Run(new Break());
+
+        //    Paragraph paragraph = new Paragraph();
+        //    paragraph.Append(new OpenXmlElement[] { linebreak });
+        //    body.Append(paragraph);
+        //}
+        private void AddRecommemdedPortfolio(Body body, CF[] currentInvestments, PF[] proposedInvestments, BasicDetails clientDetails)
         {
             ////Paragraph break3 = new Paragraph(new Run(new Break() { Type = BreakValues.Page }));
 
@@ -13543,17 +14695,17 @@ namespace PlanlogicAI.Controllers
 
             Paragraph description = body.AppendChild(new Paragraph(new Run(new Text("The following table outlines our recommendations for your investment portfolio. This table may include other existing investments or products you hold which we have not addressed as part of our advice."))));
 
-            IList<OriginalCF> clientCurrent = new List<OriginalCF>(currentInvestments.Where(c => c.Owner == "Client").ToArray());
-            IList<OriginalCF> partnerCurrent = new List<OriginalCF>(currentInvestments.Where(c => c.Owner == "Partner").ToArray());
-            IList<OriginalCF> jointCurrent = new List<OriginalCF>(currentInvestments.Where(c => c.Owner == "Joint").ToArray());
+            IList<CF> clientCurrent = new List<CF>(currentInvestments.Where(c => c.owner == "Client").ToArray());
+            IList<CF> partnerCurrent = new List<CF>(currentInvestments.Where(c => c.owner == "Partner").ToArray());
+            IList<CF> jointCurrent = new List<CF>(currentInvestments.Where(c => c.owner == "Joint").ToArray());
 
             IList<PF> clientProposed = new List<PF>(proposedInvestments.Where(c => c.owner == "Client").ToArray());
             IList<PF> partnerProposed = new List<PF>(proposedInvestments.Where(c => c.owner == "Partner").ToArray());
             IList<PF> jointProposed = new List<PF>(proposedInvestments.Where(c => c.owner == "Joint").ToArray());
 
-            var commonClient = clientCurrent.Select(s => s.ProductId).ToList().Union(clientProposed.Select(p => p.productId).ToList()).ToList();
-            var commonPartner = partnerCurrent.Select(s => s.ProductId).ToList().Union(partnerProposed.Select(p => p.productId).ToList()).ToList();
-            var commonJoint = jointCurrent.Select(s => s.ProductId).ToList().Union(jointProposed.Select(p => p.productId).ToList()).ToList();
+            var commonClient = clientCurrent.Select(s => s.productId).ToList().Union(clientProposed.Select(p => p.productId).ToList()).ToList();
+            var commonPartner = partnerCurrent.Select(s => s.productId).ToList().Union(partnerProposed.Select(p => p.productId).ToList()).ToList();
+            var commonJoint = jointCurrent.Select(s => s.productId).ToList().Union(jointProposed.Select(p => p.productId).ToList()).ToList();
 
 
             Table table = body.AppendChild(new Table());
@@ -13578,7 +14730,7 @@ namespace PlanlogicAI.Controllers
             Justification rightJustify = new Justification() { Val = JustificationValues.Right };
             hpp1.AppendChild((Justification)rightJustify.CloneNode(true));
 
-          
+
 
             TableCellBorders hcb = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 20, Color = "ED7D27" } };
 
@@ -13651,7 +14803,7 @@ namespace PlanlogicAI.Controllers
                     }
                     else
                     {
-                        
+
                         Paragraph para = new Paragraph();
                         Run run = para.AppendChild(new Run());
                         RunProperties runProperties = run.AppendChild(new RunProperties());
@@ -13692,228 +14844,290 @@ namespace PlanlogicAI.Controllers
                     }
                 }
 
-                decimal currentTotal = 0;
-                decimal proposedTotal = 0;
+                var totalProducts = new List<sub>();
                 foreach (int propertytId in commonClient)
                 {
-                    var current = (clientCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId).FirstOrDefault();
+                    var current = (clientCurrent ?? Enumerable.Empty<CF>()).Where(i => i.productId == propertytId);
                     var proposed = (clientProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId).FirstOrDefault();
 
-                    if (current != null && (current.Product != ""))
+                    foreach(CF cf in current)
                     {
-                        TableRow tr = new TableRow();
-                        TableCell tc1 = new TableCell();
-
-                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                        tc1.Append((TableCellProperties)tcpN.CloneNode(true));
-                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Product))));
-
-
-                        TableCell tc2 = new TableCell();
-                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc2.Append((TableCellProperties)tcp2.CloneNode(true));
-                        tc2.Append(new Paragraph(new Run(new Text(""))));
-
-
-
-
-                        TableCell tc3 = new TableCell();
-                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc3.Append((TableCellProperties)tcp2.CloneNode(true));
-                        tc3.Append(new Paragraph(new Run(new Text(""))));
-
-
-                        TableCell tc4 = new TableCell();
-                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc4.Append((TableCellProperties)tcp2.CloneNode(true));
-                        tc4.Append(new Paragraph(new Run(new Text(""))));
-
-
-                        tr.Append(tc1, tc2, tc3, tc4);
-
-                        table.AppendChild(tr);
-
-
-                    }
-                    else
-                    {
-                        TableRow tr = new TableRow();
-                        TableCell tc1 = new TableCell();
-
-                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                        tc1.Append((TableCellProperties)tcpN.CloneNode(true));
-                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposed.product))));
-
-
-                        TableCell tc2 = new TableCell();
-                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc2.Append((TableCellProperties)tcp2.CloneNode(true));
-                        tc2.Append(new Paragraph(new Run(new Text(""))));
-
-                        TableCell tc3 = new TableCell();
-                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc3.Append((TableCellProperties)tcp2.CloneNode(true));
-                        tc3.Append(new Paragraph(new Run(new Text(""))));
-
-
-
-                        TableCell tc4 = new TableCell();
-                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc4.Append((TableCellProperties)tcp2.CloneNode(true));
-                        tc4.Append(new Paragraph(new Run(new Text(""))));
-
-                        tr.Append(tc1, tc2, tc3, tc4);
-
-                        table.AppendChild(tr);
-
+                        var t = new sub();
+                        t.productId = cf.productId;
+                        t.currentId = cf.id;
+                        t.proposedId = 0;
+                        totalProducts.Add(t);
                     }
 
-                    var commonFund = new List<string>();
-                    if (current != null || proposed != null)
+                    if (proposed != null)
                     {
-                        if (current != null && proposed != null)
+
+                        if (current == null || current.Count() <= 0)
                         {
-                            commonFund = current.data.Select(s => s.Apircode).ToList().Union(proposed.data.Select(p => p.Apircode).ToList()).ToList();
-                        }
-                        else if (current == null)
-                        {
-                            commonFund = proposed.data.Select(p => p.Apircode).ToList();
+                            var p = new sub();
+                            p.productId = proposed.productId;
+                            p.proposedId = proposed.id;
+                            p.currentId = 0;
+
+                            totalProducts.Add(p);
                         }
                         else
                         {
-                            commonFund = current.data.Select(p => p.Apircode).ToList();
-                        }
-                        foreach (string APIR in commonFund)
-                        {
-
-                            var currentFund = current == null ? null : (current.data ?? Enumerable.Empty<CurrentClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
-                            var proposedFund = proposed == null ? null : (proposed.data ?? Enumerable.Empty<ProposedClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
-                            if (currentFund != null && (currentFund.FundName != ""))
+                            foreach (CF cf in current)
                             {
-                                TableRow tr = new TableRow();
-                                TableCell tc1 = new TableCell();
+                                if (proposed.productId != cf.productId)
+                                {
+                                    var p = new sub();
+                                    p.productId = proposed.productId;
+                                    p.proposedId = proposed.id;
+                                    p.currentId = 0;
 
-                                tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                                tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(currentFund.FundName))));
+                                    totalProducts.Add(p);
+                                }
+                                else
+                                {
+                                    var t = totalProducts.Where(x => x.currentId == cf.id).FirstOrDefault();
+                                    t.proposedId = proposed.id;
 
-
-                                TableCell tc2 = new TableCell();
-                                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc2.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", currentFund.Value)))));
-
-
-
-
-                                TableCell tc3 = new TableCell();
-                                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", ((proposedFund == null ? 0 : proposedFund.Value) - currentFund.Value))))));
-
-
-                                TableCell tc4 = new TableCell();
-                                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc4.Append(tcp2);
-                                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc4.Append(new Paragraph(new Run(new Text(proposedFund == null ? "0" : String.Format("{0:n0}", proposedFund.Value)))));
-
-                                tr.Append(tc1, tc2, tc3, tc4);
-
-                                table.AppendChild(tr);
-
-
+                                }
                             }
-                            else
-                            {
-                                TableRow tr = new TableRow();
-                                TableCell tc1 = new TableCell();
-
-                                tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                                tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(proposedFund.FundName))));
-
-
-                                TableCell tc2 = new TableCell();
-                                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc2.Append(new Paragraph(new Run(new Text(currentFund == null ? "0" : String.Format("{0:n0}", currentFund.Value)))));
-
-                                TableCell tc3 = new TableCell();
-                                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", (proposedFund.Value - (currentFund == null ? 0 : currentFund.Value)))))));
-
-
-                                TableCell tc4 = new TableCell();
-                                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc4.Append(tcp2);
-                                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc4.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", proposedFund.Value)))));
-
-                                tr.Append(tc1, tc2, tc3, tc4);
-
-                                table.AppendChild(tr);
-
-                            }
-
-
-
                         }
+                    }
 
-                        // Sub Total
-                        if (current != null || proposed != null)
+
+                }
+
+                    decimal currentTotal = 0;
+                decimal proposedTotal = 0;
+                foreach (sub propertytId in totalProducts)
+                {
+                    CF current = null;
+                    PF proposed = null;
+                    if (propertytId.currentId != 0)
+                    {
+                        current = (clientCurrent ?? Enumerable.Empty<CF>()).Where(i => i.productId == propertytId.productId && i.id == propertytId.currentId).FirstOrDefault();
+                    }
+                    if (propertytId.proposedId != 0)
+                    {
+                         proposed = (clientProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId.productId && i.id == propertytId.proposedId).FirstOrDefault();
+                    }
+                                  
+                        if (current != null && (current.product != ""))
                         {
                             TableRow tr = new TableRow();
                             TableCell tc1 = new TableCell();
 
-                            tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                            tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                            tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Sub Total"))));
+                            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                            tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+                            tc1.Append((TableCellProperties)tcpN.CloneNode(true));
+                            tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+                            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.product))));
 
 
                             TableCell tc2 = new TableCell();
                             tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                            tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+                            tc2.Append((TableCellProperties)tcp2.CloneNode(true));
+                            tc2.Append(new Paragraph(new Run(new Text(""))));
 
-                            currentTotal += current == null ? 0 : current.data.Sum(items => items.Value);
 
-                           
+
 
                             TableCell tc3 = new TableCell();
                             tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                            tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", ((proposed == null ? 0 : proposed.data.Sum(items => items.Value))) - (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+                            tc3.Append((TableCellProperties)tcp2.CloneNode(true));
+                            tc3.Append(new Paragraph(new Run(new Text(""))));
 
 
                             TableCell tc4 = new TableCell();
-                            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                            tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                            tc4.Append(tcp2);
                             tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (proposed == null ? 0 : proposed.data.Sum(items => items.Value)))))));
-
-                            proposedTotal += proposed == null ? 0 : proposed.data.Sum(items => items.Value);
-                            
+                            tc4.Append((TableCellProperties)tcp2.CloneNode(true));
+                            tc4.Append(new Paragraph(new Run(new Text(""))));
 
 
                             tr.Append(tc1, tc2, tc3, tc4);
 
                             table.AppendChild(tr);
+
+
+                        }
+                        else
+                        {
+                            TableRow tr = new TableRow();
+                            TableCell tc1 = new TableCell();
+
+                            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                            tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+                            tc1.Append((TableCellProperties)tcpN.CloneNode(true));
+                            tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+                            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposed.product))));
+
+
+                            TableCell tc2 = new TableCell();
+                            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                            tc2.Append((TableCellProperties)tcp2.CloneNode(true));
+                            tc2.Append(new Paragraph(new Run(new Text(""))));
+
+                            TableCell tc3 = new TableCell();
+                            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                            tc3.Append((TableCellProperties)tcp2.CloneNode(true));
+                            tc3.Append(new Paragraph(new Run(new Text(""))));
+
+
+
+                            TableCell tc4 = new TableCell();
+                            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                            tc4.Append((TableCellProperties)tcp2.CloneNode(true));
+                            tc4.Append(new Paragraph(new Run(new Text(""))));
+
+                            tr.Append(tc1, tc2, tc3, tc4);
+
+                            table.AppendChild(tr);
+
                         }
 
+                        var commonFund = new List<string>();
+                        if (current != null || proposed != null)
+                        {
+                            if (current != null && proposed != null)
+                            {
+                                commonFund = current.data.Select(s => s.Apircode).ToList().Union(proposed.data.Select(p => p.Apircode).ToList()).ToList();
+                            }
+                            else if (current == null)
+                            {
+                                commonFund = proposed.data.Select(p => p.Apircode).ToList();
+                            }
+                            else
+                            {
+                                commonFund = current.data.Select(p => p.Apircode).ToList();
+                            }
+                            foreach (string APIR in commonFund)
+                            {
 
-                    }
+                                var currentFund = current == null ? null : (current.data ?? Enumerable.Empty<CurrentClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+                                var proposedFund = proposed == null ? null : (proposed.data ?? Enumerable.Empty<ProposedClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+                                if (currentFund != null && (currentFund.FundName != ""))
+                                {
+                                    TableRow tr = new TableRow();
+                                    TableCell tc1 = new TableCell();
+
+                                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+                                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
+                                    tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+                                    tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(currentFund.FundName))));
+
+
+                                    TableCell tc2 = new TableCell();
+                                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+                                    tc2.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", currentFund.Value)))));
+
+
+
+
+                                    TableCell tc3 = new TableCell();
+                                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+                                    tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", ((proposedFund == null ? 0 : proposedFund.Value) - currentFund.Value))))));
+
+
+                                    TableCell tc4 = new TableCell();
+                                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+                                    tc4.Append(tcp2);
+                                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                    tc4.Append(new Paragraph(new Run(new Text(proposedFund == null ? "0" : String.Format("{0:n0}", proposedFund.Value)))));
+
+                                    tr.Append(tc1, tc2, tc3, tc4);
+
+                                    table.AppendChild(tr);
+
+
+                                }
+                                else
+                                {
+                                    TableRow tr = new TableRow();
+                                    TableCell tc1 = new TableCell();
+
+                                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+                                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
+                                    tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+                                    tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(proposedFund.FundName))));
+
+
+                                    TableCell tc2 = new TableCell();
+                                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+                                    tc2.Append(new Paragraph(new Run(new Text(currentFund == null ? "0" : String.Format("{0:n0}", currentFund.Value)))));
+
+                                    TableCell tc3 = new TableCell();
+                                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+                                    tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", (proposedFund.Value - (currentFund == null ? 0 : currentFund.Value)))))));
+
+
+                                    TableCell tc4 = new TableCell();
+                                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+                                    tc4.Append(tcp2);
+                                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                    tc4.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", proposedFund.Value)))));
+
+                                    tr.Append(tc1, tc2, tc3, tc4);
+
+                                    table.AppendChild(tr);
+
+                                }
+
+
+
+                            }
+
+                            // Sub Total
+                            if (current != null || proposed != null)
+                            {
+                                TableRow tr = new TableRow();
+                                TableCell tc1 = new TableCell();
+
+                                tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+                                tc1.Append((TableCellProperties)tcp.CloneNode(true));
+                                tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Sub Total"))));
+
+
+                                TableCell tc2 = new TableCell();
+                                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+                                tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+
+                                currentTotal += current == null ? 0 : current.data.Sum(items => items.Value);
+
+
+
+                                TableCell tc3 = new TableCell();
+                                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+                                tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", ((proposed == null ? 0 : proposed.data.Sum(items => items.Value))) - (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+
+
+                                TableCell tc4 = new TableCell();
+                                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+                                tc4.Append(tcp2);
+                                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+                                tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (proposed == null ? 0 : proposed.data.Sum(items => items.Value)))))));
+
+                                proposedTotal += proposed == null ? 0 : proposed.data.Sum(items => items.Value);
+
+
+
+                                tr.Append(tc1, tc2, tc3, tc4);
+
+                                table.AppendChild(tr);
+                            }
+
+
+                        }
+                    //}
                 }
 
                 //Client Total
@@ -13923,7 +15137,7 @@ namespace PlanlogicAI.Controllers
                     TableCell tc1 = new TableCell();
 
                     tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                    
+
                     if (clientDetails.MaritalStatus == "S")
                     {
                         tc1.Append((TableCellProperties)tcp.CloneNode(true));
@@ -13939,7 +15153,7 @@ namespace PlanlogicAI.Controllers
                         Run run = para.AppendChild(new Run());
                         RunProperties runProperties = run.AppendChild(new RunProperties());
                         Bold bold = new Bold();
-                      
+
                         runProperties.AppendChild(bold);
                         run.AppendChild(new Text { Text = "Total for ", Space = SpaceProcessingModeValues.Preserve });
 
@@ -13952,7 +15166,7 @@ namespace PlanlogicAI.Controllers
                         run1.AppendChild(new Text(clientDetails.FamilyName + ", " + clientDetails.ClientName));
                         tc1.Append(para);
 
-                       // tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total for " + clientDetails.FamilyName + ", " + clientDetails.ClientName))));
+                        // tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total for " + clientDetails.FamilyName + ", " + clientDetails.ClientName))));
                     }
 
                     currentOverallTotal += currentTotal;
@@ -13983,634 +15197,690 @@ namespace PlanlogicAI.Controllers
                     table.AppendChild(tr);
                 }
             }
-            //Partner
-            if (commonPartner != null && (commonPartner.Any()))
-            {
-                if (clientDetails.PartnerName != "")
-                {
-                    TableRow tr = new TableRow();
-                    TableCell tc1 = new TableCell();
+            ////Partner
+            //if (commonPartner != null && (commonPartner.Any()))
+            //{
+            //    if (clientDetails.PartnerName != "")
+            //    {
+            //        TableRow tr = new TableRow();
+            //        TableCell tc1 = new TableCell();
 
-                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                    tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                    tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+            //        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //        tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
 
-                    Paragraph para = new Paragraph();
-                    Run run = para.AppendChild(new Run());
-                    RunProperties runProperties = run.AppendChild(new RunProperties());
-                    Caps caps = new Caps();
-                    Bold bold = new Bold();
-                    caps.Val = OnOffValue.FromBoolean(true);
-                    runProperties.AppendChild(caps);
-                    runProperties.AppendChild(bold);
-                    run.AppendChild(new Text(clientDetails.FamilyName + ", " + clientDetails.PartnerName));
-                    tc1.Append(para);
+            //        Paragraph para = new Paragraph();
+            //        Run run = para.AppendChild(new Run());
+            //        RunProperties runProperties = run.AppendChild(new RunProperties());
+            //        Caps caps = new Caps();
+            //        Bold bold = new Bold();
+            //        caps.Val = OnOffValue.FromBoolean(true);
+            //        runProperties.AppendChild(caps);
+            //        runProperties.AppendChild(bold);
+            //        run.AppendChild(new Text(clientDetails.FamilyName + ", " + clientDetails.PartnerName));
+            //        tc1.Append(para);
 
-                    // tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(clientDetails.FamilyName + ", " + clientDetails.PartnerName))));
+            //        // tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(clientDetails.FamilyName + ", " + clientDetails.PartnerName))));
 
 
-                    TableCell tc2 = new TableCell();
-                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc2.Append((TableCellProperties)tcp2.CloneNode(true));
-                    tc2.Append(new Paragraph(new Run(new Text(""))));
+            //        TableCell tc2 = new TableCell();
+            //        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc2.Append((TableCellProperties)tcp2.CloneNode(true));
+            //        tc2.Append(new Paragraph(new Run(new Text(""))));
 
 
 
 
-                    TableCell tc3 = new TableCell();
-                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc3.Append((TableCellProperties)tcp2.CloneNode(true));
-                    tc3.Append(new Paragraph(new Run(new Text(""))));
+            //        TableCell tc3 = new TableCell();
+            //        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc3.Append((TableCellProperties)tcp2.CloneNode(true));
+            //        tc3.Append(new Paragraph(new Run(new Text(""))));
 
 
-                    TableCell tc4 = new TableCell();
-                    tc4.Append((TableCellProperties)tcp2.CloneNode(true));
-                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc4.Append(new Paragraph(new Run(new Text(""))));
+            //        TableCell tc4 = new TableCell();
+            //        tc4.Append((TableCellProperties)tcp2.CloneNode(true));
+            //        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc4.Append(new Paragraph(new Run(new Text(""))));
 
-                    tr.Append(tc1, tc2, tc3, tc4);
+            //        tr.Append(tc1, tc2, tc3, tc4);
 
-                    table.AppendChild(tr);
-                }
+            //        table.AppendChild(tr);
+            //    }
 
-                decimal currentTotal = 0;
-                decimal proposedTotal = 0;
-                foreach (int propertytId in commonPartner)
-                {
-                    var current = (partnerCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId).FirstOrDefault();
-                    var proposed = (partnerProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId).FirstOrDefault();
+            //    var totalProducts = new List<sub>();
+            //    foreach (int propertytId in commonPartner)
+            //    {
+            //        var current = (partnerCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId);
+            //        var proposed = (partnerProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId).FirstOrDefault();
 
-                    if (current != null && (current.Product != ""))
-                    {
-                        TableRow tr = new TableRow();
-                        TableCell tc1 = new TableCell();
+            //        foreach (OriginalCF cf in current)
+            //        {
+            //            var t = new sub();
+            //            t.productId = cf.ProductId;
+            //            t.recId = cf.RecId;
 
-                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //            totalProducts.Add(t);
+            //        }
 
-                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Product))));
+            //        if (proposed != null)
+            //        {
+            //            var p = new sub();
+            //            p.productId = proposed.productId;
+            //            p.recId = proposed.id;
 
+            //            totalProducts.Add(p);
+            //        }
 
-                        TableCell tc2 = new TableCell();
-                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc2.Append(new Paragraph(new Run(new Text(""))));
 
+            //    }
 
+            //    decimal currentTotal = 0;
+            //    decimal proposedTotal = 0;
+            //    foreach (sub propertytId in totalProducts)
+            //    {
+            //        var current = (partnerCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId.productId && i.RecId == propertytId.recId).FirstOrDefault();
+            //        var proposed = (partnerProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId.productId && i.id == propertytId.recId).FirstOrDefault();
 
 
-                        TableCell tc3 = new TableCell();
-                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc3.Append(new Paragraph(new Run(new Text(""))));
+            //        if (current != null && (current.Product != ""))
+            //        {
+            //            TableRow tr = new TableRow();
+            //            TableCell tc1 = new TableCell();
 
+            //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //            tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
 
-                        TableCell tc4 = new TableCell();
-                        tc4.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc4.Append(new Paragraph(new Run(new Text(""))));
+            //            tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //            tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+            //            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Product))));
 
-                        tr.Append(tc1, tc2, tc3, tc4);
 
-                        table.AppendChild(tr);
+            //            TableCell tc2 = new TableCell();
+            //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc2.Append(new Paragraph(new Run(new Text(""))));
 
 
-                    }
-                    else
-                    {
-                        TableRow tr = new TableRow();
-                        TableCell tc1 = new TableCell();
 
-                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposed.product))));
 
+            //            TableCell tc3 = new TableCell();
+            //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc3.Append(new Paragraph(new Run(new Text(""))));
 
-                        TableCell tc2 = new TableCell();
-                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc2.Append(new Paragraph(new Run(new Text(""))));
 
-                        TableCell tc3 = new TableCell();
-                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc3.Append(new Paragraph(new Run(new Text(""))));
+            //            TableCell tc4 = new TableCell();
+            //            tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc4.Append(new Paragraph(new Run(new Text(""))));
 
+            //            tr.Append(tc1, tc2, tc3, tc4);
 
-                        TableCell tc4 = new TableCell();
-                        tc4.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc4.Append(new Paragraph(new Run(new Text(""))));
+            //            table.AppendChild(tr);
 
-                        tr.Append(tc1, tc2, tc3, tc4);
 
-                        table.AppendChild(tr);
+            //        }
+            //        else
+            //        {
+            //            TableRow tr = new TableRow();
+            //            TableCell tc1 = new TableCell();
 
-                    }
+            //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //            tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //            tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //            tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+            //            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposed.product))));
 
-                    var commonFund = new List<string>();
-                    if (current != null || proposed != null)
-                    {
-                        if (current != null && proposed != null)
-                        {
-                            commonFund = current.data.Select(s => s.Apircode).ToList().Union(proposed.data.Select(p => p.Apircode).ToList()).ToList();
-                        }
-                        else if (current == null)
-                        {
-                            commonFund = proposed.data.Select(p => p.Apircode).ToList();
-                        }
-                        else
-                        {
-                            commonFund = current.data.Select(p => p.Apircode).ToList();
-                        }
-                        foreach (string APIR in commonFund)
-                        {
 
-                            var currentFund = current == null ? null : (current.data ?? Enumerable.Empty<CurrentClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
-                            var proposedFund = proposed == null ? null : (proposed.data ?? Enumerable.Empty<ProposedClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
-                            if (currentFund != null && (currentFund.FundName != ""))
-                            {
-                                TableRow tr = new TableRow();
-                                TableCell tc1 = new TableCell();
+            //            TableCell tc2 = new TableCell();
+            //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc2.Append(new Paragraph(new Run(new Text(""))));
 
-                                tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                                tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(currentFund.FundName))));
+            //            TableCell tc3 = new TableCell();
+            //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc3.Append(new Paragraph(new Run(new Text(""))));
 
 
-                                TableCell tc2 = new TableCell();
-                                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc2.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", currentFund.Value)))));
+            //            TableCell tc4 = new TableCell();
+            //            tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc4.Append(new Paragraph(new Run(new Text(""))));
 
+            //            tr.Append(tc1, tc2, tc3, tc4);
 
+            //            table.AppendChild(tr);
 
+            //        }
 
-                                TableCell tc3 = new TableCell();
-                                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", ((proposedFund == null ? 0 : proposedFund.Value) - currentFund.Value))))));
+            //        var commonFund = new List<string>();
+            //        if (current != null || proposed != null)
+            //        {
+            //            if (current != null && proposed != null)
+            //            {
+            //                commonFund = current.data.Select(s => s.Apircode).ToList().Union(proposed.data.Select(p => p.Apircode).ToList()).ToList();
+            //            }
+            //            else if (current == null)
+            //            {
+            //                commonFund = proposed.data.Select(p => p.Apircode).ToList();
+            //            }
+            //            else
+            //            {
+            //                commonFund = current.data.Select(p => p.Apircode).ToList();
+            //            }
+            //            foreach (string APIR in commonFund)
+            //            {
 
+            //                var currentFund = current == null ? null : (current.data ?? Enumerable.Empty<CurrentClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+            //                var proposedFund = proposed == null ? null : (proposed.data ?? Enumerable.Empty<ProposedClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+            //                if (currentFund != null && (currentFund.FundName != ""))
+            //                {
+            //                    TableRow tr = new TableRow();
+            //                    TableCell tc1 = new TableCell();
 
-                                TableCell tc4 = new TableCell();
-                                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc4.Append(tcp2);
-                                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc4.Append(new Paragraph(new Run(new Text(proposedFund == null ? "0" : String.Format("{0:n0}", proposedFund.Value)))));
+            //                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //                    tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+            //                    tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(currentFund.FundName))));
 
-                                tr.Append(tc1, tc2, tc3, tc4);
 
-                                table.AppendChild(tr);
+            //                    TableCell tc2 = new TableCell();
+            //                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                    tc2.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", currentFund.Value)))));
 
 
-                            }
-                            else
-                            {
-                                TableRow tr = new TableRow();
-                                TableCell tc1 = new TableCell();
 
-                                tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                                tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(proposedFund.FundName))));
 
+            //                    TableCell tc3 = new TableCell();
+            //                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                    tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", ((proposedFund == null ? 0 : proposedFund.Value) - currentFund.Value))))));
 
-                                TableCell tc2 = new TableCell();
-                                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc2.Append(new Paragraph(new Run(new Text(currentFund == null ? "0" : String.Format("{0:n0}", currentFund.Value)))));
 
-                                TableCell tc3 = new TableCell();
-                                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", (proposedFund.Value - (currentFund == null ? 0 : currentFund.Value)))))));
+            //                    TableCell tc4 = new TableCell();
+            //                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                    tc4.Append(tcp2);
+            //                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc4.Append(new Paragraph(new Run(new Text(proposedFund == null ? "0" : String.Format("{0:n0}", proposedFund.Value)))));
 
+            //                    tr.Append(tc1, tc2, tc3, tc4);
 
-                                TableCell tc4 = new TableCell();
-                                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc4.Append(tcp2);
-                                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc4.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", proposedFund.Value)))));
+            //                    table.AppendChild(tr);
 
-                                tr.Append(tc1, tc2, tc3, tc4);
 
-                                table.AppendChild(tr);
+            //                }
+            //                else
+            //                {
+            //                    TableRow tr = new TableRow();
+            //                    TableCell tc1 = new TableCell();
 
-                            }
+            //                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //                    tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+            //                    tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(proposedFund.FundName))));
 
 
+            //                    TableCell tc2 = new TableCell();
+            //                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                    tc2.Append(new Paragraph(new Run(new Text(currentFund == null ? "0" : String.Format("{0:n0}", currentFund.Value)))));
 
-                        }
+            //                    TableCell tc3 = new TableCell();
+            //                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                    tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", (proposedFund.Value - (currentFund == null ? 0 : currentFund.Value)))))));
 
-                        // Sub Total
-                        if (current != null || proposed != null)
-                        {
-                            TableRow tr = new TableRow();
-                            TableCell tc1 = new TableCell();
 
-                            tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                            tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                            tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Sub Total"))));
+            //                    TableCell tc4 = new TableCell();
+            //                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                    tc4.Append(tcp2);
+            //                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc4.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", proposedFund.Value)))));
 
+            //                    tr.Append(tc1, tc2, tc3, tc4);
 
-                            TableCell tc2 = new TableCell();
-                            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                            tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+            //                    table.AppendChild(tr);
 
-                            currentTotal += current == null ? 0 : current.data.Sum(items => items.Value);
-                           // currentOverallTotal += currentTotal;
+            //                }
 
 
 
-                            TableCell tc3 = new TableCell();
-                            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                            tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", ((proposed == null ? 0 : proposed.data.Sum(items => items.Value))) - (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+            //            }
 
+            //            // Sub Total
+            //            if (current != null || proposed != null)
+            //            {
+            //                TableRow tr = new TableRow();
+            //                TableCell tc1 = new TableCell();
 
-                            TableCell tc4 = new TableCell();
-                            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                            tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                            tc4.Append(tcp2);
-                            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (proposed == null ? 0 : proposed.data.Sum(items => items.Value)))))));
+            //                tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //                tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Sub Total"))));
 
-                            proposedTotal += proposed == null ? 0 : proposed.data.Sum(items => items.Value);
-                          
-                            tr.Append(tc1, tc2, tc3, tc4);
 
-                            table.AppendChild(tr);
-                        }
+            //                TableCell tc2 = new TableCell();
+            //                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (current == null ? 0 : current.data.Sum(items => items.Value)))))));
 
+            //                currentTotal += current == null ? 0 : current.data.Sum(items => items.Value);
+            //                // currentOverallTotal += currentTotal;
 
-                    }
-                }
 
-                //Client Total
-                if (commonPartner.Any())
-                {
-                    TableRow tr = new TableRow();
-                    TableCell tc1 = new TableCell();
 
-                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                    tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                TableCell tc3 = new TableCell();
+            //                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", ((proposed == null ? 0 : proposed.data.Sum(items => items.Value))) - (current == null ? 0 : current.data.Sum(items => items.Value)))))));
 
-               
-                    Paragraph para = new Paragraph();
-                    Run run = para.AppendChild(new Run());
-                    RunProperties runProperties = run.AppendChild(new RunProperties());
-                    Bold bold = new Bold();
-                    runProperties.AppendChild(bold);
-                    run.AppendChild(new Text { Text = "Total for ", Space = SpaceProcessingModeValues.Preserve });
 
-                    Run run1 = para.AppendChild(new Run());
-                    RunProperties runPropertiesA = run1.AppendChild(new RunProperties());
-                    Caps caps = new Caps();
-                    caps.Val = OnOffValue.FromBoolean(true);
-                    runPropertiesA.AppendChild(caps);
-                    runPropertiesA.AppendChild((Bold)bold.CloneNode(true));
-                    run1.AppendChild(new Text(clientDetails.FamilyName + ", " + clientDetails.PartnerName));
-                    tc1.Append(para);
-                    //tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total for " + clientDetails.FamilyName + " , " + clientDetails.PartnerName))));
+            //                TableCell tc4 = new TableCell();
+            //                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                tc4.Append(tcp2);
+            //                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (proposed == null ? 0 : proposed.data.Sum(items => items.Value)))))));
 
-                    currentOverallTotal += currentTotal;
-                    proposedOverallTotal += proposedTotal;
-                    TableCell tc2 = new TableCell();
-                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                    tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", currentTotal)))));
+            //                proposedTotal += proposed == null ? 0 : proposed.data.Sum(items => items.Value);
 
+            //                tr.Append(tc1, tc2, tc3, tc4);
 
+            //                table.AppendChild(tr);
+            //            }
 
 
-                    TableCell tc3 = new TableCell();
-                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                    tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal - currentTotal)))));
+            //        }
+            //    }
 
+            //    //Client Total
+            //    if (commonPartner.Any())
+            //    {
+            //        TableRow tr = new TableRow();
+            //        TableCell tc1 = new TableCell();
 
-                    TableCell tc4 = new TableCell();
-                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                    tc4.Append(tcp2);
-                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal)))));
+            //        tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //        tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
 
-                    tr.Append(tc1, tc2, tc3, tc4);
 
-                    table.AppendChild(tr);
-                }
-            }
-            //Joint
-            if (commonJoint != null && (commonJoint.Any()))
-            {
-                if (clientDetails.MaritalStatus != "S")
-                {
-                    TableRow tr = new TableRow();
-                    TableCell tc1 = new TableCell();
+            //        Paragraph para = new Paragraph();
+            //        Run run = para.AppendChild(new Run());
+            //        RunProperties runProperties = run.AppendChild(new RunProperties());
+            //        Bold bold = new Bold();
+            //        runProperties.AppendChild(bold);
+            //        run.AppendChild(new Text { Text = "Total for ", Space = SpaceProcessingModeValues.Preserve });
 
-                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                    tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                    tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Joint"))));
+            //        Run run1 = para.AppendChild(new Run());
+            //        RunProperties runPropertiesA = run1.AppendChild(new RunProperties());
+            //        Caps caps = new Caps();
+            //        caps.Val = OnOffValue.FromBoolean(true);
+            //        runPropertiesA.AppendChild(caps);
+            //        runPropertiesA.AppendChild((Bold)bold.CloneNode(true));
+            //        run1.AppendChild(new Text(clientDetails.FamilyName + ", " + clientDetails.PartnerName));
+            //        tc1.Append(para);
+            //        //tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total for " + clientDetails.FamilyName + " , " + clientDetails.PartnerName))));
 
+            //        currentOverallTotal += currentTotal;
+            //        proposedOverallTotal += proposedTotal;
+            //        TableCell tc2 = new TableCell();
+            //        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //        tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", currentTotal)))));
 
-                    TableCell tc2 = new TableCell();
-                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                    tc2.Append(new Paragraph(new Run(new Text(""))));
 
 
 
+            //        TableCell tc3 = new TableCell();
+            //        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //        tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal - currentTotal)))));
 
-                    TableCell tc3 = new TableCell();
-                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                    tc3.Append(new Paragraph(new Run(new Text(""))));
 
+            //        TableCell tc4 = new TableCell();
+            //        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //        tc4.Append(tcp2);
+            //        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal)))));
 
-                    TableCell tc4 = new TableCell();
-                    tc4.Append((TableCellProperties)tcp1.CloneNode(true));
-                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc4.Append(new Paragraph(new Run(new Text(""))));
+            //        tr.Append(tc1, tc2, tc3, tc4);
 
-                    tr.Append(tc1, tc2, tc3, tc4);
+            //        table.AppendChild(tr);
+            //    }
+            //}
+            ////Joint
+            //if (commonJoint != null && (commonJoint.Any()))
+            //{
+            //    if (clientDetails.MaritalStatus != "S")
+            //    {
+            //        TableRow tr = new TableRow();
+            //        TableCell tc1 = new TableCell();
 
-                    table.AppendChild(tr);
-                }
+            //        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //        tcp2.Append((TableCellBorders)tcbN.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //        tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Joint"))));
 
-                decimal currentTotal = 0;
-                decimal proposedTotal = 0;
-                foreach (int propertytId in commonJoint)
-                {
-                    var current = (partnerCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId).FirstOrDefault();
-                    var proposed = (partnerProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId).FirstOrDefault();
 
-                    if (current != null && (current.Product != ""))
-                    {
-                        TableRow tr = new TableRow();
-                        TableCell tc1 = new TableCell();
+            //        TableCell tc2 = new TableCell();
+            //        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //        tc2.Append(new Paragraph(new Run(new Text(""))));
 
-                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Product))));
 
 
-                        TableCell tc2 = new TableCell();
-                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc2.Append(new Paragraph(new Run(new Text(""))));
 
+            //        TableCell tc3 = new TableCell();
+            //        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //        tc3.Append(new Paragraph(new Run(new Text(""))));
 
 
+            //        TableCell tc4 = new TableCell();
+            //        tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+            //        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc4.Append(new Paragraph(new Run(new Text(""))));
 
-                        TableCell tc3 = new TableCell();
-                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc3.Append(new Paragraph(new Run(new Text(""))));
+            //        tr.Append(tc1, tc2, tc3, tc4);
 
+            //        table.AppendChild(tr);
+            //    }
 
-                        TableCell tc4 = new TableCell();
-                        tc4.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc4.Append(new Paragraph(new Run(new Text(""))));
 
-                        tr.Append(tc1, tc2, tc3, tc4);
+            //    var totalProducts = new List<sub>();
+            //    foreach (int propertytId in commonJoint)
+            //    {
+            //        var current = (partnerCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId);
+            //        var proposed = (partnerProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId).FirstOrDefault();
 
-                        table.AppendChild(tr);
+            //        foreach (OriginalCF cf in current)
+            //        {
+            //            var t = new sub();
+            //            t.productId = cf.ProductId;
+            //            t.recId = cf.RecId;
 
+            //            totalProducts.Add(t);
+            //        }
 
-                    }
-                    else
-                    {
-                        TableRow tr = new TableRow();
-                        TableCell tc1 = new TableCell();
+            //        if (proposed != null)
+            //        {
+            //            var p = new sub();
+            //            p.productId = proposed.productId;
+            //            p.recId = proposed.id;
 
-                        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //            totalProducts.Add(p);
+            //        }
 
-                        tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                        tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposed.product))));
 
+            //    }
 
-                        TableCell tc2 = new TableCell();
-                        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc2.Append(new Paragraph(new Run(new Text(""))));
+            //    decimal currentTotal = 0;
+            //    decimal proposedTotal = 0;
+            //    foreach (sub propertytId in totalProducts)
+            //    {
+            //        var current = (partnerCurrent ?? Enumerable.Empty<OriginalCF>()).Where(i => i.ProductId == propertytId.productId && i.RecId == propertytId.recId).FirstOrDefault();
+            //        var proposed = (partnerProposed ?? Enumerable.Empty<PF>()).Where(i => i.productId == propertytId.productId && i.id == propertytId.recId).FirstOrDefault();
 
-                        TableCell tc3 = new TableCell();
-                        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc3.Append(new Paragraph(new Run(new Text(""))));
+            //        if (current != null && (current.Product != ""))
+            //        {
+            //            TableRow tr = new TableRow();
+            //            TableCell tc1 = new TableCell();
 
+            //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //            tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //            tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //            tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+            //            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Product))));
 
-                        TableCell tc4 = new TableCell();
-                        tc4.Append((TableCellProperties)tcp1.CloneNode(true));
-                        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                        tc4.Append(new Paragraph(new Run(new Text(""))));
 
-                        tr.Append(tc1, tc2, tc3, tc4);
+            //            TableCell tc2 = new TableCell();
+            //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc2.Append(new Paragraph(new Run(new Text(""))));
 
-                        table.AppendChild(tr);
 
-                    }
 
-                    var commonFund = new List<string>();
-                    if (current != null || proposed != null)
-                    {
-                        if (current != null && proposed != null)
-                        {
-                            commonFund = current.data.Select(s => s.Apircode).ToList().Union(proposed.data.Select(p => p.Apircode).ToList()).ToList();
-                        }
-                        else if (current == null)
-                        {
-                            commonFund = proposed.data.Select(p => p.Apircode).ToList();
-                        }
-                        else
-                        {
-                            commonFund = current.data.Select(p => p.Apircode).ToList();
-                        }
-                        foreach (string APIR in commonFund)
-                        {
 
-                            var currentFund = current == null ? null : (current.data ?? Enumerable.Empty<CurrentClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
-                            var proposedFund = proposed == null ? null : (proposed.data ?? Enumerable.Empty<ProposedClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
-                            if (currentFund != null && (currentFund.FundName != ""))
-                            {
-                                TableRow tr = new TableRow();
-                                TableCell tc1 = new TableCell();
+            //            TableCell tc3 = new TableCell();
+            //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc3.Append(new Paragraph(new Run(new Text(""))));
 
-                                tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                                tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(currentFund.FundName))));
 
+            //            TableCell tc4 = new TableCell();
+            //            tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc4.Append(new Paragraph(new Run(new Text(""))));
 
-                                TableCell tc2 = new TableCell();
-                                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc2.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", currentFund.Value)))));
+            //            tr.Append(tc1, tc2, tc3, tc4);
 
+            //            table.AppendChild(tr);
 
 
+            //        }
+            //        else
+            //        {
+            //            TableRow tr = new TableRow();
+            //            TableCell tc1 = new TableCell();
 
-                                TableCell tc3 = new TableCell();
-                                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", ((proposedFund == null ? 0 : proposedFund.Value) - currentFund.Value))))));
+            //            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //            tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
 
+            //            tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //            tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+            //            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposed.product))));
 
-                                TableCell tc4 = new TableCell();
-                                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc4.Append(tcp2);
-                                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc4.Append(new Paragraph(new Run(new Text(proposedFund == null ? "0" : String.Format("{0:n0}", proposedFund.Value)))));
 
-                                tr.Append(tc1, tc2, tc3, tc4);
+            //            TableCell tc2 = new TableCell();
+            //            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc2.Append(new Paragraph(new Run(new Text(""))));
 
-                                table.AppendChild(tr);
+            //            TableCell tc3 = new TableCell();
+            //            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc3.Append(new Paragraph(new Run(new Text(""))));
 
 
-                            }
-                            else
-                            {
-                                TableRow tr = new TableRow();
-                                TableCell tc1 = new TableCell();
+            //            TableCell tc4 = new TableCell();
+            //            tc4.Append((TableCellProperties)tcp1.CloneNode(true));
+            //            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //            tc4.Append(new Paragraph(new Run(new Text(""))));
 
-                                tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                                tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                                tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(proposedFund.FundName))));
+            //            tr.Append(tc1, tc2, tc3, tc4);
 
+            //            table.AppendChild(tr);
 
-                                TableCell tc2 = new TableCell();
-                                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc2.Append(new Paragraph(new Run(new Text(currentFund == null ? "0" : String.Format("{0:n0}", currentFund.Value)))));
+            //        }
 
-                                TableCell tc3 = new TableCell();
-                                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                                tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", (proposedFund.Value - (currentFund == null ? 0 : currentFund.Value)))))));
+            //        var commonFund = new List<string>();
+            //        if (current != null || proposed != null)
+            //        {
+            //            if (current != null && proposed != null)
+            //            {
+            //                commonFund = current.data.Select(s => s.Apircode).ToList().Union(proposed.data.Select(p => p.Apircode).ToList()).ToList();
+            //            }
+            //            else if (current == null)
+            //            {
+            //                commonFund = proposed.data.Select(p => p.Apircode).ToList();
+            //            }
+            //            else
+            //            {
+            //                commonFund = current.data.Select(p => p.Apircode).ToList();
+            //            }
+            //            foreach (string APIR in commonFund)
+            //            {
 
+            //                var currentFund = current == null ? null : (current.data ?? Enumerable.Empty<CurrentClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+            //                var proposedFund = proposed == null ? null : (proposed.data ?? Enumerable.Empty<ProposedClientFundsViewModel>()).Where(i => i.Apircode == APIR).FirstOrDefault();
+            //                if (currentFund != null && (currentFund.FundName != ""))
+            //                {
+            //                    TableRow tr = new TableRow();
+            //                    TableCell tc1 = new TableCell();
 
-                                TableCell tc4 = new TableCell();
-                                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                                tc4.Append(tcp2);
-                                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                                tc4.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", proposedFund.Value)))));
+            //                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //                    tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+            //                    tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(currentFund.FundName))));
 
-                                tr.Append(tc1, tc2, tc3, tc4);
 
-                                table.AppendChild(tr);
+            //                    TableCell tc2 = new TableCell();
+            //                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                    tc2.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", currentFund.Value)))));
 
-                            }
 
 
 
-                        }
+            //                    TableCell tc3 = new TableCell();
+            //                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                    tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", ((proposedFund == null ? 0 : proposedFund.Value) - currentFund.Value))))));
 
-                        // Sub Total
-                        if (current != null || proposed != null)
-                        {
-                            TableRow tr = new TableRow();
-                            TableCell tc1 = new TableCell();
 
-                            tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                            tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                            tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Sub Total"))));
+            //                    TableCell tc4 = new TableCell();
+            //                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                    tc4.Append(tcp2);
+            //                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc4.Append(new Paragraph(new Run(new Text(proposedFund == null ? "0" : String.Format("{0:n0}", proposedFund.Value)))));
 
+            //                    tr.Append(tc1, tc2, tc3, tc4);
 
-                            TableCell tc2 = new TableCell();
-                            tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                            tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+            //                    table.AppendChild(tr);
 
-                            currentTotal += current == null ? 0 : current.data.Sum(items => items.Value);
-                           // currentOverallTotal += currentTotal;
 
-                            TableCell tc3 = new TableCell();
-                            tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                            tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", ((proposed == null ? 0 : proposed.data.Sum(items => items.Value))) - (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+            //                }
+            //                else
+            //                {
+            //                    TableRow tr = new TableRow();
+            //                    TableCell tc1 = new TableCell();
 
+            //                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //                    tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
+            //                    tc1.Append(new Paragraph(new Run(new RunProperties(), new Text(proposedFund.FundName))));
 
-                            TableCell tc4 = new TableCell();
-                            TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                            tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                            tc4.Append(tcp2);
-                            tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                            tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (proposed == null ? 0 : proposed.data.Sum(items => items.Value)))))));
 
-                            proposedTotal += proposed == null ? 0 : proposed.data.Sum(items => items.Value);
-                           
+            //                    TableCell tc2 = new TableCell();
+            //                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                    tc2.Append(new Paragraph(new Run(new Text(currentFund == null ? "0" : String.Format("{0:n0}", currentFund.Value)))));
 
-                            tr.Append(tc1, tc2, tc3, tc4);
+            //                    TableCell tc3 = new TableCell();
+            //                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                    tc3.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", (proposedFund.Value - (currentFund == null ? 0 : currentFund.Value)))))));
 
-                            table.AppendChild(tr);
-                        }
 
+            //                    TableCell tc4 = new TableCell();
+            //                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                    tc4.Append(tcp2);
+            //                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                    tc4.Append(new Paragraph(new Run(new Text(String.Format("{0:n0}", proposedFund.Value)))));
 
-                    }
-                }
+            //                    tr.Append(tc1, tc2, tc3, tc4);
 
-                //Client Total
-                if (commonJoint.Any())
-                {
-                    TableRow tr = new TableRow();
-                    TableCell tc1 = new TableCell();
+            //                    table.AppendChild(tr);
 
-                    tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                    tc1.Append((TableCellProperties)tcp.CloneNode(true));
-                    tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total for Joint"))));
+            //                }
 
 
-                    TableCell tc2 = new TableCell();
-                    tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc2.Append((TableCellProperties)tcp1.CloneNode(true));
-                    tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", currentTotal)))));
 
+            //            }
 
-                    currentOverallTotal += currentTotal;
-                    proposedOverallTotal += proposedTotal;
+            //            // Sub Total
+            //            if (current != null || proposed != null)
+            //            {
+            //                TableRow tr = new TableRow();
+            //                TableCell tc1 = new TableCell();
 
-                    TableCell tc3 = new TableCell();
-                    tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc3.Append((TableCellProperties)tcp1.CloneNode(true));
-                    tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal - currentTotal)))));
+            //                tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //                tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Sub Total"))));
 
 
-                    TableCell tc4 = new TableCell();
-                    TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                    tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
-                    tc4.Append(tcp2);
-                    tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                    tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal)))));
+            //                TableCell tc2 = new TableCell();
+            //                tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (current == null ? 0 : current.data.Sum(items => items.Value)))))));
 
-                    tr.Append(tc1, tc2, tc3, tc4);
+            //                currentTotal += current == null ? 0 : current.data.Sum(items => items.Value);
+            //                // currentOverallTotal += currentTotal;
 
-                    table.AppendChild(tr);
-                }
-            }
+            //                TableCell tc3 = new TableCell();
+            //                tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //                tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", ((proposed == null ? 0 : proposed.data.Sum(items => items.Value))) - (current == null ? 0 : current.data.Sum(items => items.Value)))))));
+
+
+            //                TableCell tc4 = new TableCell();
+            //                TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //                tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //                tc4.Append(tcp2);
+            //                tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //                tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", (proposed == null ? 0 : proposed.data.Sum(items => items.Value)))))));
+
+            //                proposedTotal += proposed == null ? 0 : proposed.data.Sum(items => items.Value);
+
+
+            //                tr.Append(tc1, tc2, tc3, tc4);
+
+            //                table.AppendChild(tr);
+            //            }
+
+
+            //        }
+            //    }
+
+            //    //Client Total
+            //    if (commonJoint.Any())
+            //    {
+            //        TableRow tr = new TableRow();
+            //        TableCell tc1 = new TableCell();
+
+            //        tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //        tc1.Append((TableCellProperties)tcp.CloneNode(true));
+            //        tc1.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total for Joint"))));
+
+
+            //        TableCell tc2 = new TableCell();
+            //        tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc2.Append((TableCellProperties)tcp1.CloneNode(true));
+            //        tc2.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", currentTotal)))));
+
+
+            //        currentOverallTotal += currentTotal;
+            //        proposedOverallTotal += proposedTotal;
+
+            //        TableCell tc3 = new TableCell();
+            //        tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc3.Append((TableCellProperties)tcp1.CloneNode(true));
+            //        tc3.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal - currentTotal)))));
+
+
+            //        TableCell tc4 = new TableCell();
+            //        TableCellProperties tcp2 = new TableCellProperties(new TableCellWidth { Width = "1000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+            //        tcp2.Append((TableCellBorders)tcbR.CloneNode(true), (Justification)rightJustify.CloneNode(true));
+            //        tc4.Append(tcp2);
+            //        tc4.AppendChild((ParagraphProperties)pp.CloneNode(true));
+            //        tc4.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposedTotal)))));
+
+            //        tr.Append(tc1, tc2, tc3, tc4);
+
+            //        table.AppendChild(tr);
+            //    }
+            //}
 
 
             if (clientDetails.MaritalStatus == "M" && (commonPartner.Any() || commonJoint.Any()))
@@ -14620,11 +15890,11 @@ namespace PlanlogicAI.Controllers
 
                 tcp1.Append((TableCellBorders)tcbL.CloneNode(true), (TableCellMargin)tcm.CloneNode(true), (Justification)rightJustify.CloneNode(true));
 
-               
+
                 tc1.Append((TableCellProperties)tcp.CloneNode(true));
                 tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
                 tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Total"))));
-              
+
 
                 TableCell tc2 = new TableCell();
                 tc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
@@ -14660,7 +15930,7 @@ namespace PlanlogicAI.Controllers
             body.Append(paragraph);
         }
 
-        public void AddProductCosts(Body body, PF[] proposedProducts, Color orange, BasicDetails clientDetails)
+        private void AddProductCosts(Body body, PF[] proposedProducts, Color orange, BasicDetails clientDetails)
         {
             Color red = new Color() { Val = "FF0000" };
 
@@ -14760,7 +16030,7 @@ namespace PlanlogicAI.Controllers
                 bool isGrowWrapASX = false;
                 bool hasBrokerage = false;
 
-               var clientList = new List<string>();
+                var clientList = new List<string>();
                 var partnerList = new List<string>();
                 var jointList = new List<string>();
 
@@ -14799,7 +16069,7 @@ namespace PlanlogicAI.Controllers
                         isGrowWrap = true;
                         foreach (ProposedClientFundsViewModel data in product.data)
                         {
-                            
+
                             if (data.FeeLabel3 == "ASX" || data.FeeLabel4 == "ETF")
                             {
                                 isGrowWrapASX = true;
@@ -14807,7 +16077,7 @@ namespace PlanlogicAI.Controllers
 
                         }
 
-                        if(product.owner == "Client")
+                        if (product.owner == "Client")
                         {
                             clientList.Add(platform.SubType);
                         }
@@ -14827,7 +16097,7 @@ namespace PlanlogicAI.Controllers
                     }
 
 
-                    if(platform.PlatformName == "MyNorth")
+                    if (platform.PlatformName == "MyNorth")
                     {
                         if (product.owner == "Client")
                         {
@@ -14870,11 +16140,11 @@ namespace PlanlogicAI.Controllers
                         {
                             var owner = "";
                             if (product.owner == "Client")
-                            {                            
+                            {
                                 owner = clientDetails.ClientName;
                             }
                             else if (product.owner == "Partner")
-                            {                             
+                            {
                                 owner = clientDetails.PartnerName;
                             }
                             else if (product.owner == "Joint")
@@ -14914,7 +16184,7 @@ namespace PlanlogicAI.Controllers
                     var feeDetails = product.feeDisplay.OrderBy(d => feeOrder.IndexOf(d.name.Trim())).ToList();
                     foreach (ProductFeesDisplay pf in feeDetails)
                     {
-                        if(pf.name == "Brokerage Fee" && pf.val > 0)
+                        if (pf.name == "Brokerage Fee" && pf.val > 0)
                         {
                             hasBrokerage = true;
                         }
@@ -15074,20 +16344,20 @@ namespace PlanlogicAI.Controllers
                 jointList = jointList.Distinct().ToList();
 
                 //TODO : client & partner
-                if ((clientList.Count > 0 && partnerList.Count > 0 ) || jointList.Count > 0)
+                if ((clientList.Count > 0 && partnerList.Count > 0) || jointList.Count > 0)
                 {
                     var val = "";
                     var listOfLists = new List<List<string>>() { clientList, partnerList, jointList };
                     var intersection = listOfLists.Aggregate((previousList, nextList) => previousList.Intersect(nextList).ToList());
 
                     int i = 0;
-                    foreach(string s in intersection)
+                    foreach (string s in intersection)
                     {
-                        if(i == 0)
+                        if (i == 0)
                         {
                             val += s;
                         }
-                        else 
+                        else
                         {
                             val += " / " + s;
                         }
@@ -15111,7 +16381,7 @@ namespace PlanlogicAI.Controllers
                             val += " / " + s;
                         }
                     }
-                    Paragraph commentary = new Paragraph(new ParagraphProperties(new ParagraphStyleId() { Val = "ListParagraph" }, new NumberingProperties(new NumberingLevelReference() { Val = 0 }, new NumberingId() { Val = 1 })), new Run(new RunProperties(), new Text { Text = "We have recommended " + clientDetails.ClientName +" invest in the same product provider " + val + " which will enable you to receive the ‘family discount’, thereby reducing your ongoing administration fee.", Space = SpaceProcessingModeValues.Preserve }));
+                    Paragraph commentary = new Paragraph(new ParagraphProperties(new ParagraphStyleId() { Val = "ListParagraph" }, new NumberingProperties(new NumberingLevelReference() { Val = 0 }, new NumberingId() { Val = 1 })), new Run(new RunProperties(), new Text { Text = "We have recommended " + clientDetails.ClientName + " invest in the same product provider " + val + " which will enable you to receive the ‘family discount’, thereby reducing your ongoing administration fee.", Space = SpaceProcessingModeValues.Preserve }));
                     body.Append(commentary);
                 }
                 else if (partnerList.Count > 0)
@@ -15132,7 +16402,7 @@ namespace PlanlogicAI.Controllers
                     Paragraph commentary = new Paragraph(new ParagraphProperties(new ParagraphStyleId() { Val = "ListParagraph" }, new NumberingProperties(new NumberingLevelReference() { Val = 0 }, new NumberingId() { Val = 1 })), new Run(new RunProperties(), new Text { Text = "We have recommended " + clientDetails.PartnerName + " invest in the same product provider " + val + " which will enable you to receive the ‘family discount’, thereby reducing your ongoing administration fee.", Space = SpaceProcessingModeValues.Preserve }));
                     body.Append(commentary);
                 }
-               
+
 
                 if (isGrowWrapASX == true)
                 {
@@ -15150,7 +16420,7 @@ namespace PlanlogicAI.Controllers
                     body.Append(commentary);
                 }
 
-              
+
 
             }
 
@@ -15161,7 +16431,7 @@ namespace PlanlogicAI.Controllers
             body.Append(paragraph1);
         }
 
-        public void AddProposedAllocation (Body body, AssetDetails[] details,Color orange,string riskProfile,string type,PF[] proposedAssets,BasicDetails clientDetails)
+        private void AddProposedAllocation(Body body, AssetDetails[] details, Color orange, string riskProfile, string type, PF[] proposedAssets, BasicDetails clientDetails)
         {
             Color red = new Color() { Val = "FF0000" };
 
@@ -15185,7 +16455,7 @@ namespace PlanlogicAI.Controllers
                     owner = "Joint";
                 }
 
-              
+
 
 
                 Paragraph break3 = new Paragraph(new Run(new Break() { Type = BreakValues.Page }));
@@ -15195,51 +16465,54 @@ namespace PlanlogicAI.Controllers
                 Paragraph selectedProduct = body.AppendChild(new Paragraph());
                 Run r = selectedProduct.AppendChild(new Run());
                 RunProperties runProperties = r.AppendChild(new RunProperties(new Bold(), new RunFonts { Ascii = "Verdana" }, new FontSize { Val = new StringValue("20") }));
-               // runProperties.AppendChild(orange.CloneNode(true));
+                // runProperties.AppendChild(orange.CloneNode(true));
 
                 var productNames = "";
                 var i = 1;
-                foreach(PF pf in proposedAssetsDetails)
+                foreach (PF pf in proposedAssetsDetails)
                 {
-                   
-                    if (i == 1)
+                    var platform = this.context.Platform.Where(x => x.PlatformId == pf.platformId).FirstOrDefault();
+                    if (platform.PlatformName != "Cash")
                     {
-                        if (clientDetails.MaritalStatus == "M")
+                        if (i == 1)
                         {
-                            productNames += "" + pf.product + " (" + owner + ") ";
+                            if (clientDetails.MaritalStatus == "M")
+                            {
+                                productNames += "" + pf.product + " (" + owner + ") ";
+                            }
+                            else
+                            {
+                                productNames += "" + pf.product + " ";
+                            }
+                        }
+                        else if (i == proposedAssetsDetails.Length)
+                        {
+                            if (clientDetails.MaritalStatus == "M")
+                            {
+                                productNames += "& " + pf.product + " (" + owner + ") ";
+                            }
+                            else
+                            {
+                                productNames += "& " + pf.product + " ";
+                            }
                         }
                         else
                         {
-                            productNames += "" + pf.product + " ";
+                            if (clientDetails.MaritalStatus == "M")
+                            {
+                                productNames += ", " + pf.product + " (" + owner + ") ";
+                            }
+                            else
+                            {
+                                productNames += ", " + pf.product + " ";
+                            }
                         }
+                        i++;
                     }
-                    else if ( i == proposedAssetsDetails.Length)
-                    {
-                        if (clientDetails.MaritalStatus == "M")
-                        {
-                            productNames += "& " + pf.product + " (" + owner + ") ";
-                        }
-                        else
-                        {
-                            productNames += "& " + pf.product + " ";
-                        }
-                    }
-                    else
-                    {
-                        if (clientDetails.MaritalStatus == "M")
-                        {
-                            productNames += ", " + pf.product + " (" + owner + ") ";
-                        }
-                        else
-                        {
-                            productNames += ", " + pf.product + " ";
-                        }
-                    }
-                    i++;
                 }
 
                 r.AppendChild(new Text("Proposed asset allocation - " + productNames));
-               
+
                 Paragraph s1 = body.AppendChild(new Paragraph());
                 Run r1 = s1.AppendChild(new Run());
                 RunProperties runProperties1 = r1.AppendChild(new RunProperties());
@@ -15621,7 +16894,7 @@ namespace PlanlogicAI.Controllers
                     }
                 }
 
-             
+
                 Paragraph blank = new Paragraph();
                 blank.Append(new OpenXmlElement[] { (Run)linebreak.CloneNode(true) });
                 body.Append(blank);
@@ -15630,7 +16903,7 @@ namespace PlanlogicAI.Controllers
                 Paragraph highComplianceRisk = new Paragraph();
                 body.Append(highComplianceRisk);
 
-               
+
 
                 Paragraph assetAllocation = new Paragraph();
                 ParagraphProperties assetAllocationPr = new ParagraphProperties();
@@ -15638,7 +16911,7 @@ namespace PlanlogicAI.Controllers
                 assetAllocationPr.Append(justification1);
                 assetAllocation.Append(assetAllocationPr);
 
-                assetAllocation.Append(new OpenXmlElement[] { (Run)linebreak.CloneNode(true), new Run(new RunProperties(new Bold(),new FontSize{ Val="20" }, (Color)orange.CloneNode(true)), new Text("Asset allocation commentary"))});
+                assetAllocation.Append(new OpenXmlElement[] { (Run)linebreak.CloneNode(true), new Run(new RunProperties(new Bold(), new FontSize { Val = "20" }, (Color)orange.CloneNode(true)), new Text("Asset allocation commentary")) });
                 //, (Run)linebreak.CloneNode(true)
                 body.Append(assetAllocation);
 
@@ -15647,13 +16920,13 @@ namespace PlanlogicAI.Controllers
                 if ((findVal(details, "Total Growth").proposed) >= (findVal(details, "Total Growth").targetmin) && (findVal(details, "Total Growth").proposed) <= (findVal(details, "Total Growth").targetmax))
                 {
                     //new ParagraphStyleId() { Val = "ListParagraph" }, new NumberingProperties(new NumberingLevelReference() { Val = 0 }, new NumberingId() { Val = 1 })),
-                    Paragraph commentary = new Paragraph(new ParagraphProperties( new Run(new RunProperties(), new Text("The recommended portfolio provides you with a diversified portfolio that is appropriate for your " + riskProfile.ToString().Trim() +" risk profile."))));
+                    Paragraph commentary = new Paragraph(new ParagraphProperties(new Run(new RunProperties(), new Text("The recommended portfolio provides you with a diversified portfolio that is appropriate for your '" + riskProfile.ToString().Trim() + "' risk profile."))));
                     body.Append(commentary);
                 }
                 else
                 {
                     var val = "";
-                    if((findVal(details, "Total Growth").proposed) > (findVal(details, "Total Growth").targetmax))
+                    if ((findVal(details, "Total Growth").proposed) > (findVal(details, "Total Growth").targetmax))
                     {
                         val = "growth";
                     }
@@ -15662,7 +16935,7 @@ namespace PlanlogicAI.Controllers
                         val = "defensive";
                     }
                     //new ParagraphProperties(new ParagraphStyleId() { Val = "ListParagraph" }, new NumberingProperties(new NumberingLevelReference() { Val = 0 }, new NumberingId() { Val = 1 })),
-                    Paragraph commentary = new Paragraph( new Run(new RunProperties(), new Text("The recommended portfolio has an overweight allocation to " + val + " for your investor risk profile. This is due to your investment in the  ")));
+                    Paragraph commentary = new Paragraph(new Run(new RunProperties(), new Text("The recommended portfolio has an overweight allocation to " + val + " for your investor risk profile. This is due to your investment in the  ")));
                     commentary.Append(new Run(new RunProperties((Color)red.CloneNode(true)), new Text { Text = " [recommended Name of Investment].", Space = SpaceProcessingModeValues.Preserve }));
                     body.Append(commentary);
                 }
@@ -15672,7 +16945,7 @@ namespace PlanlogicAI.Controllers
                     var growth = "";
                     var defensive = "";
 
-                    if((findVal(details, "International Equity").proposed) > 0 || (findVal(details, "Domestic Equity").proposed) > 0)
+                    if ((findVal(details, "International Equity").proposed) > 0 || (findVal(details, "Domestic Equity").proposed) > 0)
                     {
                         growth += "shares";
                     }
@@ -15691,7 +16964,7 @@ namespace PlanlogicAI.Controllers
                             growth += ", property";
                         }
                     }
-                    if ((findVal(details, "Growth Alternatives").proposed) > 0 )
+                    if ((findVal(details, "Growth Alternatives").proposed) > 0)
                     {
                         if (growth == "")
                         {
@@ -15701,7 +16974,7 @@ namespace PlanlogicAI.Controllers
                         {
                             growth += " and growth alternatives ";
                         }
-                       
+
                     }
 
 
@@ -15754,12 +17027,12 @@ namespace PlanlogicAI.Controllers
                         commentary.Append(new Run(new RunProperties(), new Text("As a guide, a " + riskProfile.ToString().Trim() + " investment portfolio would typically hold a maximum of " + (int)(findVal(details, "Total Growth").target) + " % in growth assets and a minimum of " + (int)(findVal(details, "Total Defensive").targetmin) + "% in defensive assets.")));
                     }
 
-                       
+
                     body.Append(commentary);
                 }
 
-                    //Deviation due to specific fund
-                    if (details.Length > 0)
+                //Deviation due to specific fund
+                if (details.Length > 0)
                 {
                     bool isBetween = true;
                     bool totalisBetween = true;
@@ -15774,7 +17047,7 @@ namespace PlanlogicAI.Controllers
                             if (ad.proposed < ad.targetmin || ad.proposed > ad.targetmax)
                             {
                                 isBetween = false;
-                                if(ad.proposed < ad.targetmin)
+                                if (ad.proposed < ad.targetmin)
                                 {
                                     lower += ", " + ad.name + "";
                                 }
@@ -15784,7 +17057,7 @@ namespace PlanlogicAI.Controllers
                                 }
                             }
 
-                            if(Math.Abs(ad.proposed - ad.target) > 10)
+                            if (Math.Abs(ad.proposed - ad.target) > 10)
                             {
                                 isVariance = true;
                                 variance += ", " + ad.name + "";
@@ -15792,7 +17065,7 @@ namespace PlanlogicAI.Controllers
                         }
                         else
                         {
-                            if(ad.proposed < ad.targetmin || ad.proposed > ad.targetmax)
+                            if (ad.proposed < ad.targetmin || ad.proposed > ad.targetmax)
                             {
                                 totalisBetween = false;
                             }
@@ -15802,12 +17075,12 @@ namespace PlanlogicAI.Controllers
                     //If Min/Max aligned
                     if (isBetween == true)
                     {
-                        Paragraph commentary = new Paragraph( new Run(new RunProperties(), new Text("The proposed allocation of your investments is within our recommended minimum and maximum allocation for each asset class, with regards to your risk profile.")));
+                        Paragraph commentary = new Paragraph(new Run(new RunProperties(), new Text("The proposed allocation of your investments is within our recommended minimum and maximum allocation for each asset class, with regards to your risk profile.")));
                         body.Append(commentary);
                     }
 
                     //If variance is over 10%
-                    if(isBetween == true && totalisBetween == true && isVariance == true)
+                    if (isBetween == true && totalisBetween == true && isVariance == true)
                     {
                         GenerateAlternateContentChoice(highComplianceRisk);
 
@@ -15816,13 +17089,13 @@ namespace PlanlogicAI.Controllers
                         {
                             commentary.Append(new Run(new RunProperties(), new Text { Text = " " + variance.Remove(0, 1) + " ", Space = SpaceProcessingModeValues.Preserve }));
                         }
-                            commentary.Append(new Run(new RunProperties(), new Text { Text = " ) are outside our 10% tolerance of the target, the proposed allocation of your investments aligns with our recommended minimum and maximum allocation for each asset class, and the overall growth vs defensive asset allocation is in line with your " + riskProfile.ToString().Trim() + " investor risk profile.", Space = SpaceProcessingModeValues.Preserve }));
-                      
+                        commentary.Append(new Run(new RunProperties(), new Text { Text = " ) are outside our 10% tolerance of the target, the proposed allocation of your investments aligns with our recommended minimum and maximum allocation for each asset class, and the overall growth vs defensive asset allocation is in line with your " + riskProfile.ToString().Trim() + " investor risk profile.", Space = SpaceProcessingModeValues.Preserve }));
+
                         body.Append(commentary);
                     }
-                 
-                        //If Min/Max not aligned , but growth/defensive is okay
-                        if (isBetween == false && totalisBetween == true)
+
+                    //If Min/Max not aligned , but growth/defensive is okay
+                    if (isBetween == false && totalisBetween == true)
                     {
                         if (isBetween == true && totalisBetween == true && isVariance == true)
                         {
@@ -15843,25 +17116,25 @@ namespace PlanlogicAI.Controllers
                             commentary.Append(new Run(new RunProperties(), new Text { Text = "while being underweight in " + lower.Remove(0, 1) + " ", Space = SpaceProcessingModeValues.Preserve }));
                             commentary.Append(new Run(new RunProperties((Color)red.CloneNode(true)), new Text("[state reason for deviation]")));
                         }
-                            body.Append(commentary);
+                        body.Append(commentary);
                     }
 
                     //Deviation due to specific fund
                     if (isBetween == false)
                     {
-                        Paragraph commentary = new Paragraph( new Run(new RunProperties(), new Text("The proposed allocation of your investments deviates from your long-term strategic asset allocation due to the inclusion of the")));
+                        Paragraph commentary = new Paragraph(new Run(new RunProperties(), new Text("The proposed allocation of your investments deviates from your long-term strategic asset allocation due to the inclusion of the")));
                         commentary.Append(new Run(new RunProperties((Color)red.CloneNode(true)), new Text { Text = " [Name of fund] ", Space = SpaceProcessingModeValues.Preserve }));
                         commentary.Append(new Run(new RunProperties(), new Text("in your portfolio. The manager of this fund has the ability to increase and decrease the level of risk within their portfolio, effectively varying the exposure to cash and growth assets held by the Fund. Although this results in the short to medium term deviation away from your strategic asset allocation, we believe that over the long term the manager's ability to vary the risk profile will add value to your overall portfolio.")));
 
                         body.Append(commentary);
                     }
                 }
-               
+
                 //Overweight in cash due to liquidity needs
                 if (((findVal(details, "Domestic Cash").proposed) > (findVal(details, "Domestic Cash").targetmax)) || ((findVal(details, "International Cash").proposed) > (findVal(details, "International Cash").targetmax)))
                 {
                     Paragraph commentary = new Paragraph(new Run(new RunProperties(), new Text("The recommended portfolio has an ")));
-                    commentary.Append(new Run(new RunProperties(new Bold()), new Text { Text = " overweight allocation " , Space = SpaceProcessingModeValues.Preserve }));
+                    commentary.Append(new Run(new RunProperties(new Bold()), new Text { Text = " overweight allocation ", Space = SpaceProcessingModeValues.Preserve }));
                     commentary.Append(new Run(new RunProperties(), new Text { Text = "to defensive assets for your investor risk profile. This is a tactical allocation to enable you to cover short term cash requirements such as ", Space = SpaceProcessingModeValues.Preserve }));
                     commentary.Append(new Run(new RunProperties((Color)red.CloneNode(true)), new Text(" [fees and charges/insurance premiums/pension payments for the next XX years/other].")));
                     body.Append(commentary);
@@ -15890,7 +17163,7 @@ namespace PlanlogicAI.Controllers
                 {
                     Paragraph commentary = new Paragraph(new Run(new RunProperties(), new Text("We note that your asset allocation shows an overweight allocation to ‘Global Property’ via  ")));
 
-                    commentary.Append(new Run(new RunProperties((Color)red.CloneNode(true)), new Text { Text = " [name of investments invested in global property]", Space =SpaceProcessingModeValues.Preserve }));
+                    commentary.Append(new Run(new RunProperties((Color)red.CloneNode(true)), new Text { Text = " [name of investments invested in global property]", Space = SpaceProcessingModeValues.Preserve }));
                     commentary.Append(new Run(new RunProperties(), new Text(". These funds provide exposure to a diversified portfolio of real estate investment trusts (REITs) and infrastructure assets across Australian and global markets. The global mandate for these funds enables managers to access countries at different points in the economic cycle and to sectors not available in the Australian market. However, depending on market opportunities, these funds may also access REITs and infrastructure assets within Australia. This means that from time to time, your portfolio may have varying allocation to ‘Domestic Property’ and ‘Global Property’. We believe the flexibility to access investments in Australia and globally provides increased diversification within your property portfolio. In light of this, we are comfortable with the overweight allocation to ‘Global Property’ within your portfolio. ")));
 
                     body.Append(commentary);
@@ -15902,12 +17175,12 @@ namespace PlanlogicAI.Controllers
                     Paragraph commentary = new Paragraph(new Run(new RunProperties(), new Text("Your portfolio currently has some exposure to ‘Other Growth’ which forms part of your overall growth allocation. The ‘Other Growth’ exposure relates to underlying securities that are outside of traditional growth assets such as shares and properties. The inclusion of other growth assets can enhance portfolio diversification and smooth out investment returns over market cycles, when used alongside a traditional allocation to bonds and equities. The use of growth assets can also reduce reliance on equities as the primary (or sole) driver of long term returns above inflation. As such, we are comfortable with your portfolio’s allocation to ‘Other Growth’ assets.")));
                     body.Append(commentary);
                 }
-                 
+
 
 
             }
 
-            
+
         }
         private void AddReplacementOfProduct(Body body, CF[] currentAssests, PF[] proposedAssets, AlternativeFund[] alternativeAssets, BasicDetails clientDetails, Color orange)
         {
@@ -15918,13 +17191,13 @@ namespace PlanlogicAI.Controllers
 
             //if(clientproposedAssets.Length > 0 || partnerproposedAssets.Length > 0 || jointproposedAssets.Length > 0)
             //{
-                
+
             //}
 
             //Client
             if (clientproposedAssets != null && clientproposedAssets.Length > 0)
             {
-               
+
                 var feeDisplay = new List<String>();
                 var transactionDisplay = new List<String>();
                 var proposedProducts = new List<PF>();
@@ -15941,12 +17214,12 @@ namespace PlanlogicAI.Controllers
                         var diff = false;
                         if (prop.Length == curr.Length)
                         {
-                            foreach(var proposed in pp.data)
+                            foreach (var proposed in pp.data)
                             {
                                 var isExist = current.First().data.Where(x => x.Apircode == proposed.Apircode).FirstOrDefault();
-                                if(isExist != null)
+                                if (isExist != null)
                                 {
-                                   if(proposed.Value != isExist.Value)
+                                    if (proposed.Value != isExist.Value)
                                     {
                                         diff = true;
                                         break;
@@ -15955,24 +17228,24 @@ namespace PlanlogicAI.Controllers
                             }
 
                         }
-                            if (((prop.Length == curr.Length && prop.Intersect(curr).Count() == prop.Length) == false ) || (diff == true))
-                            {
-                                proposedProductsRebalances.Add(pp);
-                            }
-                        
+                        if (((prop.Length == curr.Length && prop.Intersect(curr).Count() == prop.Length) == false) || (diff == true))
+                        {
+                            proposedProductsRebalances.Add(pp);
+                        }
+
                     }
                 }
 
                 foreach (PF pp in clientproposedAssets)
                 {
-                   var current = currentAssests.Where(a => a.proposedId == pp.id);
-                   if(current.Any())
+                    var current = currentAssests.Where(a => a.proposedId == pp.id);
+                    if (current.Any())
                     {
                         proposedProducts.Add(pp);
                     }
                 }
 
-                if(proposedProductsRebalances.Count != 0)
+                if (proposedProductsRebalances.Count != 0)
                 {
                     foreach (PF pp in proposedProductsRebalances)
                     {
@@ -15994,7 +17267,7 @@ namespace PlanlogicAI.Controllers
                 var isExisting = existingProducts.Where(z => z.owner != "Client");
                 var isAlternate = alternativeProducts.Where(z => z.owner != "Client");
                 bool notClient = false;
-                if(isExisting.Count() > 0 || isAlternate.Count() > 0)
+                if (isExisting.Count() > 0 || isAlternate.Count() > 0)
                 {
                     notClient = true;
                 }
@@ -16118,7 +17391,7 @@ namespace PlanlogicAI.Controllers
                     h1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Plan Costs"))));
                     header.Append(h1);
 
-                   
+
 
                     foreach (PF proposed in proposedProducts)
                     {
@@ -16258,7 +17531,7 @@ namespace PlanlogicAI.Controllers
                             if (notClient)
                             {
                                 var name = "";
-                                if(alternate.owner == "Client")
+                                if (alternate.owner == "Client")
                                 {
                                     name = clientDetails.ClientName;
                                 }
@@ -16476,7 +17749,7 @@ namespace PlanlogicAI.Controllers
                         TableCell h = new TableCell();
                         h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         h.Append((TableCellProperties)tcp.CloneNode(true));
-                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", existing.feeDisplay.Sum(item => item.val))))));
+                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", existing.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val))))));
                         NetOngoingCosts.Append(h);
                     }
                     foreach (PF proposed in proposedProducts)
@@ -16484,7 +17757,7 @@ namespace PlanlogicAI.Controllers
                         TableCell h = new TableCell();
                         h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         h.Append((TableCellProperties)tcp.CloneNode(true));
-                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposed.feeDisplay.Sum(item => item.val))))));
+                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposed.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val))))));
                         NetOngoingCosts.Append(h);
                     }
                     foreach (AlternativeFund alternate in alternativeProducts)
@@ -16492,7 +17765,7 @@ namespace PlanlogicAI.Controllers
                         TableCell h = new TableCell();
                         h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         h.Append((TableCellProperties)tcp.CloneNode(true));
-                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", alternate.feeDisplay.Sum(item => item.val))))));
+                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", alternate.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val))))));
                         NetOngoingCosts.Append(h);
                     }
 
@@ -16519,18 +17792,18 @@ namespace PlanlogicAI.Controllers
                     {
 
                         decimal sum = 0;
-                        IEnumerable<RopcurrentProducts> list = this.mapper.Map<IEnumerable<RopcurrentProducts>>(from s in this.context.RopcurrentProducts.AsEnumerable()  where s.ProposedProduct == proposed.id select s).ToList();
+                        IEnumerable<RopcurrentProducts> list = this.mapper.Map<IEnumerable<RopcurrentProducts>>(from s in this.context.RopcurrentProducts.AsEnumerable() where s.ProposedProduct == proposed.id select s).ToList();
                         foreach (RopcurrentProducts cp in list)
                         {
                             var current = currentAssests.Where(a => a.id == cp.RecId).FirstOrDefault();
                             if (current != null)
                             {
-                                sum += current.feeDisplay.Sum(item => item.val);
+                                sum += current.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val);
                             }
                         }
 
                         var display = "";
-                        var value = Math.Round(proposed.feeDisplay.Sum(item => item.val)) - Math.Round(sum);
+                        var value = Math.Round(proposed.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val)) - Math.Round(sum);
                         if (value > 0)
                         {
                             display = " Additional $" + String.Format("{0:n0}", Math.Abs(value));
@@ -16553,18 +17826,18 @@ namespace PlanlogicAI.Controllers
                     foreach (AlternativeFund alternate in alternativeProducts)
                     {
                         decimal sum = 0;
-                        IEnumerable<RopcurrentProducts> list = this.mapper.Map<IEnumerable<RopcurrentProducts>>(from s in this.context.RopcurrentProducts.AsEnumerable()  where s.ProposedProduct == alternate.proposedId select s).ToList();
+                        IEnumerable<RopcurrentProducts> list = this.mapper.Map<IEnumerable<RopcurrentProducts>>(from s in this.context.RopcurrentProducts.AsEnumerable() where s.ProposedProduct == alternate.proposedId select s).ToList();
                         foreach (RopcurrentProducts cp in list)
                         {
                             var current = currentAssests.Where(a => a.id == cp.RecId).FirstOrDefault();
                             if (current != null)
                             {
-                                sum += current.feeDisplay.Sum(item => item.val);
+                                sum += current.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val);
                             }
                         }
 
                         var display = "";
-                        var value = Math.Round(alternate.feeDisplay.Sum(item => item.val)) - Math.Round(sum);
+                        var value = Math.Round(alternate.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val)) - Math.Round(sum);
                         if (value > 0)
                         {
                             display = " Additional $" + String.Format("{0:n0}", Math.Abs(value));
@@ -16701,10 +17974,10 @@ namespace PlanlogicAI.Controllers
                     transaction.Add("Buy/Sell Costs");
                     transaction.Add("Managed fund transactions");
                     transaction.Add("Brokerage Fee");
-                  
-                   
-                  
-                   
+
+
+
+
 
                     var transactionDisplaySorted = transactionDisplay.OrderBy(d => transaction.IndexOf(d.Trim())).ToList();
                     foreach (String s in transactionDisplaySorted)
@@ -17294,7 +18567,7 @@ namespace PlanlogicAI.Controllers
                         TableCell h = new TableCell();
                         h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         h.Append((TableCellProperties)tcp.CloneNode(true));
-                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", existing.feeDisplay.Sum(item => item.val))))));
+                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", existing.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val))))));
                         NetOngoingCosts.Append(h);
                     }
                     foreach (PF proposed in proposedProducts)
@@ -17302,7 +18575,7 @@ namespace PlanlogicAI.Controllers
                         TableCell h = new TableCell();
                         h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         h.Append((TableCellProperties)tcp.CloneNode(true));
-                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposed.feeDisplay.Sum(item => item.val))))));
+                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposed.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val))))));
                         NetOngoingCosts.Append(h);
                     }
                     foreach (AlternativeFund alternate in alternativeProducts)
@@ -17310,7 +18583,7 @@ namespace PlanlogicAI.Controllers
                         TableCell h = new TableCell();
                         h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         h.Append((TableCellProperties)tcp.CloneNode(true));
-                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", alternate.feeDisplay.Sum(item => item.val))))));
+                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", alternate.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val))))));
                         NetOngoingCosts.Append(h);
                     }
 
@@ -17337,18 +18610,18 @@ namespace PlanlogicAI.Controllers
                     {
 
                         decimal sum = 0;
-                        IEnumerable<RopcurrentProducts> list = this.mapper.Map<IEnumerable<RopcurrentProducts>>(from s in this.context.RopcurrentProducts.AsEnumerable()  where s.ProposedProduct == proposed.id select s).ToList();
+                        IEnumerable<RopcurrentProducts> list = this.mapper.Map<IEnumerable<RopcurrentProducts>>(from s in this.context.RopcurrentProducts.AsEnumerable() where s.ProposedProduct == proposed.id select s).ToList();
                         foreach (RopcurrentProducts cp in list)
                         {
                             var current = currentAssests.Where(a => a.id == cp.RecId).FirstOrDefault();
                             if (current != null)
                             {
-                                sum += current.feeDisplay.Sum(item => item.val);
+                                sum += current.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val);
                             }
                         }
 
                         var display = "";
-                        var value = Math.Round(proposed.feeDisplay.Sum(item => item.val)) - Math.Round(sum);
+                        var value = Math.Round(proposed.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val)) - Math.Round(sum);
                         if (value > 0)
                         {
                             display = " Additional $" + String.Format("{0:n0}", Math.Abs(value));
@@ -17378,12 +18651,12 @@ namespace PlanlogicAI.Controllers
                             var current = currentAssests.Where(a => a.id == cp.RecId).FirstOrDefault();
                             if (current != null)
                             {
-                                sum += current.feeDisplay.Sum(item => item.val);
+                                sum += current.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val);
                             }
                         }
 
                         var display = "";
-                        var value = Math.Round(alternate.feeDisplay.Sum(item => item.val)) - Math.Round(sum);
+                        var value = Math.Round(alternate.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val)) - Math.Round(sum);
                         if (value > 0)
                         {
                             display = " Additional $" + String.Format("{0:n0}", Math.Abs(value));
@@ -17753,7 +19026,7 @@ namespace PlanlogicAI.Controllers
                     h1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Plan Costs"))));
                     header.Append(h1);
 
-               
+
                     foreach (PF proposed in proposedProducts)
                     {
                         var existing = existingProducts.Where(z => z.proposedId == proposed.id);
@@ -18110,7 +19383,7 @@ namespace PlanlogicAI.Controllers
                         TableCell h = new TableCell();
                         h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         h.Append((TableCellProperties)tcp.CloneNode(true));
-                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", existing.feeDisplay.Sum(item => item.val))))));
+                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", existing.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val))))));
                         NetOngoingCosts.Append(h);
                     }
                     foreach (PF proposed in proposedProducts)
@@ -18118,7 +19391,7 @@ namespace PlanlogicAI.Controllers
                         TableCell h = new TableCell();
                         h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         h.Append((TableCellProperties)tcp.CloneNode(true));
-                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposed.feeDisplay.Sum(item => item.val))))));
+                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", proposed.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val))))));
                         NetOngoingCosts.Append(h);
                     }
                     foreach (AlternativeFund alternate in alternativeProducts)
@@ -18126,7 +19399,7 @@ namespace PlanlogicAI.Controllers
                         TableCell h = new TableCell();
                         h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         h.Append((TableCellProperties)tcp.CloneNode(true));
-                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", alternate.feeDisplay.Sum(item => item.val))))));
+                        h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", alternate.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val))))));
                         NetOngoingCosts.Append(h);
                     }
 
@@ -18159,12 +19432,12 @@ namespace PlanlogicAI.Controllers
                             var current = currentAssests.Where(a => a.id == cp.RecId).FirstOrDefault();
                             if (current != null)
                             {
-                                sum += current.feeDisplay.Sum(item => item.val);
+                                sum += current.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val);
                             }
                         }
 
                         var display = "";
-                        var value = Math.Round(proposed.feeDisplay.Sum(item => item.val)) - Math.Round(sum);
+                        var value = Math.Round(proposed.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val)) - Math.Round(sum);
                         if (value > 0)
                         {
                             display = " Additional $" + String.Format("{0:n0}", Math.Abs(value));
@@ -18193,12 +19466,12 @@ namespace PlanlogicAI.Controllers
                             var current = currentAssests.Where(a => a.id == cp.RecId).FirstOrDefault();
                             if (current != null)
                             {
-                                sum += current.feeDisplay.Sum(item => item.val);
+                                sum += current.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val);
                             }
                         }
 
                         var display = "";
-                        var value = Math.Round(alternate.feeDisplay.Sum(item => item.val)) - Math.Round(sum);
+                        var value = Math.Round(alternate.feeDisplay.Where(x => x.feeType.Trim() == "ongoing").Sum(item => item.val)) - Math.Round(sum);
                         if (value > 0)
                         {
                             display = " Additional $" + String.Format("{0:n0}", Math.Abs(value));
@@ -18390,10 +19663,10 @@ namespace PlanlogicAI.Controllers
 
             if (clientproposedAssets.Length > 0 || partnerproposedAssets.Length > 0 || jointproposedAssets.Length > 0)
             {
-              
+
             }
 
-           
+
 
             //Client
             if (clientproposedAssets != null && clientproposedAssets.Length > 0)
@@ -18542,7 +19815,7 @@ namespace PlanlogicAI.Controllers
                             h1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Plan Costs"))));
                             header.Append(h1);
 
-                           
+
                             if (proposedProduct != null)
                             {
                                 var existing = existingProducts.Where(z => z.proposedId == proposedProduct.id);
@@ -18593,7 +19866,7 @@ namespace PlanlogicAI.Controllers
                                         {
                                             name = "Joint";
                                         }
-                                      
+
                                         h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Existing " + ex.product + " - " + name))));
 
                                     }
@@ -18975,7 +20248,7 @@ namespace PlanlogicAI.Controllers
                                 //h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("$" + String.Format("{0:n0}", existing.feeDisplay.Where(x => x.feeType == "ongoing").Sum(item => item.val))))));
                                 //NetOngoingCosts.Append(h);
 
-                              
+
                                 TableCell h = new TableCell();
                                 h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                                 h.Append((TableCellProperties)tcp.CloneNode(true));
@@ -18983,7 +20256,7 @@ namespace PlanlogicAI.Controllers
                                 h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                                 h.Append(new Paragraph(new Run(new RunProperties(new Color() { Val = "808080" }), new Text(String.Format("{0:n}", (Math.Round(existing.feeDisplay.Where(x => x.feeType == "ongoing").Sum(item => item.val)) / existing.value) * 100) + "%"))));
                                 NetOngoingCosts.Append(h);
-                        }
+                            }
                             if (proposedProduct != null)
                             {
                                 TableCell h = new TableCell();
@@ -19026,7 +20299,7 @@ namespace PlanlogicAI.Controllers
                             //}
                             //if (proposedProduct != null)
                             //{
-                               
+
                             //    TableCell h = new TableCell();
                             //    h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                             //    h.Append((TableCellProperties)tcp.CloneNode(true));
@@ -19074,7 +20347,7 @@ namespace PlanlogicAI.Controllers
                                     var c = currentAssests.Where(a => a.id == cp.RecId).FirstOrDefault();
                                     sum += c.feeDisplay.Sum(item => item.val);
                                 }
-                          
+
                                 var display = "";
                                 var value = Math.Round(proposedProduct.feeDisplay.Sum(item => item.val)) - Math.Round(sum);
                                 if (value > 0)
@@ -19205,7 +20478,7 @@ namespace PlanlogicAI.Controllers
                                 h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Existing " + existing.product))));
                                 header.Append(h);
                             }
-                            if(proposedProduct !=null)
+                            if (proposedProduct != null)
                             {
                                 foreach (ProductFeesDisplay pfd in proposedProduct.feeDisplay)
                                 {
@@ -19294,7 +20567,7 @@ namespace PlanlogicAI.Controllers
 
 
                     }
-                 
+
                 }
             }
 
@@ -19303,7 +20576,7 @@ namespace PlanlogicAI.Controllers
             {
 
                 var feeDisplay = new List<String>();
-                var transactionDisplay = new List<String>(); 
+                var transactionDisplay = new List<String>();
                 var proposedProducts = new List<PF>();
                 foreach (PF pp in partnerproposedAssets)
                 {
@@ -19408,7 +20681,7 @@ namespace PlanlogicAI.Controllers
                             h1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(proposedProduct.product))));
                             header.Append(h1);
 
-                         
+
                             if (proposedProduct != null)
                             {
                                 var existing = existingProducts.Where(z => z.proposedId == proposedProduct.id);
@@ -20261,7 +21534,7 @@ namespace PlanlogicAI.Controllers
                             h1.Append(new Paragraph(new RunProperties(new Bold()), new Run(new Text(proposedProduct.product))));
                             header.Append(h1);
 
-                         
+
                             if (proposedProduct != null)
                             {
                                 var existing = existingProducts.Where(z => z.proposedId == proposedProduct.id);
@@ -21008,7 +22281,7 @@ namespace PlanlogicAI.Controllers
 
 
         }
-        public AssetDetails findVal(AssetDetails[] assetDetails , string search)
+        private AssetDetails findVal(AssetDetails[] assetDetails, string search)
         {
             var searchItem = assetDetails.Where(val => val.name == search).FirstOrDefault();
             return searchItem;

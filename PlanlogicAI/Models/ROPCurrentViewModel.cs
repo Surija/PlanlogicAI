@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace PlanlogicAI.Data
+﻿namespace PlanlogicAI.Data
 {
-   
-       public partial class RopcurrentFundsViewModel
+
+    public partial class RopcurrentFundsViewModel
     {
         public int RecId { get; set; }
         public int HeaderId { get; set; }
@@ -27,7 +24,8 @@ namespace PlanlogicAI.Data
         public decimal Value { get; set; }
         public decimal Percentage { get; set; }
         public int ProposedProduct { get; set; }
-
+        public int OriginalProduct { get; set; }
+        
     }
 
 }

@@ -40,7 +40,7 @@ namespace PlanlogicAI.Controllers
         public IConfiguration Configuration { get; }
 
 
-        public InsuranceDocumentController(StrategyOptimizerPrototypeContext context,IMapper mapper, IConfiguration configuration)
+        public InsuranceDocumentController(StrategyOptimizerPrototypeContext context, IMapper mapper, IConfiguration configuration)
         {
             this.context = context;
             this.mapper = mapper;
@@ -102,12 +102,12 @@ namespace PlanlogicAI.Controllers
                     {
                         if (clientCurrentInsurance.Count() > 0)
                         {
-                            AddRiskProtection(body, documentDetails.clientDetails, clientCurrentInsurance, orange, 0);
+                                  AddRiskProtection(body, documentDetails.clientDetails, clientCurrentInsurance, orange, 0);
                         }
 
                         if (partnerCurrentInsurance.Count() > 0)
                         {
-                            AddRiskProtection(body, documentDetails.clientDetails, partnerCurrentInsurance, orange , 1);
+                                     AddRiskProtection(body, documentDetails.clientDetails, partnerCurrentInsurance, orange, 1);
                         }
                     }
 
@@ -118,18 +118,18 @@ namespace PlanlogicAI.Controllers
                     //add(pr0);
                     //body.Append(pr0);
 
-                    GenerateBody(body);
+                       GenerateBody(body);
                     Run br1 = new Run(new Break());
                     Paragraph pr1 = new Paragraph();
                     pr1.Append(new OpenXmlElement[] { br1 });
                     body.Append(pr1);
 
-                    AddPara1(body);
+                       AddPara1(body);
                     //Run br2 = new Run(new Break());
                     Paragraph pr2 = new Paragraph();
                     //pr2.Append(new OpenXmlElement[] { br2 });
                     body.Append(pr2);
-                    AddPara2(body);
+                        AddPara2(body);
 
                     //Your Insurance Needs
 
@@ -139,20 +139,20 @@ namespace PlanlogicAI.Controllers
                     var clientNeedsAnalysis = documentDetails.needsAnalysis.Where(x => x.Owner == "Client");
                     var partnerNeedsAnalysis = documentDetails.needsAnalysis.Where(x => x.Owner == "Partner");
 
-                    if(clientNeedsAnalysis.Count() > 0 || partnerNeedsAnalysis.Count() > 0)
+                    if (clientNeedsAnalysis.Count() > 0 || partnerNeedsAnalysis.Count() > 0)
                     {
                         Paragraph InsuranceNeeds = new Paragraph(new Run(new RunProperties(new Color() { Val = "ED7D27" }, new FontSize { Val = "40" }), new Text("Your Insurance Needs")));
                         body.Append(InsuranceNeeds);
 
-                      
+
                         if (clientNeedsAnalysis.Count() > 0)
                         {
-                            AddInsuranceNeeds(body, clientNeedsAnalysis.ToArray(), orange , documentDetails.clientDetails.ClientName);
+                                AddInsuranceNeeds(body, clientNeedsAnalysis.ToArray(), orange, documentDetails.clientDetails.ClientName);
                         }
 
                         if (partnerNeedsAnalysis.Count() > 0 && documentDetails.clientDetails.MaritalStatus != "S")
                         {
-                            AddInsuranceNeeds(body, partnerNeedsAnalysis.ToArray(), orange, documentDetails.clientDetails.PartnerName);
+                                  AddInsuranceNeeds(body, partnerNeedsAnalysis.ToArray(), orange, documentDetails.clientDetails.PartnerName);
                         }
 
                     }
@@ -167,27 +167,27 @@ namespace PlanlogicAI.Controllers
                     {
                         if (clientProposedInsurance.Count() > 0)
                         {
-                            AddRecommendedInsurance(body, documentDetails.clientDetails, clientProposedInsurance, orange, 0);
+                                     AddRecommendedInsurance(body, documentDetails.clientDetails, clientProposedInsurance, orange, 0);
                         }
 
                         if (partnerProposedInsurance.Count() > 0)
                         {
-                            AddRecommendedInsurance(body, documentDetails.clientDetails, partnerProposedInsurance, orange, 1);
+                                     AddRecommendedInsurance(body, documentDetails.clientDetails, partnerProposedInsurance, orange, 1);
                         }
 
 
-                        AddStandardText(body,orange);
+                              AddStandardText(body, orange);
                     }
 
                     //Insurance ROP
 
-                    AddReplacementOfProduct(body, documentDetails.currentInsurance, documentDetails.proposedInsurance, documentDetails.clientDetails, orange);
+                         AddReplacementOfProduct(body, documentDetails.currentInsurance, documentDetails.proposedInsurance, documentDetails.clientDetails, orange);
 
                     Paragraph break4 = new Paragraph(new Run(new Break() { Type = BreakValues.Page }));
                     body.Append(break4);
 
 
-                    AddImplementation(body,documentDetails.proposedInsurance, documentDetails.clientDetails, orange);
+                        AddImplementation(body, documentDetails.proposedInsurance, documentDetails.clientDetails, orange);
 
                     //Paragraph break4 = new Paragraph(new Run(new Break() { Type = BreakValues.Page }));
                     //body.Append(break4);
@@ -219,7 +219,7 @@ namespace PlanlogicAI.Controllers
                     FooterPart footerPart = mainPart.AddNewPart<FooterPart>();
 
                     string footerPartId = mainPart.GetIdOfPart(footerPart);
-                    GeneratePartContent(footerPart);
+                        GeneratePartContent(footerPart);
 
                     IEnumerable<SectionProperties> sections = mainPart.Document.Body.Elements<SectionProperties>();
                     foreach (var section in sections)
@@ -241,7 +241,7 @@ namespace PlanlogicAI.Controllers
 
                 return File(ms.ToArray(), "application/octet-stream", "test");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -249,7 +249,7 @@ namespace PlanlogicAI.Controllers
 
         private void AddImplementation(Body body, ProposedInsuranceViewModel[] proposedInsurance, BasicDetails clientDetails, Color orange)
         {
-            
+
             var implementation = new List<ProposedInsuranceViewModel>();
             var ongoing = new List<ProposedInsuranceViewModel>();
 
@@ -265,11 +265,11 @@ namespace PlanlogicAI.Controllers
                 }
             }
 
-            if(implementation.Count() > 0 || ongoing.Count() > 0)
+            if (implementation.Count() > 0 || ongoing.Count() > 0)
             {
-               
+
                 if (implementation.Any())
-                    {
+                {
 
                     Paragraph s1 = body.AppendChild(new Paragraph());
                     Run r1 = s1.AppendChild(new Run());
@@ -283,103 +283,103 @@ namespace PlanlogicAI.Controllers
                     //New Table
 
                     Table table = body.AppendChild(new Table());
-                        TableProperties tableProp = new TableProperties();
-                        TableStyle tableStyle = new TableStyle() { Val = "TableGrid" };
+                    TableProperties tableProp = new TableProperties();
+                    TableStyle tableStyle = new TableStyle() { Val = "TableGrid" };
 
-                        TableWidth tableWidth = new TableWidth() { Width = "5000", Type = TableWidthUnitValues.Pct };
+                    TableWidth tableWidth = new TableWidth() { Width = "5000", Type = TableWidthUnitValues.Pct };
 
-                        tableProp.Append(tableStyle, tableWidth);
-                        table.AppendChild(tableProp);
-
-
-                        ////Header
-                        TableRow type = new TableRow();
-
-                        TableCellProperties hcp = new TableCellProperties(new TableCellWidth { Width = "2000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        TableCellProperties hcp1 = new TableCellProperties(new TableCellWidth { Width = "2390", Type = TableWidthUnitValues.Auto }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        TableCellProperties hcp2 = new TableCellProperties(new TableCellWidth { Width = "2390", Type = TableWidthUnitValues.Auto }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-
-                        ParagraphProperties hpp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
-                        ParagraphProperties hpp1 = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
-
-                        Justification centerJustify = new Justification() { Val = JustificationValues.Center };
-                        hpp1.AppendChild((Justification)centerJustify.CloneNode(true));
-
-                        TableCellBorders hcb = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 20, Color = "ED7D27" } };
-
-                        Shading hs1 = new Shading() { Color = "auto", Fill = "393939", Val = ShadingPatternValues.Clear };
-                        TableCellMargin hcm1 = new TableCellMargin() { RightMargin = new RightMargin() { Width = "50", Type = TableWidthUnitValues.Dxa }, LeftMargin = new LeftMargin() { Width = "50", Type = TableWidthUnitValues.Dxa } };
-
-                        hcp.Append(hcm1, hs1, hcb);
-                        hcp1.Append((TableCellMargin)hcm1.CloneNode(true), (Shading)hs1.CloneNode(true), (TableCellBorders)hcb.CloneNode(true));
-                        hcp2.Append((TableCellMargin)hcm1.CloneNode(true), (Shading)hs1.CloneNode(true));
-
-                        TableCell blank = new TableCell();
-                        blank.AppendChild((ParagraphProperties)hpp.CloneNode(true));
-                        blank.Append((TableCellProperties)hcp2.CloneNode(true));
-                        blank.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Description"))));
-                        type.Append(blank);
+                    tableProp.Append(tableStyle, tableWidth);
+                    table.AppendChild(tableProp);
 
 
-                            TableCell h = new TableCell();
-                            h.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
-                            h.Append((TableCellProperties)hcp2.CloneNode(true));
-                            h.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Cost to you"))));
-                            type.Append(h);
-                      
-                            TableCell h1 = new TableCell();
-                            h1.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
-                            h1.Append((TableCellProperties)hcp2.CloneNode(true));
-                            h1.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Calculation of amounts received by us"))));
-                            type.Append(h1);
+                    ////Header
+                    TableRow type = new TableRow();
 
-                            TableCell h2 = new TableCell();
-                            h2.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
-                            h2.Append((TableCellProperties)hcp2.CloneNode(true));
-                            h2.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("RI Advice Group"))));
-                            type.Append(h2);
+                    TableCellProperties hcp = new TableCellProperties(new TableCellWidth { Width = "2000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                    TableCellProperties hcp1 = new TableCellProperties(new TableCellWidth { Width = "2390", Type = TableWidthUnitValues.Auto }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                    TableCellProperties hcp2 = new TableCellProperties(new TableCellWidth { Width = "2390", Type = TableWidthUnitValues.Auto }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
 
-                            TableCell h3 = new TableCell();
-                            h3.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
-                            h3.Append((TableCellProperties)hcp2.CloneNode(true));
-                            h3.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Practice"))));
-                            type.Append(h3);
+                    ParagraphProperties hpp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
+                    ParagraphProperties hpp1 = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
 
-                            TableCell h4 = new TableCell();
-                            h4.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
-                            h4.Append((TableCellProperties)hcp2.CloneNode(true));
-                            h4.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Adviser"))));
-                            type.Append(h4);
+                    Justification centerJustify = new Justification() { Val = JustificationValues.Center };
+                    hpp1.AppendChild((Justification)centerJustify.CloneNode(true));
 
-                            table.Append(type);
+                    TableCellBorders hcb = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 20, Color = "ED7D27" } };
+
+                    Shading hs1 = new Shading() { Color = "auto", Fill = "393939", Val = ShadingPatternValues.Clear };
+                    TableCellMargin hcm1 = new TableCellMargin() { RightMargin = new RightMargin() { Width = "50", Type = TableWidthUnitValues.Dxa }, LeftMargin = new LeftMargin() { Width = "50", Type = TableWidthUnitValues.Dxa } };
+
+                    hcp.Append(hcm1, hs1, hcb);
+                    hcp1.Append((TableCellMargin)hcm1.CloneNode(true), (Shading)hs1.CloneNode(true), (TableCellBorders)hcb.CloneNode(true));
+                    hcp2.Append((TableCellMargin)hcm1.CloneNode(true), (Shading)hs1.CloneNode(true));
+
+                    TableCell blank = new TableCell();
+                    blank.AppendChild((ParagraphProperties)hpp.CloneNode(true));
+                    blank.Append((TableCellProperties)hcp2.CloneNode(true));
+                    blank.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Description"))));
+                    type.Append(blank);
 
 
-                        //Body
+                    TableCell h = new TableCell();
+                    h.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
+                    h.Append((TableCellProperties)hcp2.CloneNode(true));
+                    h.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Cost to you"))));
+                    type.Append(h);
 
-                        TableCellProperties tcp1 = new TableCellProperties(new TableCellWidth { Width = "2390", Type = TableWidthUnitValues.Auto }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        TableCellProperties tcp = new TableCellProperties(new TableCellWidth { Width = "2000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
-                        TableCellProperties tcpN = new TableCellProperties(new TableCellWidth { Width = "2000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                    TableCell h1 = new TableCell();
+                    h1.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
+                    h1.Append((TableCellProperties)hcp2.CloneNode(true));
+                    h1.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Calculation of amounts received by us"))));
+                    type.Append(h1);
 
-                        TableCellBorders tcbL = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, TopBorder = new TopBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, RightBorder = new RightBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" } };
-                        TableCellBorders tcbR = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, TopBorder = new TopBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, LeftBorder = new LeftBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" } };
-                        TableCellBorders tcbN = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, TopBorder = new TopBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" } };
+                    TableCell h2 = new TableCell();
+                    h2.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
+                    h2.Append((TableCellProperties)hcp2.CloneNode(true));
+                    h2.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("RI Advice Group"))));
+                    type.Append(h2);
 
-                        TableCellMargin tcm = new TableCellMargin() { RightMargin = new RightMargin() { Width = "50", Type = TableWidthUnitValues.Dxa }, LeftMargin = new LeftMargin() { Width = "50", Type = TableWidthUnitValues.Dxa } };
+                    TableCell h3 = new TableCell();
+                    h3.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
+                    h3.Append((TableCellProperties)hcp2.CloneNode(true));
+                    h3.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Practice"))));
+                    type.Append(h3);
 
-                        ParagraphProperties pp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
-                        ParagraphProperties pp1 = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
+                    TableCell h4 = new TableCell();
+                    h4.AppendChild((ParagraphProperties)hpp1.CloneNode(true));
+                    h4.Append((TableCellProperties)hcp2.CloneNode(true));
+                    h4.Append(new Paragraph(new Run(new RunProperties(new Bold(), new FontSize { Val = new StringValue("16") }), new Text("Adviser"))));
+                    type.Append(h4);
 
-                      
+                    table.Append(type);
+
+
+                    //Body
+
+                    TableCellProperties tcp1 = new TableCellProperties(new TableCellWidth { Width = "2390", Type = TableWidthUnitValues.Auto }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                    TableCellProperties tcp = new TableCellProperties(new TableCellWidth { Width = "2000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+                    TableCellProperties tcpN = new TableCellProperties(new TableCellWidth { Width = "2000", Type = TableWidthUnitValues.Pct }, new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center });
+
+                    TableCellBorders tcbL = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, TopBorder = new TopBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, RightBorder = new RightBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" } };
+                    TableCellBorders tcbR = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, TopBorder = new TopBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, LeftBorder = new LeftBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" } };
+                    TableCellBorders tcbN = new TableCellBorders() { BottomBorder = new BottomBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" }, TopBorder = new TopBorder() { Val = BorderValues.Single, Size = 1, Color = "D3D3D3" } };
+
+                    TableCellMargin tcm = new TableCellMargin() { RightMargin = new RightMargin() { Width = "50", Type = TableWidthUnitValues.Dxa }, LeftMargin = new LeftMargin() { Width = "50", Type = TableWidthUnitValues.Dxa } };
+
+                    ParagraphProperties pp = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
+                    ParagraphProperties pp1 = new ParagraphProperties(new ParagraphStyleId() { Val = "No Spacing" }, new SpacingBetweenLines() { After = "5" });
+
+
                     pp1.AppendChild((Justification)centerJustify.CloneNode(true));
                     tcp.Append(tcbL, tcm);
-                        tcpN.Append((TableCellBorders)tcbN.CloneNode(true), (TableCellMargin)tcm.CloneNode(true));
+                    tcpN.Append((TableCellBorders)tcbN.CloneNode(true), (TableCellMargin)tcm.CloneNode(true));
 
                     decimal totalFeeCost = 0;
                     decimal totalAdviceGroup = 0;
                     decimal totalPractice = 0;
 
-                        foreach (ProposedInsuranceViewModel proposed in implementation)
-                        {
+                    foreach (ProposedInsuranceViewModel proposed in implementation)
+                    {
 
                         TableRow heading = new TableRow();
                         TableCell bACell = new TableCell();
@@ -401,9 +401,9 @@ namespace PlanlogicAI.Controllers
 
                         var feeSum = proposed.FeeDetails.Sum(x => x.Amount);
                         //verify if error
-                        var adviceGroup = feeSum * (proposed.Implementation.Commission  / 100 ) * ( proposed.Implementation.Riadvice/100);
+                        var adviceGroup = feeSum * (proposed.Implementation.Commission / 100) * (proposed.Implementation.Riadvice / 100);
                         var practice = feeSum * (proposed.Implementation.Commission / 100) * (proposed.Implementation.Practice / 100);
-                        var adviser = proposed.Implementation.Adviser == 0 ? "See note above" : string.Format("{0:n0}",feeSum * (proposed.Implementation.Commission / 100) * (proposed.Implementation.Adviser / 100));
+                        var adviser = proposed.Implementation.Adviser == 0 ? "See note above" : string.Format("{0:n0}", feeSum * (proposed.Implementation.Commission / 100) * (proposed.Implementation.Adviser / 100));
 
 
                         totalFeeCost += feeSum;
@@ -414,16 +414,16 @@ namespace PlanlogicAI.Controllers
                         TableCell tableCell2 = new TableCell();
                         tableCell2.AppendChild((ParagraphProperties)pp1.CloneNode(true));
                         tableCell2.Append((TableCellProperties)tcp.CloneNode(true));
-                        tableCell2.Append(new Paragraph(new Run(new RunProperties(), new Text(string.Format("{0:n0}",feeSum)))));
+                        tableCell2.Append(new Paragraph(new Run(new RunProperties(), new Text(string.Format("{0:n0}", feeSum)))));
                         impDetails.Append(tableCell2);
 
                         TableCell tableCell3 = new TableCell();
                         tableCell3.AppendChild((ParagraphProperties)pp1.CloneNode(true));
                         tableCell3.Append((TableCellProperties)tcp.CloneNode(true));
-                        tableCell3.Append(new Paragraph(new Run(new RunProperties(new FontSize { Val = new StringValue("16") }), new Text( proposed.Implementation.Commission + "% of commissionable premium"))));
+                        tableCell3.Append(new Paragraph(new Run(new RunProperties(new FontSize { Val = new StringValue("16") }), new Text(proposed.Implementation.Commission + "% of commissionable premium"))));
                         impDetails.Append(tableCell3);
 
-                       
+
 
                         TableCell tableCell4 = new TableCell();
                         tableCell4.AppendChild((ParagraphProperties)pp1.CloneNode(true));
@@ -740,7 +740,7 @@ namespace PlanlogicAI.Controllers
             Paragraph s2 = body.AppendChild(new Paragraph());
             Run r2 = s2.AppendChild(new Run());
             RunProperties runProperties2 = r2.AppendChild(new RunProperties(new Bold(), new RunFonts { Ascii = "Verdana" }, new FontSize { Val = new StringValue("20") }));
-          
+
             runProperties2.AppendChild(orange.CloneNode(true));
             r2.AppendChild(new Text("Your duty of disclosure"));
 
@@ -758,7 +758,7 @@ namespace PlanlogicAI.Controllers
             Paragraph s3 = body.AppendChild(new Paragraph());
             Run r3 = s3.AppendChild(new Run());
             RunProperties runProperties3 = r3.AppendChild(new RunProperties(new Bold(), new RunFonts { Ascii = "Verdana" }, new FontSize { Val = new StringValue("20") }));
-           
+
             runProperties3.AppendChild(orange.CloneNode(true));
             r3.AppendChild(new Text("Product Disclosure Statement of retained policies"));
 
@@ -815,7 +815,7 @@ namespace PlanlogicAI.Controllers
             Run r3 = s3.AppendChild(new Run());
             RunProperties runProperties3 = r3.AppendChild(new RunProperties(new Bold(), new RunFonts { Ascii = "Verdana" }, new FontSize { Val = new StringValue("20") }));
 
-           // runProperties3.AppendChild(orange.CloneNode(true));
+            // runProperties3.AppendChild(orange.CloneNode(true));
             r3.AppendChild(new Text("Important note:"));
 
             Paragraph commentary4 = body.AppendChild(new Paragraph(new ParagraphProperties(new ParagraphStyleId() { Val = "ListParagraph" }, new NumberingProperties(new NumberingLevelReference() { Val = 0 }, new NumberingId() { Val = 1 })), new Run(new RunProperties(), new Text("You should maintain your existing cover until the new policy is established, and all waiting periods are served, to ensure you have continuous cover. This could mean you are paying multiple premiums for a period of time. Once your new policy is in place and all waiting periods have been satisfied, the old policy can be cancelled."))));
@@ -846,7 +846,7 @@ namespace PlanlogicAI.Controllers
 
             foreach (ProposedInsuranceViewModel proposed in clientProposedInsurance)
             //New Table
-            { 
+            {
                 Table table = body.AppendChild(new Table());
                 TableProperties tableProp = new TableProperties();
                 TableStyle tableStyle = new TableStyle() { Val = "TableGrid" };
@@ -888,7 +888,7 @@ namespace PlanlogicAI.Controllers
                 h1.AppendChild((ParagraphProperties)hppLeft.CloneNode(true));
 
                 var heading = "";
-                if(proposed.ReplacementId == 0)
+                if (proposed.ReplacementId == 0)
                 {
                     heading = "Purchase";
                 }
@@ -945,9 +945,9 @@ namespace PlanlogicAI.Controllers
 
                     TableCell mtc2 = new TableCell();
                     mtc2.AppendChild((ParagraphProperties)pp.CloneNode(true));
-                   mtc2.Append((TableCellProperties)tcp1.CloneNode(true));               
+                    mtc2.Append((TableCellProperties)tcp1.CloneNode(true));
                     mtc2.Append(new Paragraph(new Run(new Run(new RunProperties(new Bold()), new Text("Cover Type")))));
-                  
+
                     TableCell mtc3 = new TableCell();
                     mtc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
                     mtc3.Append((TableCellProperties)tcpN.CloneNode(true));
@@ -957,7 +957,7 @@ namespace PlanlogicAI.Controllers
 
                     table.AppendChild(mtr);
 
-                    if(proposed.LifeCover.First().PolicyOwner != "")
+                    if (proposed.LifeCover.First().PolicyOwner != "")
                     {
                         TableRow tr = new TableRow();
                         TableCell tc1 = new TableCell();
@@ -976,8 +976,8 @@ namespace PlanlogicAI.Controllers
                         tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         tc3.Append((TableCellProperties)tcpN.CloneNode(true));
                         tc3.Append(new Paragraph(new Run(new Text(proposed.LifeCover.First().PolicyOwner == "Client" ? clientDetails.ClientName : (proposed.LifeCover.First().PolicyOwner == "Partner" ? clientDetails.PartnerName : "Super Fund")))));
-                        
-                       
+
+
 
                         tr.Append(tc1, tc2, tc3);
 
@@ -1002,7 +1002,7 @@ namespace PlanlogicAI.Controllers
                         TableCell tc3 = new TableCell();
                         tc3.AppendChild((ParagraphProperties)pp.CloneNode(true));
                         tc3.Append((TableCellProperties)tcpN.CloneNode(true));
-                        tc3.Append(new Paragraph(new Run(new Text( "$" + String.Format("{0:n}", proposed.LifeCover.First().BenefitAmount.ToString())))));
+                        tc3.Append(new Paragraph(new Run(new Text("$" + String.Format("{0:n}", proposed.LifeCover.First().BenefitAmount.ToString())))));
 
                         tr.Append(tc1, tc2, tc3);
 
@@ -1309,7 +1309,7 @@ namespace PlanlogicAI.Controllers
                         table.AppendChild(tr);
                     }
 
-                    
+
                     if (proposed.TraumaCover.First().StandaloneOrLinked != "")
                     {
                         TableRow tr = new TableRow();
@@ -1591,7 +1591,7 @@ namespace PlanlogicAI.Controllers
             }
         }
 
-        public void add(Paragraph body)
+        private void add(Paragraph body)
         {
             AlternateContentChoice alternateContentChoice1 = new AlternateContentChoice() { Requires = "wps" };
 
@@ -2422,7 +2422,7 @@ namespace PlanlogicAI.Controllers
 
         }
 
-        public void GenerateBody(Body body)
+        private void GenerateBody(Body body)
         {
             Table table1 = new Table();
 
@@ -2446,7 +2446,7 @@ namespace PlanlogicAI.Controllers
 
             TableRow tableRow1 = new TableRow() { RsidTableRowMarkRevision = "00682DA0", RsidTableRowAddition = "00682DA0", RsidTableRowProperties = "00682DA0", ParagraphId = "70C1D861", TextId = "77777777" };
 
-        
+
 
             TableRowProperties tableRowProperties1 = new TableRowProperties();
             TableRowHeight tableRowHeight1 = new TableRowHeight() { Val = (UInt32Value)4933U, HeightType = HeightRuleValues.Exact };
@@ -3530,7 +3530,7 @@ namespace PlanlogicAI.Controllers
 
             part.Footer = footer1;
         }
-        public void AddRiskProtection(Body body, BasicDetails details, IEnumerable<CurrentInsuranceViewModel> currentInsurance, Color orange, int type)
+        private void AddRiskProtection(Body body, BasicDetails details, IEnumerable<CurrentInsuranceViewModel> currentInsurance, Color orange, int type)
         {
 
 
@@ -3612,7 +3612,7 @@ namespace PlanlogicAI.Controllers
                     }
 
                     h1.AppendChild((ParagraphProperties)hpp.CloneNode(true));
-                    h1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Provider + (coverType != ""  ? " - " + coverType.Substring(1) + " Cover "  : "" )))));
+                    h1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(current.Provider + (coverType != "" ? " - " + coverType.Substring(1) + " Cover " : "")))));
 
 
                     TableCell h2 = new TableCell();
@@ -3655,10 +3655,10 @@ namespace PlanlogicAI.Controllers
                         }
                         else
                         {
-                            TableCell tc2 = new TableCell((TableCellProperties)tcpN.CloneNode(true), (ParagraphProperties)pp1.CloneNode(true), new Paragraph(new Run(new RunProperties(), new Text("Super Fund") ,new Break(), type == 0 ? new Text(details.ClientName) : new Text(details.PartnerName))));
+                            TableCell tc2 = new TableCell((TableCellProperties)tcpN.CloneNode(true), (ParagraphProperties)pp1.CloneNode(true), new Paragraph(new Run(new RunProperties(), new Text("Super Fund"), new Break(), type == 0 ? new Text(details.ClientName) : new Text(details.PartnerName))));
                             tr.Append(tc1, tc2);
                         }
-                           
+
                         table.AppendChild(tr);
                     }
                     //Premium
@@ -3787,7 +3787,7 @@ namespace PlanlogicAI.Controllers
             }
 
         }
-        public void AddInsuranceNeeds(Body body, NeedsAnalysisViewModel[] details, Color orange, string name)
+        private void AddInsuranceNeeds(Body body, NeedsAnalysisViewModel[] details, Color orange, string name)
         {
 
             Paragraph p1 = body.AppendChild(new Paragraph(new Run(new RunProperties(new Color() { Val = "000000" }), new Text("Our insurance recommendations are based on our analysis of your circumstances and financial situation. The following table illustrates your insurance needs."))));
@@ -3901,11 +3901,11 @@ namespace PlanlogicAI.Controllers
                     {
                         desc = "For how long that income needs to be replaced";
                     }
-                    else if(needsAnalysis.Description == "Funeral expenses")
+                    else if (needsAnalysis.Description == "Funeral expenses")
                     {
                         desc = "Amount needed for funeral expenses";
                     }
-                    else if(needsAnalysis.Description == "Medical expenses")
+                    else if (needsAnalysis.Description == "Medical expenses")
                     {
                         desc = "Amount needed for medical expenses";
                     }
@@ -3923,9 +3923,9 @@ namespace PlanlogicAI.Controllers
                     }
 
                     tc1.AppendChild((ParagraphProperties)pp1.CloneNode(true));
-                    if(needsAnalysis.Description == "Total Cover Recommended")
+                    if (needsAnalysis.Description == "Total Cover Recommended")
                     {
-                        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()),new Text(desc))));
+                        tc1.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(desc))));
                     }
                     else
                     {
@@ -3948,7 +3948,7 @@ namespace PlanlogicAI.Controllers
                             {
                                 total.Life += Convert.ToInt32(needsAnalysis.Life);
                             }
-                           
+
                         }
                         tc2.Append(new Paragraph(new Run(new Text(needsAnalysis.Life == "0" ? "-" : "$" + String.Format("{0:n0}", Convert.ToInt32(needsAnalysis.Life))))));
                     }
@@ -4012,11 +4012,11 @@ namespace PlanlogicAI.Controllers
                         }
                         else
                         {
-                            tc5.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(needsAnalysis.IncomeProtection == "0" ? "-" : "$" + String.Format("{0:n0}", needsAnalysis.IncomeProtection))))); 
+                            tc5.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text(needsAnalysis.IncomeProtection == "0" ? "-" : "$" + String.Format("{0:n0}", needsAnalysis.IncomeProtection)))));
                         }
                     }
                     else
-                    { 
+                    {
                         int number;
                         if (Int32.TryParse(needsAnalysis.IncomeProtection, out number))
                         {
@@ -4024,7 +4024,7 @@ namespace PlanlogicAI.Controllers
                             {
                                 total.IncomeProtection += Convert.ToInt32(needsAnalysis.IncomeProtection);
                             }
-                                tc5.Append(new Paragraph(new Run(new Text(needsAnalysis.IncomeProtection == "0" ? "-" : "$" + String.Format("{0:n0}", Convert.ToInt32(needsAnalysis.IncomeProtection))))));
+                            tc5.Append(new Paragraph(new Run(new Text(needsAnalysis.IncomeProtection == "0" ? "-" : "$" + String.Format("{0:n0}", Convert.ToInt32(needsAnalysis.IncomeProtection))))));
                         }
                         else
                         {
@@ -4085,9 +4085,9 @@ namespace PlanlogicAI.Controllers
 
             var clientInsurances = proposedInsurances.Where(c => c.Owner == "Client").ToArray();
             var partnerInsurances = proposedInsurances.Where(c => c.Owner == "Partner").ToArray();
-           
 
-            if (clientInsurances.Length > 0 || partnerInsurances.Length > 0 )
+
+            if (clientInsurances.Length > 0 || partnerInsurances.Length > 0)
             {
                 Paragraph break4 = new Paragraph(new Run(new Break() { Type = BreakValues.Page }));
                 body.Append(break4);
@@ -4101,35 +4101,35 @@ namespace PlanlogicAI.Controllers
 
             //Client
             if (clientInsurances != null && clientInsurances.Length > 0)
-            {              
+            {
                 var proposedProducts = new List<ProposedInsuranceViewModel>();
 
                 foreach (ProposedInsuranceViewModel pI in clientInsurances)
                 {
-                  
+
                     if (pI.Replacement.Any())
                     {
                         proposedProducts.Add(pI);
                     }
                 }
-    
+
                 var existingProducts = new List<CurrentInsuranceViewModel>();
-             
+
                 foreach (ProposedInsuranceViewModel pp in proposedProducts)
                 {
                     foreach (InsuranceReplacementViewModel iR in pp.Replacement)
                     {
                         var current = currentInsurances.Where(a => a.RecId == iR.CurrentId).FirstOrDefault();
                         var existing = existingProducts.Where(a => a.RecId == current.RecId);
-                        if(existing.Count() == 0)
+                        if (existing.Count() == 0)
                         {
                             existingProducts.Add(current);
                         }
 
-                        
+
                     }
                 }
-           
+
                 if (proposedProducts.Any() || existingProducts.Any())
                 {
 
@@ -4193,7 +4193,7 @@ namespace PlanlogicAI.Controllers
                         h.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Proposed"))));
                         type.Append(h);
                     }
-                 
+
                     table.Append(type);
 
 
@@ -4331,10 +4331,10 @@ namespace PlanlogicAI.Controllers
 
                     //Benefit Amount
                     if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
-                    {                         
+                    {
                         TableRow BenefitAmount = new TableRow();
                         TableCell bACell = new TableCell();
-                        TableCellProperties tableCellProperties9 = new TableCellProperties(new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center } , new GridSpan() { Val = rowLength });
+                        TableCellProperties tableCellProperties9 = new TableCellProperties(new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center }, new GridSpan() { Val = rowLength });
                         bACell.Append(tableCellProperties9);
                         bACell.AppendChild((ParagraphProperties)pp1.CloneNode(true));
                         bACell.Append(new Paragraph(new Run(new RunProperties(new Bold()), new Text("Benefit Amounts (lump sum)"))));
@@ -4342,7 +4342,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(BenefitAmount);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4370,7 +4370,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4398,7 +4398,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4426,7 +4426,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4456,7 +4456,7 @@ namespace PlanlogicAI.Controllers
 
                     //Premium Costs
                     if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
-                    {                       
+                    {
                         TableRow PremiumCosts = new TableRow();
                         TableCell bACell = new TableCell();
                         TableCellProperties tableCellProperties9 = new TableCellProperties(new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center }, new GridSpan() { Val = rowLength });
@@ -4467,7 +4467,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(PremiumCosts);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4481,7 +4481,7 @@ namespace PlanlogicAI.Controllers
                             TableCell h = new TableCell();
                             h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                             h.Append((TableCellProperties)tcp.CloneNode(true));
-                            h.Append(new Paragraph(new Run(new RunProperties(), new Text(existing.FeeDetails.Where( item => item.FeeType == "premium").Any() ? "$ " + String.Format("{0:n0}", existing.FeeDetails.Where(item => item.FeeType == "premium").Sum(item => item.Amount)) : "-"))));
+                            h.Append(new Paragraph(new Run(new RunProperties(), new Text(existing.FeeDetails.Where(item => item.FeeType == "premium").Any() ? "$ " + String.Format("{0:n0}", existing.FeeDetails.Where(item => item.FeeType == "premium").Sum(item => item.Amount)) : "-"))));
                             tbl.Append(h);
                         }
                         foreach (ProposedInsuranceViewModel proposed in proposedProducts)
@@ -4495,7 +4495,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4523,7 +4523,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4551,7 +4551,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4606,7 +4606,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(LifeBenefits);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4620,7 +4620,7 @@ namespace PlanlogicAI.Controllers
                             TableCell h = new TableCell();
                             h.AppendChild((ParagraphProperties)pp.CloneNode(true));
                             h.Append((TableCellProperties)tcp.CloneNode(true));
-                            h.Append(new Paragraph(new Run(new RunProperties(), new Text(existing.LifeCover.Any() ? (existing.LifeCover[0].FutureInsurability == 1 ? "Yes" : "No" ) : "-"))));
+                            h.Append(new Paragraph(new Run(new RunProperties(), new Text(existing.LifeCover.Any() ? (existing.LifeCover[0].FutureInsurability == 1 ? "Yes" : "No") : "-"))));
                             tbl.Append(h);
                         }
                         foreach (ProposedInsuranceViewModel proposed in proposedProducts)
@@ -4634,7 +4634,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4675,7 +4675,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(TPDBenefits);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4703,7 +4703,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4731,7 +4731,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4759,7 +4759,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4787,7 +4787,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4828,7 +4828,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(TraumaBenefits);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4856,7 +4856,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4884,7 +4884,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4912,7 +4912,7 @@ namespace PlanlogicAI.Controllers
 
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4941,7 +4941,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -4983,7 +4983,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(IncomeBenefits);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -5011,7 +5011,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -5039,7 +5039,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -5067,7 +5067,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -5095,7 +5095,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -5123,7 +5123,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
 
-                       if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
+                    if (existingProducts.Count() > 0 || proposedProducts.Count() > 0)
                     {
                         TableRow tbl = new TableRow();
                         TableCell tableCell = new TableCell();
@@ -5151,7 +5151,7 @@ namespace PlanlogicAI.Controllers
                         table.Append(tbl);
                     }
                 }
-           
+
             }
 
             //Partner
@@ -6215,7 +6215,7 @@ namespace PlanlogicAI.Controllers
             }
         }
 
-   
+
 
     }
 }

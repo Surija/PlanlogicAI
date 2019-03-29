@@ -12,5 +12,6 @@ namespace PlanlogicAI.Data
         public decimal Value { get; set; }
         public decimal Percentage { get; set; }
         public int ProposedProduct { get; set; }
+        public int OriginalProduct { get; set; }
     }
 }

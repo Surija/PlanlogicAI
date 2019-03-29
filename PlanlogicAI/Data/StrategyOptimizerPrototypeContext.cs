@@ -6,7 +6,10 @@ namespace PlanlogicAI.Data
 {
     public partial class StrategyOptimizerPrototypeContext : DbContext
     {
-        
+        public StrategyOptimizerPrototypeContext()
+        {
+        }
+
 
         public virtual DbSet<Advisor> Advisor { get; set; }
         public virtual DbSet<AlternativeClientFunds> AlternativeClientFunds { get; set; }

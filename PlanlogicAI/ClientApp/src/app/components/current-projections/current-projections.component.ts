@@ -11,6 +11,7 @@ import { CommonService } from '../../services/common.service';
 import { CashFlowService } from '../../services/cashFlow.service';
 import { InvestmentService } from '../../services/investment.service';
 import { PropertyService } from '../../services/property.service';
+import { ProjectionService } from '../../services/projections.service';
 import { SuperService } from '../../services/super.service';
 import { Super } from './../../models/Super';
 import { SuperAssumptionsService } from '../../services/superAssumptions.service';
@@ -297,8 +298,8 @@ export class CurrentProjectionsComponent implements OnInit {
      finalStrategies: any[] = [];
 
   constructor(private route: ActivatedRoute,
-      private router: Router, private cashFlowService: CashFlowService,
-      private clientService: ClientService, private commonService: CommonService, private investmentService: InvestmentService, private propertyService: PropertyService, private superService: SuperService, private superAssumptionsService: SuperAssumptionsService, private liabilityService: LiabilityService, private pensionService: PensionService, private pensionAssumptionsService: PensionAssumptionsService, private lifestyleService: LifestyleAssetService, private centrelinkAssumptionsService:CentrelinkAssumptionsService) { }
+    private router: Router, private cashFlowService: CashFlowService,
+    private clientService: ClientService, private commonService: CommonService, private investmentService: InvestmentService, private propertyService: PropertyService, private superService: SuperService, private superAssumptionsService: SuperAssumptionsService, private projectionService: ProjectionService, private liabilityService: LiabilityService, private pensionService: PensionService, private pensionAssumptionsService: PensionAssumptionsService, private lifestyleService: LifestyleAssetService, private centrelinkAssumptionsService: CentrelinkAssumptionsService) { }
 
   ngOnInit() {
 
@@ -337,7 +338,7 @@ export class CurrentProjectionsComponent implements OnInit {
       }
 
 
-      if (this.clientDetails.clientId) {
+    if (this.clientDetails.clientId) {
           sources.push(this.cashFlowService.getCashFlows(this.clientDetails.clientId, "I"));
           sources.push(this.cashFlowService.getCashFlows(this.clientDetails.clientId, "E"));
           sources.push(this.commonService.getMarginalTaxRates());
@@ -358,6 +359,7 @@ export class CurrentProjectionsComponent implements OnInit {
           sources.push(this.lifestyleService.getLifestyleAssets(this.clientDetails.clientId));
           sources.push(this.commonService.getAssetTypesAssumptions());
           sources.push(this.centrelinkAssumptionsService.getQualifyingAge());
+          sources.push(this.projectionService.projections(this.clientDetails.clientId));
       }
 
       Observable.forkJoin(sources).subscribe((data: any)=>  {
@@ -383,6 +385,9 @@ export class CurrentProjectionsComponent implements OnInit {
               this.lifestyleAssets = data[17];
               this.assetAssumptions = data[18];
               this.qualifyingAge = data[19];
+              var b = data[20];
+
+              console.log(JSON.stringify(b));
 
               this.marginalTaxRates = this.marginalTaxRates.sort(function (obj1: any, obj2: any) {
                   return obj1.index - obj2.index;
@@ -448,7 +453,7 @@ export class CurrentProjectionsComponent implements OnInit {
             
               //var j = 0;
               var m = 1;
-             
+             //current
               for (var i = 0; i < this.clientDetails.period; i++) {
                   for (var q = 0; q <= 1; q++) {
 
@@ -986,6 +991,7 @@ export class CurrentProjectionsComponent implements OnInit {
                           }
 
                       })
+
                       //    //Todo -TaxIncome Total
                       this.cfiClient.forEach((x: any) => { // client
 
@@ -5299,6 +5305,8 @@ export class CurrentProjectionsComponent implements OnInit {
 
                       //Centrelink
 
+
+
                       this.calculateEligiblePeriod("EligiblePeriod-client", "Client", i);
                       this.calculateEligiblePeriod("EligiblePeriod-partner", "Partner", i);
 
@@ -5311,7 +5319,7 @@ export class CurrentProjectionsComponent implements OnInit {
 
               var t = this.CentrelinkTotal;
 
-           
+               
 
               // Optimizer Logic
               var indexRangeInflowOptimized: any = [];
@@ -5321,7 +5329,7 @@ export class CurrentProjectionsComponent implements OnInit {
               var partnerEmploymentIncomeOptimized: any = [];
               var n = 1;
 
-             
+             //proposed
               for (var w = 0; w < this.clientDetails.period; w++)
               {
                   var strategyOrder: any[] = [];
@@ -5329,34 +5337,36 @@ export class CurrentProjectionsComponent implements OnInit {
                   //1st year
                   if (w == 0) {
 
+
+
                       var clientCurrentAge = Number(this.clientAge + w);
 
                       //Calculate NRR
                       var marginalTaxRate: number = 0;
 
                       if (this.TotalPayable.filter(c => c.owner === "ClientMarginalTaxRate")[0].values[this.clientDetails.startDate + w] != 0) {
-                          marginalTaxRate = Number(this.TotalPayable.filter(c => c.owner === "ClientMarginalTaxRate")[0].values[this.clientDetails.startDate + w]) / 100;
+                        marginalTaxRate = Number(this.TotalPayable.filter(c => c.owner === "ClientMarginalTaxRate")[0].values[this.clientDetails.startDate + w]) / 100;
                       }
                       else {
-                          marginalTaxRate = 0;
+                        marginalTaxRate = 0;
                       }
                       var openingVal: any[] = [];
                       var cashSurplus: any = {};
                       var existingCashSurplus = this.netCashFlow.filter(c => c.owner === "NetCashflow");
                       cashSurplus["name"] = "Cash Surplus";
                       cashSurplus["value"] = Number(existingCashSurplus[0].values[this.clientDetails.startDate + w]);
-                      console.log(cashSurplus);
+
                       if (this.assetAssumptions.filter((a: any) => a.name == "Domestic Cash")[0].growth != 0) {
-                          cashSurplus["growth"] = Number(this.assetAssumptions.filter((a: any) => a.name == "Domestic Cash")[0].growth) / 100;
+                        cashSurplus["growth"] = Number(this.assetAssumptions.filter((a: any) => a.name == "Domestic Cash")[0].growth) / 100;
                       }
                       else {
-                          cashSurplus["growth"] = 0;
+                        cashSurplus["growth"] = 0;
                       }
                       if (this.assetAssumptions.filter((a: any) => a.name == "Domestic Cash")[0].income != 0) {
-                          cashSurplus["income"] = Number(this.assetAssumptions.filter((a: any) => a.name == "Domestic Cash")[0].income) / 100;
+                        cashSurplus["income"] = Number(this.assetAssumptions.filter((a: any) => a.name == "Domestic Cash")[0].income) / 100;
                       }
                       else {
-                          cashSurplus["income"] = 0;
+                        cashSurplus["income"] = 0;
                       }
 
                       cashSurplus["reinvest"] = "Y";
@@ -5369,35 +5379,34 @@ export class CurrentProjectionsComponent implements OnInit {
                       openingVal.push(cashSurplus);
 
                       this.investmentClientOptimized.forEach((x: any) => {
-                          var inclient = this.BeginningValue.filter(c => c.owner === x.investmentId);
-                          var obj: any = {};
-                          obj["name"] = x.name;
-                          obj["id"] = x.investmentId;
-                          obj["owner"] = x.owner;
-                          if (x.reinvest == "Y") {
-                              obj["value"] = Number(inclient[0].BegValues[this.clientDetails.startDate + w]) + Number(inclient[0].growthValues[this.clientDetails.startDate + w]) + Number(inclient[0].incomeValues[this.clientDetails.startDate + w]);
-                          }
-                          else {
-                              obj["value"] = Number(inclient[0].BegValues[this.clientDetails.startDate + w]) + Number(inclient[0].growthValues[this.clientDetails.startDate + w]);
-                          }
-                          obj["growth"] = Number(x.growth) / 100;
-                          obj["income"] = Number(x.income) / 100;
-                          obj["reinvest"] = x.reinvest;
-                          obj["status"] = "Existing";
-                          obj["status"] = "Existing";
+                        var inclient = this.BeginningValue.filter(c => c.owner === x.investmentId);
+                        var obj: any = {};
+                        obj["name"] = x.name;
+                        obj["id"] = x.investmentId;
+                        obj["owner"] = x.owner;
+                        if (x.reinvest == "Y") {
+                          obj["value"] = Number(inclient[0].BegValues[this.clientDetails.startDate + w]) + Number(inclient[0].growthValues[this.clientDetails.startDate + w]) + Number(inclient[0].incomeValues[this.clientDetails.startDate + w]);
+                        }
+                        else {
+                          obj["value"] = Number(inclient[0].BegValues[this.clientDetails.startDate + w]) + Number(inclient[0].growthValues[this.clientDetails.startDate + w]);
+                        }
+                        obj["growth"] = Number(x.growth) / 100;
+                        obj["income"] = Number(x.income) / 100;
+                        obj["reinvest"] = x.reinvest;
+                        obj["status"] = "Existing";
 
-                          var NRR: number = 0;
-                          NRR = ((Number(x.growth) / 100) + (Number(x.income) / 100)) * (1 - marginalTaxRate);
-                          //NRR = (Number(x.growth) / 100) + ((Number(x.income) / 100) * (1 - marginalTaxRate));
-                          obj["NRR"] = NRR;
-                          openingVal.push(obj);
+                        var NRR: number = 0;
+                        NRR = ((Number(x.growth) / 100) + (Number(x.income) / 100)) * (1 - marginalTaxRate);
+                        //NRR = (Number(x.growth) / 100) + ((Number(x.income) / 100) * (1 - marginalTaxRate));
+                        obj["NRR"] = NRR;
+                        openingVal.push(obj);
 
                       });
 
                       let cash: number = 0;
                       openingVal.forEach((x: any) => {
-                          var t = parseInt(x.value);
-                          cash = cash + t;
+                        var t = parseInt(x.value);
+                        cash = cash + t;
                       });
 
 
@@ -5413,39 +5422,38 @@ export class CurrentProjectionsComponent implements OnInit {
                       //SS eligibiltiy
 
                       if (clientCurrentAge < 65) {
-                          SalarySacrifice["type"] = "SS";
-                          strategies.push(SalarySacrifice);
+                        SalarySacrifice["type"] = "SS";
+                        strategies.push(SalarySacrifice);
                       }
                       else if (clientCurrentAge >= 65 && clientCurrentAge < 75) {
-                          var cEmploymentIncome = clientEmploymentIncome.filter((g: any) => g.type === "Employment");
-                          for (var j = 0; j < cEmploymentIncome.length; j++) {
+                        var cEmploymentIncome = clientEmploymentIncome.filter((g: any) => g.type === "Employment");
+                        for (var j = 0; j < cEmploymentIncome.length; j++) {
 
-                              if (Number(cEmploymentIncome[j].values[this.clientDetails.startDate + w]) > 0) {
-                                  SalarySacrifice["type"] = "SS";
-                                  strategies.push(SalarySacrifice);
-                                  break;
-                              }
+                          if (Number(cEmploymentIncome[j].values[this.clientDetails.startDate + w]) > 0) {
+                            SalarySacrifice["type"] = "SS";
+                            strategies.push(SalarySacrifice);
+                            break;
                           }
+                        }
 
                       }
 
                       //NCC eligibility
 
                       if (clientCurrentAge < 65) {
-                          NCC["type"] = "NCC";
-                          strategies.push(NCC);
+                        NCC["type"] = "NCC";
+                        strategies.push(NCC);
                       }
                       else if (clientCurrentAge >= 65 && clientCurrentAge < 75) {
-                          var cEmploymentIncome = clientEmploymentIncome.filter((g: any) => g.type === "Employment");
-                          for (var j = 0; j < cEmploymentIncome.length; j++) {
+                        var cEmploymentIncome = clientEmploymentIncome.filter((g: any) => g.type === "Employment");
+                        for (var j = 0; j < cEmploymentIncome.length; j++) {
 
-                              if (Number(cEmploymentIncome[j].values[this.clientDetails.startDate + w]) > 0) {
-                                  NCC["type"] = "NCC";
-                                  strategies.push(NCC);
-                                  break;
-                              }
+                          if (Number(cEmploymentIncome[j].values[this.clientDetails.startDate + w]) > 0) {
+                            NCC["type"] = "NCC";
+                            strategies.push(NCC);
+                            break;
                           }
-
+                        }
                       }
 
                       //Investment eligibilty
@@ -5456,304 +5464,305 @@ export class CurrentProjectionsComponent implements OnInit {
                       //Debt eligibility
 
                       for (var j = 0; j < this.liabilityClient.length; j++) {
-                          var lbclient = this.LBValue.filter(c => c.owner === this.liabilityClient[j].liabilityId);
-                          if (Number(lbclient[0].BegValues[this.clientDetails.startDate + w]) > 0) {
-                              Debt["type"] = "Debt";
-                              strategies.push(Debt);
-                              break;
-                          }
+                        var lbclient = this.LBValue.filter(c => c.owner === this.liabilityClient[j].liabilityId);
+                        if (Number(lbclient[0].BegValues[this.clientDetails.startDate + w]) > 0) {
+                          Debt["type"] = "Debt";
+                          strategies.push(Debt);
+                          break;
+                        }
                       }
 
-                      console.log(strategies);
+
                       //Net Impact
                       var NRR: any[] = [];
                       strategies.forEach((x: any) => {
 
-                          if (x.type == "SS") {
-                              this.superClient.forEach((x: any) => {
-                                  var obj: any = {};
-                                  obj["name"] = "Salary Sacrifice";
-                                  obj["id"] = x.superId;
-                                  obj["type"] = "SS";
-                                  obj["status"] = "Strategy";
-                                  var val: number = 0;
-                                  val = (marginalTaxRate - (15 / 100)) + (((Number(x.growth) / 100) + (Number(x.income) / 100)) * (1 - (15 / 100)));
-                                  //val = (marginalTaxRate - (15 / 100)) + (Number(x.growth) / 100) + (((Number(x.income) / 100)) * (1 - (15 / 100)));
-                                  obj["NRR"] = val;
-                                  NRR.push(obj);
+                        if (x.type == "SS") {
+                          this.superClient.forEach((x: any) => {
+                            var obj: any = {};
+                            obj["name"] = "Salary Sacrifice";
+                            obj["id"] = x.superId;
+                            obj["type"] = "SS";
+                            obj["status"] = "Strategy";
+                            var val: number = 0;
+                            val = (marginalTaxRate - (15 / 100)) + (((Number(x.growth) / 100) + (Number(x.income) / 100)) * (1 - (15 / 100)));
+                            //val = (marginalTaxRate - (15 / 100)) + (Number(x.growth) / 100) + (((Number(x.income) / 100)) * (1 - (15 / 100)));
+                            obj["NRR"] = val;
+                            NRR.push(obj);
 
-                              });
-                          }
-                          else if (x.type == "NCC") {
-                              this.superClient.forEach((x: any) => {
-                                  var obj: any = {};
-                                  obj["name"] = "Non-concessional Contribution";
-                                  obj["id"] = x.superId;
-                                  obj["type"] = "NCC";
-                                  obj["status"] = "Strategy";
-                                  var val: number = 0;
-                                  val = ((Number(x.growth) / 100) + (Number(x.income) / 100)) * (1 - (15 / 100));
-                                  //val = (Number(x.growth) / 100) + ((Number(x.income) / 100) * (1 - (15 / 100)));
-                                  obj["NRR"] = val;
-                                  NRR.push(obj);
+                          });
+                        }
+                        else if (x.type == "NCC") {
+                          this.superClient.forEach((x: any) => {
+                            var obj: any = {};
+                            obj["name"] = "Non-concessional Contribution";
+                            obj["id"] = x.superId;
+                            obj["type"] = "NCC";
+                            obj["status"] = "Strategy";
+                            var val: number = 0;
+                            val = ((Number(x.growth) / 100) + (Number(x.income) / 100)) * (1 - (15 / 100));
+                            //val = (Number(x.growth) / 100) + ((Number(x.income) / 100) * (1 - (15 / 100)));
+                            obj["NRR"] = val;
+                            NRR.push(obj);
 
-                              });
-                          }
-                          else if (x.type == "Investment") {
-                              var growth = Number(this.assetAssumptions.filter((a: any) => a.name == this.clientDetails.clientRiskProfile)[0].growth) / 100;
-                              var income = Number(this.assetAssumptions.filter((a: any) => a.name == this.clientDetails.clientRiskProfile)[0].income) / 100;
-                              var obj: any = {};
-                              //obj["NRR"] = Number(growth + ( income * (1 - marginalTaxRate)));
-                              obj["NRR"] = Number((growth + income) * (1 - marginalTaxRate));
-                              obj["type"] = "Investment";
-                              obj["name"] = "Investment";
-                              obj["status"] = "Strategy";
-                              obj["id"] = 0;
-                              NRR.push(obj);
+                          });
+                        }
+                        else if (x.type == "Investment") {
+                          var growth = Number(this.assetAssumptions.filter((a: any) => a.name == this.clientDetails.clientRiskProfile)[0].growth) / 100;
+                          var income = Number(this.assetAssumptions.filter((a: any) => a.name == this.clientDetails.clientRiskProfile)[0].income) / 100;
+                          var obj: any = {};
+                          //obj["NRR"] = Number(growth + ( income * (1 - marginalTaxRate)));
+                          obj["NRR"] = Number((growth + income) * (1 - marginalTaxRate));
+                          obj["type"] = "Investment";
+                          obj["name"] = "Investment";
+                          obj["status"] = "Strategy";
+                          obj["id"] = 0;
+                          NRR.push(obj);
 
-                          }
-                          else if (x.type == "Debt") {
+                        }
+                        else if (x.type == "Debt") {
 
-                              this.liabilityClient.forEach((x: any) => {
-                                  var obj: any = {};
-                                  obj["name"] = x.name;
-                                  obj["id"] = x.liabilityId;
-                                  obj["type"] = "Debt";
-                                  obj["status"] = "Strategy";
-                                  var val: number = 0;
-                                  if (x.type == "Non-Deductible") {
-                                      if (marginalTaxRate != 1) {
-                                          val = ((x.interestRate / 100) / (1 - marginalTaxRate));
-                                      }
-                                      else {
-                                          val = 0;
-                                      }
-                                  }
-                                  else {
-                                      val = (x.interestRate / 100);
-                                  }
-                                  obj["NRR"] = val;
-                                  NRR.push(obj);
-                              });
-                          }
+                          this.liabilityClient.forEach((x: any) => {
+                            var obj: any = {};
+                            obj["name"] = x.name;
+                            obj["id"] = x.liabilityId;
+                            obj["type"] = "Debt";
+                            obj["status"] = "Strategy";
+                            var val: number = 0;
+                            if (x.type == "Non-Deductible") {
+                              if (marginalTaxRate != 1) {
+                                val = ((x.interestRate / 100) / (1 - marginalTaxRate));
+                              }
+                              else {
+                                val = 0;
+                              }
+                            }
+                            else {
+                              val = (x.interestRate / 100);
+                            }
+                            obj["NRR"] = val;
+                            NRR.push(obj);
+                          });
+                        }
                       });
 
-                      console.log(NRR);
+
 
                       NRR.forEach((x: any) => {
-                          strategyOrder.push(x);
+                        strategyOrder.push(x);
                       });
 
 
                       openingVal.forEach((x: any) => {
-                          strategyOrder.push(x);
+                        strategyOrder.push(x);
                       });
 
-                      console.log(strategyOrder);
+
                       strategyOrder = strategyOrder.sort(function (obj1: any, obj2: any) {
-                          return obj2.NRR - obj1.NRR;
+                        return obj2.NRR - obj1.NRR;
                       });
 
-                      console.log(strategyOrder);
+
                       var existingCash = cash;
-     
+
                       strategyOrder.forEach((x: any) => {
-                          if (existingCash > 0 && x.type != "CashSurplus") {
+                        if (existingCash > 0 && x.type != "CashSurplus") {
 
-                              if (x.type == "SS") {
-                                  var sg = this.SuperValue.filter(c => c.owner === x.id);
-                                  var sgRate = Number(sg[0].sgContrValues[this.clientDetails.startDate + w]);
-                                  var cap = 25000 - sgRate;
+                          if (x.type == "SS") {
+                            var sg = this.SuperValue.filter(c => c.owner === x.id);
+                            var sgRate = Number(sg[0].sgContrValues[this.clientDetails.startDate + w]);
+                            var cap = 25000 - sgRate;
 
-                                  if (existingCash >= cap) {
-                                      x["AllocatedValue"] = cap;
-                                      existingCash = existingCash - cap;
-                                  }
-                                  else {
-                                      x["AllocatedValue"] = existingCash;
-                                      existingCash = 0;
-                                  }
+                            if (existingCash >= cap) {
+                              x["AllocatedValue"] = cap;
+                              existingCash = existingCash - cap;
+                            }
+                            else {
+                              x["AllocatedValue"] = existingCash;
+                              existingCash = 0;
+                            }
 
-                              }
-                              else if (x.type == "NCC") {
-                                  var cap = 100000;
+                          }
+                          else if (x.type == "NCC") {
+                            var cap = 100000;
 
-                                  if (existingCash >= cap) {
-                                      x["AllocatedValue"] = cap;
-                                      existingCash = existingCash - cap;
-                                  }
-                                  else {
-                                      x["AllocatedValue"] = existingCash;
-                                      existingCash = 0;
-                                  }
-                              }
-                              else if (x.type == "Debt") {
-                                  var liability = this.LBValue.filter(c => c.owner === x.id);
-                                  var liabilityVal = Number(liability[0].BegValues[this.clientDetails.startDate + w]) + Number(liability[0].accruedInterestValues[this.clientDetails.startDate + w]);
+                            if (existingCash >= cap) {
+                              x["AllocatedValue"] = cap;
+                              existingCash = existingCash - cap;
+                            }
+                            else {
+                              x["AllocatedValue"] = existingCash;
+                              existingCash = 0;
+                            }
+                          }
+                          else if (x.type == "Debt") {
+                            var liability = this.LBValue.filter(c => c.owner === x.id);
+                            var liabilityVal = Number(liability[0].BegValues[this.clientDetails.startDate + w]) + Number(liability[0].accruedInterestValues[this.clientDetails.startDate + w]);
 
 
-                                  if (existingCash >= liabilityVal) {
-                                      x["AllocatedValue"] = liabilityVal;
-                                      existingCash = existingCash - liabilityVal;
-                                  }
-                                  else {
-                                      x["AllocatedValue"] = existingCash;
-                                      existingCash = 0;
-                                  }
-                              }
-                              else {
-                                  if (existingCash >= 0) {
-                                      x["AllocatedValue"] = existingCash;
-                                      existingCash = 0;
-                                  }
-                              }
+                            if (existingCash >= liabilityVal) {
+                              x["AllocatedValue"] = liabilityVal;
+                              existingCash = existingCash - liabilityVal;
+                            }
+                            else {
+                              x["AllocatedValue"] = existingCash;
+                              existingCash = 0;
+                            }
                           }
                           else {
-                              x["AllocatedValue"] = 0;
+                            if (existingCash >= 0) {
+                              x["AllocatedValue"] = existingCash;
+                              existingCash = 0;
+                            }
                           }
+                        }
+                        else {
+                          x["AllocatedValue"] = 0;
+                        }
                       });
 
 
                       strategyOrder.forEach((x: any) => {
-                         
-
-                          
-                          if (x.type != "CashSurplus") {
-                              var obj: any = {};
-                              if (x.type == "SS") {
-
-                                  obj = this.finalStrategies.filter((y: any) => y.type === "SS").filter((a: any) => a.id === x.id)
-
-                              }
-                              else if (x.type == "NCC") {
-                                  obj = this.finalStrategies.filter((y: any) => y.type === "NCC").filter((a: any) => a.id === x.id)
-
-                              }
-                              else if (x.type == "Debt") {
-                                  obj = this.finalStrategies.filter((y: any) => y.type === "Debt").filter((a: any) => a.id === x.id)
-                              }
-                              else if (x.type == "Investment") {
-
-                                  obj = this.finalStrategies.filter((y: any) => (y.type === "Investment"))
-                              }
-                              else {
-                                  obj = this.finalStrategies.filter((y: any) => y.status === "Existing").filter((a: any) => a.id === x.id)
-                              }
-                              //}
-
-                              var obj1: any = {};
-
-                              if (obj == null || obj.length <= 0) {
-                                  obj = {};
-
-                              }
-                              else {
-                                  obj1 = obj.values;
-
-                              }
-
-                              obj["name"] = x.name;
-                              obj["id"] = x.id;
-                              obj["type"] = x.type;
-                              obj["status"] = x.status;
-
-                              obj1[this.clientDetails.startDate + w] = x.AllocatedValue.toFixed();
 
 
 
-                              obj["values"] = obj1;
+                        if (x.type != "CashSurplus") {
+                          var obj: any = {};
+                          if (x.type == "SS") {
 
-                              if (x.type == "SS") {
-                                  var t = this.finalStrategies.filter((y: any) => y.type === "SS").filter((a: any) => a.id === x.id)
+                            obj = this.finalStrategies.filter((y: any) => y.type === "SS").filter((a: any) => a.id === x.id)
 
-                                  if (t != null && t.length > 0) {
-                                      // this.finalStrategies[this.finalStrategies.findIndex((y: any) => (y.id === x.id && y.type === "SS"))] = obj;
-                                      for (i = 0; i < this.finalStrategies.length; i++) {
-                                          if (this.finalStrategies[i].id == x.id && this.finalStrategies[i].type == "SS") {
-                                              this.finalStrategies[i] = obj
-                                          }
-                                      }
-                                  }
-                                  else {
-                                      this.finalStrategies.push(obj);
-
-                                  }
-                              }
-                              else if (x.type == "NCC") {
-                                  var t = this.finalStrategies.filter((y: any) => y.type === "NCC").filter((a: any) => a.id === x.id)
-
-
-
-                                  if (t != null && t.length > 0) {
-
-                                      for (i = 0; i < this.finalStrategies.length; i++) {
-                                          if (this.finalStrategies[i].id == x.id && this.finalStrategies[i].type == "NCC") {
-                                              this.finalStrategies[i] = obj
-                                          }
-                                      }
-
-                                  }
-                                  else {
-                                      this.finalStrategies.push(obj);
-
-                                  }
-                              }
-                              else if (x.type == "Debt") {
-                                  var t = this.finalStrategies.filter((y: any) => y.type === "Debt").filter((a: any) => a.id === x.id)
-
-                                  if (t != null && t.length > 0) {
-                                      // this.finalStrategies[this.finalStrategies.findIndex(t:)] = obj;
-                                      for (i = 0; i < this.finalStrategies.length; i++) {
-                                          if (this.finalStrategies[i].id == x.id && this.finalStrategies[i].type == "Debt") {
-                                              this.finalStrategies[i] = obj
-                                          }
-                                      }
-                                  }
-                                  else {
-                                      this.finalStrategies.push(obj);
-
-                                  }
-                              }
-                              else if (x.type == "Investment") {
-
-                                  var t = this.finalStrategies.filter((y: any) => y.type === "Investment")
-
-                                  if (t != null && t.length > 0) {
-                                      // this.finalStrategies[this.finalStrategies.findIndex(t:)] = obj;
-                                      for (i = 0; i < this.finalStrategies.length; i++) {
-                                          if (this.finalStrategies[i].type == "Investment") {
-                                              this.finalStrategies[i] = obj
-                                          }
-                                      }
-                                  }
-                                  else {
-                                      this.finalStrategies.push(obj);
-
-                                  }
-                              }
-                              else {
-                                  var t = this.finalStrategies.filter((y: any) => y.status === "Existing").filter((a: any) => a.id === x.id)
-
-                                  if (t != null && t.length > 0) {
-
-                                      for (i = 0; i < this.finalStrategies.length; i++) {
-                                          if (this.finalStrategies[i].id == x.id && this.finalStrategies[i].status == "Existing") {
-                                              this.finalStrategies[i] = obj
-                                          }
-                                      }
-                                  }
-                                  else {
-                                      this.finalStrategies.push(obj);
-
-                                  }
-                              }
                           }
+                          else if (x.type == "NCC") {
+                            obj = this.finalStrategies.filter((y: any) => y.type === "NCC").filter((a: any) => a.id === x.id)
+
+                          }
+                          else if (x.type == "Debt") {
+                            obj = this.finalStrategies.filter((y: any) => y.type === "Debt").filter((a: any) => a.id === x.id)
+                          }
+                          else if (x.type == "Investment") {
+
+                            obj = this.finalStrategies.filter((y: any) => (y.type === "Investment"))
+                          }
+                          else {
+                            obj = this.finalStrategies.filter((y: any) => y.status === "Existing").filter((a: any) => a.id === x.id)
+                          }
+                          //}
+
+                          var obj1: any = {};
+
+                          if (obj == null || obj.length <= 0) {
+                            obj = {};
+
+                          }
+                          else {
+                            obj1 = obj.values;
+
+                          }
+
+                          obj["name"] = x.name;
+                          obj["id"] = x.id;
+                          obj["type"] = x.type;
+                          obj["status"] = x.status;
+
+                          obj1[this.clientDetails.startDate + w] = x.AllocatedValue.toFixed();
+
+
+
+                          obj["values"] = obj1;
+
+                          if (x.type == "SS") {
+                            var t = this.finalStrategies.filter((y: any) => y.type === "SS").filter((a: any) => a.id === x.id)
+
+                            if (t != null && t.length > 0) {
+                              // this.finalStrategies[this.finalStrategies.findIndex((y: any) => (y.id === x.id && y.type === "SS"))] = obj;
+                              for (i = 0; i < this.finalStrategies.length; i++) {
+                                if (this.finalStrategies[i].id == x.id && this.finalStrategies[i].type == "SS") {
+                                  this.finalStrategies[i] = obj
+                                }
+                              }
+                            }
+                            else {
+                              this.finalStrategies.push(obj);
+
+                            }
+                          }
+                          else if (x.type == "NCC") {
+                            var t = this.finalStrategies.filter((y: any) => y.type === "NCC").filter((a: any) => a.id === x.id)
+
+
+
+                            if (t != null && t.length > 0) {
+
+                              for (i = 0; i < this.finalStrategies.length; i++) {
+                                if (this.finalStrategies[i].id == x.id && this.finalStrategies[i].type == "NCC") {
+                                  this.finalStrategies[i] = obj
+                                }
+                              }
+
+                            }
+                            else {
+                              this.finalStrategies.push(obj);
+
+                            }
+                          }
+                          else if (x.type == "Debt") {
+                            var t = this.finalStrategies.filter((y: any) => y.type === "Debt").filter((a: any) => a.id === x.id)
+
+                            if (t != null && t.length > 0) {
+                              // this.finalStrategies[this.finalStrategies.findIndex(t:)] = obj;
+                              for (i = 0; i < this.finalStrategies.length; i++) {
+                                if (this.finalStrategies[i].id == x.id && this.finalStrategies[i].type == "Debt") {
+                                  this.finalStrategies[i] = obj
+                                }
+                              }
+                            }
+                            else {
+                              this.finalStrategies.push(obj);
+
+                            }
+                          }
+                          else if (x.type == "Investment") {
+
+                            var t = this.finalStrategies.filter((y: any) => y.type === "Investment")
+
+                            if (t != null && t.length > 0) {
+                              // this.finalStrategies[this.finalStrategies.findIndex(t:)] = obj;
+                              for (i = 0; i < this.finalStrategies.length; i++) {
+                                if (this.finalStrategies[i].type == "Investment") {
+                                  this.finalStrategies[i] = obj
+                                }
+                              }
+                            }
+                            else {
+                              this.finalStrategies.push(obj);
+
+                            }
+                          }
+                          else {
+                            var t = this.finalStrategies.filter((y: any) => y.status === "Existing").filter((a: any) => a.id === x.id)
+
+                            if (t != null && t.length > 0) {
+
+                              for (i = 0; i < this.finalStrategies.length; i++) {
+                                if (this.finalStrategies[i].id == x.id && this.finalStrategies[i].status == "Existing") {
+                                  this.finalStrategies[i] = obj
+                                }
+                              }
+                            }
+                            else {
+                              this.finalStrategies.push(obj);
+
+                            }
+                          }
+                        }
                       });
 
+
                     
+                    for (var i = w; i < 1; i++) {
 
 
-                      for (var i = w; i < 1; i++) {
 
                           //Add new investment
                           var newInvestmentStrategy = strategyOrder.filter(c => c.type === "Investment");
@@ -5788,4769 +5797,4762 @@ export class CurrentProjectionsComponent implements OnInit {
                           }
 
 
+                      for (var p = 0; p <= 1; p++) {
 
-                          //Client LifeStyles
-                          this.lifestyleClient.forEach((x: any) => { // client
+                        //Client LifeStyles
+                        this.lifestyleClient.forEach((x: any) => { // client
 
-                              var obj = this.lifestylesOptimized.find((y: any) => y.id === x.lassetId);
-                              var obj1: any = {};
-                              var purchaseOfAssets: any = {};
-                              var saleOfAssets: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
+                          var obj = this.lifestylesOptimized.find((y: any) => y.id === x.lassetId);
+                          var obj1: any = {};
+                          var purchaseOfAssets: any = {};
+                          var saleOfAssets: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            purchaseOfAssets = obj.purchaseOfAssetValues;
+                            saleOfAssets = obj.saleOfAssetValues;
+                            j = obj.increment;
+                          }
+                          if (p == 0) {
+                            obj["owner"] = x.owner;
+                            obj["name"] = x.name;
+
+                            obj["id"] = x.lassetId;
+                            obj["type"] = x.lassetType;
+
+                            if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                              x.startDate = this.clientDetails.startDate;
+                            }
+                            else if (x.startDateType == "Client Retirement") {
+                              x.startDate = this.clientDetails.clientRetirementYear - 1;
+                            }
+
+                            if (x.endDateType == "End") {
+                              x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                            }
+                            else if (x.endDateType == "Retain") {
+                              x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                            }
+                            else if (x.endDateType == "Client Retirement") {
+                              x.endDate = this.clientDetails.clientRetirementYear - 1;
+                            }
+
+                            if ((this.clientDetails.startDate + i) >= x.endDate) {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                            else if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (x.lassetType == "PrimaryResidence") {
+                                if (j == 0) {
+                                  obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+
+                                }
+                                else {
+                                  obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
+                                }
+                                j++;
                               }
                               else {
-                                  obj1 = obj.values;
-                                  purchaseOfAssets = obj.purchaseOfAssetValues;
-                                  saleOfAssets = obj.saleOfAssetValues;
-                                  j = obj.increment;
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
                               }
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
 
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.name;
+                            //Purchase of assets
+                            if (x.startDateType != "Existing") {
 
-                              obj["id"] = x.lassetId;
-                              obj["type"] = x.lassetType;
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate;
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                            
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                           
-
-                              if ((this.clientDetails.startDate + i) >= x.endDate) {
-                                  obj1[this.clientDetails.startDate + i] = 0;
-                              }
-                              else if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (x.lassetType == "PrimaryResidence") {
-                                      if (j == 0) {
-                                          obj1[this.clientDetails.startDate + i] = x.value.toFixed();
-
-                                      }
-                                      else {
-                                          obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
-                                      }
-                                      j++;
-                                  }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
+                              if (x.startDate == this.clientDetails.startDate + i) {
+                                purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
                               }
                               else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
+                                purchaseOfAssets[this.clientDetails.startDate + i] = 0;
                               }
+                            }
+                            else {
+                              purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
 
-                              //Purchase of assets
-                              if (x.startDateType != "Existing") {
+                            //Sale of assets
+                            if (x.endDateType != "Retain") {
 
-                                  if (x.startDate == this.clientDetails.startDate + i) {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Sale of assets
-                              if (x.endDateType != "Retain") {
-
-                                  if (x.endDate == this.clientDetails.startDate + i) {
-                                      if (x.lassetType == "PrimaryResidence") {
-                                          if (j == 0) {
-                                              saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-
-                                          }
-                                          else {
-                                              saleOfAssets[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
-                                          }
-                                          j++;
-                                      }
-                                      else {
-                                          saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-
-                                  }
-                                  else {
-                                      saleOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  saleOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
-                              obj["purchaseOfAssetValues"] = purchaseOfAssets;
-                              obj["saleOfAssetValues"] = saleOfAssets;
-
-
-                              if (this.lifestylesOptimized.find((y: any) => y.id === x.lassetId) != null) {
-                                  this.lifestylesOptimized[this.lifestylesOptimized.findIndex((c: any) => c.id === x.lassetId)] = obj;
-                              }
-                              else {
-                                  this.lifestylesOptimized.push(obj);
-                              }
-
-                          })
-                          this.lifestylePartner.forEach((x: any) => {
-
-                              var obj = this.lifestylesOptimized.find((y: any) => y.id === x.lassetId);
-                              var obj1: any = {};
-                              var purchaseOfAssets: any = {};
-                              var saleOfAssets: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
-                              }
-                              else {
-                                  obj1 = obj.values;
-                                  purchaseOfAssets = obj.purchaseOfAssetValues;
-                                  saleOfAssets = obj.saleOfAssetValues;
-                                  j = obj.increment;
-                              }
-
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.name;
-
-                              obj["id"] = x.lassetId;
-                              obj["type"] = x.lassetType;
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate;
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              if ((this.clientDetails.startDate + i) >= x.endDate) {
-                                  obj1[this.clientDetails.startDate + i] = 0;
-                              }
-                              else if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (x.lassetType == "PrimaryResidence") {
-                                      if (j == 0) {
-                                          obj1[this.clientDetails.startDate + i] = x.value.toFixed();
-
-                                      }
-                                      else {
-                                          obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
-                                      }
-                                      j++;
-                                  }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                              }
-                              else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Purchase of assets
-                              if (x.startDateType != "Existing") {
-
-                                  if (x.startDate == this.clientDetails.startDate + i) {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Sale of assets
-                              if (x.endDateType != "Retain") {
-
-                                  if (x.endDate == this.clientDetails.startDate + i) {
-                                      if (x.lassetType == "PrimaryResidence") {
-                                          if (j == 0) {
-                                              saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-
-                                          }
-                                          else {
-                                              saleOfAssets[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
-                                          }
-                                          j++;
-                                      }
-                                      else {
-                                          saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-
-                                  }
-                                  else {
-                                      saleOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  saleOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
-                              obj["purchaseOfAssetValues"] = purchaseOfAssets;
-                              obj["saleOfAssetValues"] = saleOfAssets;
-
-
-                              if (this.lifestylesOptimized.find((y: any) => y.id === x.lassetId) != null) {
-                                  this.lifestylesOptimized[this.lifestylesOptimized.findIndex((c: any) => c.id === x.lassetId)] = obj;
-                              }
-                              else {
-                                  this.lifestylesOptimized.push(obj);
-                              }
-
-                          })
-                          this.lifestyleJoint.forEach((x: any) => {
-
-                              var obj = this.lifestylesOptimized.find((y: any) => y.id === x.lassetId);
-                              var obj1: any = {};
-                              var purchaseOfAssets: any = {};
-                              var saleOfAssets: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
-                              }
-                              else {
-                                  obj1 = obj.values;
-                                  purchaseOfAssets = obj.purchaseOfAssetValues;
-                                  saleOfAssets = obj.saleOfAssetValues;
-                                  j = obj.increment;
-                              }
-
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.name;
-
-                              obj["id"] = x.lassetId;
-                              obj["type"] = x.lassetType;
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate;
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              if ((this.clientDetails.startDate + i) >= x.endDate) {
-                                  obj1[this.clientDetails.startDate + i] = 0;
-                              }
-                              else if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (x.lassetType == "PrimaryResidence") {
-                                      if (j == 0) {
-                                          obj1[this.clientDetails.startDate + i] = x.value.toFixed();
-
-                                      }
-                                      else {
-                                          obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
-                                      }
-                                      j++;
-                                  }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                              }
-                              else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Purchase of assets
-                              if (x.startDateType != "Existing") {
-
-                                  if (x.startDate == this.clientDetails.startDate + i) {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Sale of assets
-                              if (x.endDateType != "Retain") {
-
-                                  if (x.endDate == this.clientDetails.startDate + i) {
-                                      if (x.lassetType == "PrimaryResidence") {
-                                          if (j == 0) {
-                                              saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-
-                                          }
-                                          else {
-                                              saleOfAssets[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
-                                          }
-                                          j++;
-                                      }
-                                      else {
-                                          saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-
-                                  }
-                                  else {
-                                      saleOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  saleOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
-                              obj["purchaseOfAssetValues"] = purchaseOfAssets;
-                              obj["saleOfAssetValues"] = saleOfAssets;
-
-
-                              if (this.lifestylesOptimized.find((y: any) => y.id === x.lassetId) != null) {
-                                  this.lifestylesOptimized[this.lifestylesOptimized.findIndex((c: any) => c.id === x.lassetId)] = obj;
-                              }
-                              else {
-                                  this.lifestylesOptimized.push(obj);
-                              }
-
-                          })
-                          this.calculateTotalLASaleProceedsOptimized("TotalLASales", i);
-                          this.calculateTotalLAPropertyExpensesOptimized("TotalLAPurchase", i);
-
-
-                          this.cfiClient.forEach((x: any) => { // client
-                              var obj = indexRangeInflowOptimized.find((y: any) => y.id === x.cflowId);
-                              var obj1: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
-                              }
-                              else {
-                                  obj1 = obj.values;
-                                  j = obj.increment;
-                              }
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.cfname;
-                              obj["id"] = x.cflowId;
-                              obj["type"] = x.type;
-                              if (x.startDateType == "Start") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                            
-
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (x.endDate == this.clientDetails.startDate + i) {
+                                if (x.lassetType == "PrimaryResidence") {
                                   if (j == 0) {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+                                    saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
 
                                   }
                                   else {
-                                      obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
-                                  }
-
-                                  j++;
-
-                              }
-
-                              else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
-
-                              if (indexRangeInflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
-                                  indexRangeInflowOptimized[indexRangeInflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
-                                  clientEmploymentIncomeOptimized[clientEmploymentIncomeOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
-                                  this.IncomeOptimized[this.IncomeOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
-                              }
-                              else {
-                                  indexRangeInflowOptimized.push(obj);
-                                  this.IncomeOptimized.push(obj);
-                                  clientEmploymentIncomeOptimized.push(obj);
-                              }
-                          });
-                          this.cfiPartner.forEach((x: any) => { // partner
-                              if (x.startDateType == "Start") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = indexRangeInflowOptimized.find((y: any) => y.id === x.cflowId);
-                              var obj1: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
-                              }
-                              else {
-                                  obj1 = obj.values;
-                                  j = obj.increment;
-                              }
-
-
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.cfname;
-                              obj["id"] = x.cflowId;
-                              obj["type"] = x.type;
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (j == 0) {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
-
-                                  }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
+                                    saleOfAssets[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
                                   }
                                   j++;
+                                }
+                                else {
+                                  saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
+                                }
+
                               }
                               else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
+                                saleOfAssets[this.clientDetails.startDate + i] = 0;
                               }
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
+                            }
+                            else {
+                              saleOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
 
-                              if (indexRangeInflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
-                                  indexRangeInflowOptimized[indexRangeInflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
-                                  partnerEmploymentIncomeOptimized[partnerEmploymentIncomeOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
-                                  this.IncomeOptimized[this.IncomeOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
-                              }
-                              else {
-                                  indexRangeInflowOptimized.push(obj);
-                                  this.IncomeOptimized.push(obj);
-                                  partnerEmploymentIncomeOptimized.push(obj);
-                              }
-
-                          })
-                          //    //Todo -TaxIncome Total
-                          this.cfiClient.forEach((x: any) => { // client
-
-                              if (x.type != "Non-Taxable") {
-                                  if (x.startDateType == "Start") {
-                                      x.startDate = this.clientDetails.startDate
-                                  }
-                                  else if (x.startDateType == "Client Retirement") {
-                                      x.startDate = this.clientDetails.clientRetirementYear - 1;
-                                  }
-                                 
-                                  //TODO : Reconfirm end date
-                                  if (x.endDateType == "End") {
-                                      x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                  }
-                                  else if (x.endDateType == "Client Retirement") {
-                                      x.endDate = this.clientDetails.clientRetirementYear - 1;
-                                  }
-                                 
-
-                                  var obj = indexRangeInflowOptimized.find((y: any) => y.id === "Tax" + x.cflowId);
-                                  var obj1: any = {};
-                                  var j: number = 0;
-                                  if (obj == null) {
-                                      obj = {};
-                                      j = 0;
-                                  }
-                                  else {
-                                      obj1 = obj.values;
-                                      j = obj.increment;
-                                  }
-                                  obj["owner"] = "ClientIncome-tax";
-                                  obj["name"] = x.cfname;
-                                  obj["id"] = "Tax" + x.cflowId;
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
+                          obj["purchaseOfAssetValues"] = purchaseOfAssets;
+                          obj["saleOfAssetValues"] = saleOfAssets;
 
 
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      if (j == 0) {
-                                          obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+                          if (this.lifestylesOptimized.find((y: any) => y.id === x.lassetId) != null) {
+                            this.lifestylesOptimized[this.lifestylesOptimized.findIndex((c: any) => c.id === x.lassetId)] = obj;
+                          }
+                          else {
+                            this.lifestylesOptimized.push(obj);
+                          }
 
-                                      }
-                                      else {
-                                          obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
-                                      }
-                                      j++;
-                                  }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = 0;
-                                  }
-                                  obj["values"] = obj1;
-                                  obj["increment"] = j;
+                        })
+                        this.lifestylePartner.forEach((x: any) => {
 
-                                  if (indexRangeInflowOptimized.find((y: any) => y.id === "Tax" + x.cflowId) != null) {
-                                      indexRangeInflowOptimized[indexRangeInflowOptimized.findIndex((c: any) => c.id === "Tax" + x.cflowId)] = obj;
-                                      this.IncomeOptimized[this.IncomeOptimized.findIndex((c: any) => c.id === "Tax" + x.cflowId)] = obj;
-                                  }
-                                  else {
-                                      indexRangeInflowOptimized.push(obj);
-                                      this.IncomeOptimized.push(obj);
-                                  }
-                              }
+                          var obj = this.lifestylesOptimized.find((y: any) => y.id === x.lassetId);
+                          var obj1: any = {};
+                          var purchaseOfAssets: any = {};
+                          var saleOfAssets: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            purchaseOfAssets = obj.purchaseOfAssetValues;
+                            saleOfAssets = obj.saleOfAssetValues;
+                            j = obj.increment;
+                          }
 
-                          })
-                          this.cfiPartner.forEach((x: any) => { // partner
-                              if (x.type != "Non-Taxable") {
-                                  if (x.startDateType == "Start") {
-                                      x.startDate = this.clientDetails.startDate
-                                  }
-                                  else if (x.startDateType == "Partner Retirement") {
-                                      x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                                  }
+                          if (p == 0) {
+                            obj["owner"] = x.owner;
+                            obj["name"] = x.name;
 
-                                  if (x.endDateType == "End") {
-                                      x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                  }
-                                  else if (x.endDateType == "Partner Retirement") {
-                                      x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                                  }
+                            obj["id"] = x.lassetId;
+                            obj["type"] = x.lassetType;
 
-                                  var obj = indexRangeInflowOptimized.find((y: any) => y.id === "Tax" + x.cflowId);
-                                  var obj1: any = {};
-                                  var j: number = 0;
-                                  if (obj == null) {
-                                      obj = {};
-                                      j = 0;
-                                  }
-                                  else {
-                                      obj1 = obj.values;
-                                      j = obj.increment;
-                                  }
-                                  obj["owner"] = "PartnerIncome-tax";
-                                  obj["name"] = x.cfname;
-                                  obj["id"] = "Tax" + x.cflowId;
+                            if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                              x.startDate = this.clientDetails.startDate;
+                            }
+                            else if (x.startDateType == "Partner Retirement") {
+                              x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                            }
+
+                            if (x.endDateType == "End") {
+                              x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                            }
+                            else if (x.endDateType == "Retain") {
+                              x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                            }
+                            else if (x.endDateType == "Partner Retirement") {
+                              x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                            }
 
 
+                            if ((this.clientDetails.startDate + i) >= x.endDate) {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                            else if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (x.lassetType == "PrimaryResidence") {
+                                if (j == 0) {
+                                  obj1[this.clientDetails.startDate + i] = x.value.toFixed();
 
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      if (j == 0) {
-                                          obj1[this.clientDetails.startDate + i] = x.value.toFixed();
-
-                                      }
-                                      else {
-                                          obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
-                                      }
-                                      j++;
-                                  }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = 0;
-                                  }
-                                  obj["values"] = obj1;
-                                  obj["increment"] = j;
-
-
-                                  if (indexRangeInflowOptimized.find((y: any) => y.id === "Tax" + x.cflowId) != null) {
-                                      indexRangeInflowOptimized[indexRangeInflowOptimized.findIndex((c: any) => c.id === "Tax" + x.cflowId)] = obj;
-                                      this.IncomeOptimized[this.IncomeOptimized.findIndex((c: any) => c.id === "Tax" + x.cflowId)] = obj;
-                                  }
-                                  else {
-                                      indexRangeInflowOptimized.push(obj);
-                                      this.IncomeOptimized.push(obj);
-                                  }
-                              }
-
-                          })
-                          this.inflowOptimized = indexRangeInflowOptimized;
-
-                          //Calculate Outflow Values
-                          this.cfeClient.forEach((x: any) => { // client
-
-                              var obj = indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId);
-                              var obj1: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
+                                }
+                                else {
+                                  obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
+                                }
+                                j++;
                               }
                               else {
-                                  obj1 = obj.values;
-                                  j = obj.increment;
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
                               }
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.cfname;
-                              obj["id"] = x.cflowId;
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
 
-                              if (x.startDateType == "Start") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                            
+                            //Purchase of assets
+                            if (x.startDateType != "Existing") {
 
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (x.startDate == this.clientDetails.startDate + i) {
+                                purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
+                              }
+                              else {
+                                purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                              }
+                            }
+                            else {
+                              purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
+
+                            //Sale of assets
+                            if (x.endDateType != "Retain") {
+
+                              if (x.endDate == this.clientDetails.startDate + i) {
+                                if (x.lassetType == "PrimaryResidence") {
                                   if (j == 0) {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+                                    saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
 
                                   }
                                   else {
-                                      obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
+                                    saleOfAssets[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
                                   }
                                   j++;
+                                }
+                                else {
+                                  saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
+                                }
+
                               }
                               else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
+                                saleOfAssets[this.clientDetails.startDate + i] = 0;
                               }
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
+                            }
+                            else {
+                              saleOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
+                          obj["purchaseOfAssetValues"] = purchaseOfAssets;
+                          obj["saleOfAssetValues"] = saleOfAssets;
 
 
-                              if (indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
-                                  indexRangeOutflowOptimized[indexRangeOutflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          if (this.lifestylesOptimized.find((y: any) => y.id === x.lassetId) != null) {
+                            this.lifestylesOptimized[this.lifestylesOptimized.findIndex((c: any) => c.id === x.lassetId)] = obj;
+                          }
+                          else {
+                            this.lifestylesOptimized.push(obj);
+                          }
+
+                        })
+                        this.lifestyleJoint.forEach((x: any) => {
+
+                          var obj = this.lifestylesOptimized.find((y: any) => y.id === x.lassetId);
+                          var obj1: any = {};
+                          var purchaseOfAssets: any = {};
+                          var saleOfAssets: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            purchaseOfAssets = obj.purchaseOfAssetValues;
+                            saleOfAssets = obj.saleOfAssetValues;
+                            j = obj.increment;
+                          }
+
+                          if (p == 0) {
+                            obj["owner"] = x.owner;
+                            obj["name"] = x.name;
+
+                            obj["id"] = x.lassetId;
+                            obj["type"] = x.lassetType;
+
+                            if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                              x.startDate = this.clientDetails.startDate;
+                            }
+                            else if (x.startDateType == "Client Retirement") {
+                              x.startDate = this.clientDetails.clientRetirementYear - 1;
+                            }
+                            else if (x.startDateType == "Partner Retirement") {
+                              x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                            }
+
+                            if (x.endDateType == "End") {
+                              x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                            }
+                            else if (x.endDateType == "Retain") {
+                              x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                            }
+                            else if (x.endDateType == "Client Retirement") {
+                              x.endDate = this.clientDetails.clientRetirementYear - 1;
+                            }
+                            else if (x.endDateType == "Partner Retirement") {
+                              x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                            }
+
+                            if ((this.clientDetails.startDate + i) >= x.endDate) {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                            else if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (x.lassetType == "PrimaryResidence") {
+                                if (j == 0) {
+                                  obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+
+                                }
+                                else {
+                                  obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
+                                }
+                                j++;
                               }
                               else {
-                                  indexRangeOutflowOptimized.push(obj);
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
                               }
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
 
-                          })
-                          this.cfePartner.forEach((x: any) => { // partner
-                              if (x.startDateType == "Start") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
+                            //Purchase of assets
+                            if (x.startDateType != "Existing") {
 
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId);
-                              var obj1: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
+                              if (x.startDate == this.clientDetails.startDate + i) {
+                                purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
                               }
                               else {
-                                  obj1 = obj.values;
-                                  j = obj.increment;
+                                purchaseOfAssets[this.clientDetails.startDate + i] = 0;
                               }
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.cfname;
-                              obj["id"] = x.cflowId;
+                            }
+                            else {
+                              purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
 
+                            //Sale of assets
+                            if (x.endDateType != "Retain") {
 
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (x.endDate == this.clientDetails.startDate + i) {
+                                if (x.lassetType == "PrimaryResidence") {
                                   if (j == 0) {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+                                    saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
 
                                   }
                                   else {
-                                      obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
+                                    saleOfAssets[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.growth / 100), j))).toFixed();
                                   }
                                   j++;
+                                }
+                                else {
+                                  saleOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
+                                }
+
                               }
                               else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
+                                saleOfAssets[this.clientDetails.startDate + i] = 0;
                               }
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
+                            }
+                            else {
+                              saleOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
+
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
+                          obj["purchaseOfAssetValues"] = purchaseOfAssets;
+                          obj["saleOfAssetValues"] = saleOfAssets;
 
 
-                              if (indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
-                                  indexRangeOutflowOptimized[indexRangeOutflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          if (this.lifestylesOptimized.find((y: any) => y.id === x.lassetId) != null) {
+                            this.lifestylesOptimized[this.lifestylesOptimized.findIndex((c: any) => c.id === x.lassetId)] = obj;
+                          }
+                          else {
+                            this.lifestylesOptimized.push(obj);
+                          }
+
+                        })
+                        this.calculateTotalLASaleProceedsOptimized("TotalLASales", i);
+                        this.calculateTotalLAPropertyExpensesOptimized("TotalLAPurchase", i);
+
+                        this.cfiClient.forEach((x: any) => { // client
+                          var obj = indexRangeInflowOptimized.find((y: any) => y.id === x.cflowId);
+                          var obj1: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            j = obj.increment;
+                          }
+                          obj["owner"] = x.owner;
+                          obj["name"] = x.cfname;
+                          obj["id"] = x.cflowId;
+                          obj["type"] = x.type;
+                          if (x.startDateType == "Start") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+
+
+                          if (p == 0) {
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (j == 0) {
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+
                               }
                               else {
-                                  indexRangeOutflowOptimized.push(obj);
+                                obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
                               }
 
+                              j++;
 
-                          })
-                          this.cfeJoint.forEach((x: any) => { // joint
-                              if (x.startDateType == "Start") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
+                            }
 
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-                              var obj = indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId);
-                              var obj1: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
+
+                          if (indexRangeInflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
+                            indexRangeInflowOptimized[indexRangeInflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                            clientEmploymentIncomeOptimized[clientEmploymentIncomeOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                            this.IncomeOptimized[this.IncomeOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          }
+                          else {
+                            indexRangeInflowOptimized.push(obj);
+                            this.IncomeOptimized.push(obj);
+                            clientEmploymentIncomeOptimized.push(obj);
+                          }
+                        });
+                        this.cfiPartner.forEach((x: any) => { // partner
+                          if (x.startDateType == "Start") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          var obj = indexRangeInflowOptimized.find((y: any) => y.id === x.cflowId);
+                          var obj1: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            j = obj.increment;
+                          }
+
+
+                          obj["owner"] = x.owner;
+                          obj["name"] = x.cfname;
+                          obj["id"] = x.cflowId;
+                          obj["type"] = x.type;
+                          if (p == 0) {
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (j == 0) {
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+
                               }
                               else {
-                                  obj1 = obj.values;
-                                  j = obj.increment;
+                                obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
                               }
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.cfname;
-                              obj["id"] = x.cflowId;
+                              j++;
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
+
+                          if (indexRangeInflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
+                            indexRangeInflowOptimized[indexRangeInflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                            partnerEmploymentIncomeOptimized[partnerEmploymentIncomeOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                            this.IncomeOptimized[this.IncomeOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          }
+                          else {
+                            indexRangeInflowOptimized.push(obj);
+                            this.IncomeOptimized.push(obj);
+                            partnerEmploymentIncomeOptimized.push(obj);
+                          }
+
+                        })
+                        this.cfiClient.forEach((x: any) => { // client
+
+                          if (x.type != "Non-Taxable") {
+                            if (x.startDateType == "Start") {
+                              x.startDate = this.clientDetails.startDate
+                            }
+                            else if (x.startDateType == "Client Retirement") {
+                              x.startDate = this.clientDetails.clientRetirementYear - 1;
+                            }
+                            //TODO : Reconfirm end date
+                            if (x.endDateType == "End") {
+                              x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                            }
+                            else if (x.endDateType == "Client Retirement") {
+                              x.endDate = this.clientDetails.clientRetirementYear - 1;
+                            }
 
 
+                            var obj = indexRangeInflowOptimized.find((y: any) => y.id === "Tax" + x.cflowId);
+                            var obj1: any = {};
+                            var j: number = 0;
+                            if (obj == null) {
+                              obj = {};
+                              j = 0;
+                            }
+                            else {
+                              obj1 = obj.values;
+                              j = obj.increment;
+                            }
+                            obj["owner"] = "ClientIncome-tax";
+                            obj["name"] = x.cfname;
+                            obj["id"] = "Tax" + x.cflowId;
+
+                            if (p == 0) {
                               if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (j == 0) {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+                                if (j == 0) {
+                                  obj1[this.clientDetails.startDate + i] = x.value.toFixed();
 
-                                  }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
-                                  }
-                                  j++;
+                                }
+                                else {
+                                  obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
+                                }
+                                j++;
                               }
                               else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
+                                obj1[this.clientDetails.startDate + i] = 0;
                               }
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
+                            }
+                            obj["values"] = obj1;
+                            obj["increment"] = j;
 
-                              if (indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
-                                  indexRangeOutflowOptimized[indexRangeOutflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
-                              }
-                              else {
-                                  indexRangeOutflowOptimized.push(obj);
-                              }
+                            if (indexRangeInflowOptimized.find((y: any) => y.id === "Tax" + x.cflowId) != null) {
+                              indexRangeInflowOptimized[indexRangeInflowOptimized.findIndex((c: any) => c.id === "Tax" + x.cflowId)] = obj;
+                              this.IncomeOptimized[this.IncomeOptimized.findIndex((c: any) => c.id === "Tax" + x.cflowId)] = obj;
+                            }
+                            else {
+                              indexRangeInflowOptimized.push(obj);
+                              this.IncomeOptimized.push(obj);
+                            }
+                          }
 
-                          })
-                          this.outflowOptimized = indexRangeOutflowOptimized;
+                        })
+                        this.cfiPartner.forEach((x: any) => { // partner
+                          if (x.type != "Non-Taxable") {
+                            if (x.startDateType == "Start") {
+                              x.startDate = this.clientDetails.startDate
+                            }
+                            else if (x.startDateType == "Partner Retirement") {
+                              x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                            }
+
+                            if (x.endDateType == "End") {
+                              x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                            }
+                            else if (x.endDateType == "Partner Retirement") {
+                              x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                            }
+
+                            var obj = indexRangeInflowOptimized.find((y: any) => y.id === "Tax" + x.cflowId);
+                            var obj1: any = {};
+                            var j: number = 0;
+                            if (obj == null) {
+                              obj = {};
+                              j = 0;
+                            }
+                            else {
+                              obj1 = obj.values;
+                              j = obj.increment;
+                            }
+                            obj["owner"] = "PartnerIncome-tax";
+                            obj["name"] = x.cfname;
+                            obj["id"] = "Tax" + x.cflowId;
 
 
-                          //Calculate Client Investment
-                          this.investmentClientOptimized.forEach((x: any) => {
+                            if (p == 0) {
+                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                                if (j == 0) {
+                                  obj1[this.clientDetails.startDate + i] = x.value.toFixed();
 
-                              var investmentStrategy = strategyOrder.filter(c => c.id === x.investmentId).filter(c => c.status === "Existing");
-
-                              console.log(investmentStrategy);
-
-                              this.investmentContribution = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "C");
-                              this.investmentWithdrawal = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "W");
-
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                            
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                             
-
-                              var obj = this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId);
-                              var begVal: any = {};
-                              var growth: any = {};
-                              var income: any = {};
-                              var incomePaidOut: any = {};
-                              var frankingCredits: any = {};
-                              var earnings: any = {};
-                              var purchaseOfAssets: any = {};
-                              var regularContributions: any = {};
-                              var contributions: any = {};
-                              var saleOfAssets: any = {};
-                              var regularWithdrawals: any = {};
-                              var withdrawals: any = {};
-                              var endingVal: any = {};
-                              var endingValPV: any = {};
-                              var realCG: any = {};
-                              var unrealCG: any = {};
-                              var cashFlow: any = {};
-
-                              if (obj == null) {
-                                  obj = {};
+                                }
+                                else {
+                                  obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
+                                }
+                                j++;
                               }
                               else {
-                                  obj.values;
-                                  begVal = obj.BegValues;
-                                  growth = obj.growthValues;
-                                  income = obj.incomeValues;
-                                  incomePaidOut = obj.incomePaidOutValues;
-                                  frankingCredits = obj.frankingCreditsValues;
-                                  earnings = obj.earningsValues;
-                                  purchaseOfAssets = obj.purchaseOfAssetValues;
-                                  regularContributions = obj.regularContributionsValues;
-                                  contributions = obj.contributionsValues;
-                                  saleOfAssets = obj.saleOfAssetValues;
-                                  regularWithdrawals = obj.regularWithdrawalsValues;
-                                  withdrawals = obj.withdrawalsValues;
-                                  endingVal = obj.endingValues;
-                                  endingValPV = obj.endingValuesPV;
-                                  realCG = obj.realCGValues;
-                                  unrealCG = obj.unrealCGValues;
-                                  cashFlow = obj.cashFlowValues;
+                                obj1[this.clientDetails.startDate + i] = 0;
                               }
+                            }
+                            obj["values"] = obj1;
+                            obj["increment"] = j;
 
 
+                            if (indexRangeInflowOptimized.find((y: any) => y.id === "Tax" + x.cflowId) != null) {
+                              indexRangeInflowOptimized[indexRangeInflowOptimized.findIndex((c: any) => c.id === "Tax" + x.cflowId)] = obj;
+                              this.IncomeOptimized[this.IncomeOptimized.findIndex((c: any) => c.id === "Tax" + x.cflowId)] = obj;
+                            }
+                            else {
+                              indexRangeInflowOptimized.push(obj);
+                              this.IncomeOptimized.push(obj);
+                            }
+                          }
 
-                              obj["owner"] = x.investmentId;
-                              obj["type"] = "Client";
-                              obj["name"] = "Opening Value";
+                        })
+                        this.inflowOptimized = indexRangeInflowOptimized;
+                        this.cfeClient.forEach((x: any) => { // client
 
-                              //BeginningValue
-                              if (n == 1) {
-                                  if (x.startDateType == "Existing") {
-                                      begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      begVal[this.clientDetails.startDate + i] = 0;
-                                  }
+                          var obj = indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId);
+                          var obj1: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            j = obj.increment;
+                          }
+                          obj["owner"] = x.owner;
+                          obj["name"] = x.cfname;
+                          obj["id"] = x.cflowId;
 
-                              }
-                              else {
+                          if (x.startDateType == "Start") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
 
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
 
-                                  if ((this.clientDetails.startDate + i) == x.startDate) {
-                                      begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else if ((this.clientDetails.startDate + i) < x.startDate) {
-
-                                      begVal[this.clientDetails.startDate + i] = 0;
-                                  }
-                                  else {
-                                      begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
-                                  }
-
-                              }
-
-
-
-                              cashFlow[(this.clientDetails.startDate + i)] = 0;
-
-
-                              //growth & income
-                              var growthUnAdj = (x.growth / 100) * (Number(begVal[this.clientDetails.startDate + i]));
-                              var incomeUnAdj = (x.income / 100) * (Number(begVal[this.clientDetails.startDate + i]));
-
-                              var ICR = (x.productFees / 100) * (Number(begVal[this.clientDetails.startDate + i]));
-
-
-                              var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
-                              var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
-
-                              if (typeof growthVal === "number" && !isNaN(growthVal)) {
-                                  growth[this.clientDetails.startDate + i] = growthVal.toFixed();
-                              }
-                              else {
-                                  growth[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
-                                  income[this.clientDetails.startDate + i] = incomeVal.toFixed();
-                              }
-                              else {
-                                  income[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              //incomePaidOut
-
-                              if (x.reinvest == "N") {
-                                  incomePaidOut[this.clientDetails.startDate + i] = income[this.clientDetails.startDate + i];
+                          if (p == 0) {
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (j == 0) {
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
 
                               }
                               else {
-                                  incomePaidOut[this.clientDetails.startDate + i] = 0;
+                                obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
                               }
-
-                              //FrankingCredits
-
-                              var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
-                              var ctr = Number(corporateTaxRate[0].percentage) / 100;
-
-                              frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
-
-                              //Earnings
-                              earnings[this.clientDetails.startDate + i] = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])).toFixed();
-
-                              if ((investmentStrategy.length > 0) && (investmentStrategy[0].AllocatedValue > (Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])))) {
-                                  regularContributions[this.clientDetails.startDate + i] = Number(investmentStrategy[0].AllocatedValue) - (Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i]));
-                              }
-                              else {
-                                  //List of Contributions
-                                  let ContributionSum: number = 0;
-                                  this.investmentContribution.forEach((y: any) => { // client
-
-                                      if (y.fromDateType == "Start") {
-                                          y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
-                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
-
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                          var t = parseInt(y.value);
-                                          ContributionSum = ContributionSum + t;
-                                      }
-
-                                  });
-
-                                  regularContributions[this.clientDetails.startDate + i] = ContributionSum;
-                              }
+                              j++;
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
 
 
-                              //Purchase of assets
-                              if (x.startDateType != "Existing") {
+                          if (indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
+                            indexRangeOutflowOptimized[indexRangeOutflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          }
+                          else {
+                            indexRangeOutflowOptimized.push(obj);
+                          }
 
-                                  if (x.startDate == this.clientDetails.startDate + i) {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
+                        })
+                        this.cfePartner.forEach((x: any) => { // partner
+                          if (x.startDateType == "Start") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+                          var obj = indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId);
+                          var obj1: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            j = obj.increment;
+                          }
+                          obj["owner"] = x.owner;
+                          obj["name"] = x.cfname;
+                          obj["id"] = x.cflowId;
 
-                              //Contributions
-                              contributions[this.clientDetails.startDate + i] = regularContributions[this.clientDetails.startDate + i] + Number(purchaseOfAssets[this.clientDetails.startDate + i]);
-
-
-
-                              if ((investmentStrategy.length > 0) && (investmentStrategy[0].AllocatedValue < (Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])))) {
-                                  regularWithdrawals[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])) - Number(investmentStrategy[0].AllocatedValue);
-                                  console.log(regularWithdrawals[this.clientDetails.startDate + i]);
-                              }
-                              else {
-                                  //List of Withdrawals
-                                  //TODO: only if main date started
-                                  let WithdrawalSum: number = 0;
-                                  this.investmentWithdrawal.forEach((y: any) => { // client
-
-                                      if (y.fromDateType == "Start") {
-                                          y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
-                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
-
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                          var t = parseInt(y.value);
-                                          WithdrawalSum = WithdrawalSum + t;
-                                      }
-
-                                  });
-
-                                  regularWithdrawals[this.clientDetails.startDate + i] = WithdrawalSum;
-                              }
-
-                              //Sale of assets
-                              if (x.endDateType != "Retain") {
-
-                                  if (x.endDate == this.clientDetails.startDate + i) {
-                                      saleOfAssets[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(regularWithdrawals[this.clientDetails.startDate + i]);
-                                  }
-                                  else {
-                                      saleOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  saleOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Withdrawals
-                              withdrawals[this.clientDetails.startDate + i] = Number(regularWithdrawals[this.clientDetails.startDate + i]) + Number(saleOfAssets[this.clientDetails.startDate + i]);
-
-
-                              endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(cashFlow[(this.clientDetails.startDate + i)]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(withdrawals[this.clientDetails.startDate + i])).toFixed();
-
-                              //Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = Number(inflation[0].percentage) / 100;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-
-                              if (x.type == "Domestic Cash" || x.type == "Domestic Fixed Interest") {
-                                  realCG[this.clientDetails.startDate + i] = 0;
-                                  unrealCG[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  if ((begVal[this.clientDetails.startDate + i]) != 0) {
-                                      //Real and Unreal CG
-                                      var TotalCG = 0;
-                                      var RateCG = 0
-
-
-                                      if (Number(this.clientDetails.startDate + i) == x.startDate) {
-                                          TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(growth[this.clientDetails.startDate + i])));
-                                      }
-                                      else if (Number(this.clientDetails.startDate + i) > x.startDate) {
-                                          TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(growth[this.clientDetails.startDate + i]);
-                                      }
-
-                                      if (endingVal[this.clientDetails.startDate + i] == 0) {
-                                          realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
-                                      }
-                                      else {
-                                          if (Number(withdrawals[this.clientDetails.startDate + i]) != 0) {
-                                              realCG[this.clientDetails.startDate + i] = ((Number(withdrawals[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
-                                          }
-                                          else {
-                                              realCG[this.clientDetails.startDate + i] = 0;
-                                          }
-                                      }
-
-                                      unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
-
-                                  }
-                                  else {
-                                      realCG[this.clientDetails.startDate + i] = 0;
-                                      unrealCG[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-
-
-                              obj["BegValues"] = begVal;
-                              obj["growthValues"] = growth;
-                              obj["incomeValues"] = income;
-                              obj["incomePaidOutValues"] = incomePaidOut;
-                              obj["frankingCreditsValues"] = frankingCredits;
-                              obj["earningsValues"] = earnings;
-                              obj["purchaseOfAssetValues"] = purchaseOfAssets;
-                              obj["regularContributionsValues"] = regularContributions;
-                              obj["contributionsValues"] = contributions;
-                              obj["saleOfAssetValues"] = saleOfAssets;
-                              obj["regularWithdrawalsValues"] = regularWithdrawals;
-                              obj["withdrawalsValues"] = withdrawals;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["realCGValues"] = realCG;
-                              obj["unrealCGValues"] = unrealCG;
-                              obj["cashFlowValues"] = cashFlow;
-
-
-                              if (this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId) != null) {
-                                  this.BeginningValueOptimized[this.BeginningValueOptimized.findIndex((c: any) => c.owner === x.investmentId)] = obj;
-                              }
-                              else {
-                                  this.BeginningValueOptimized.push(obj);
-                              }
-                          })
-;
-                          //Calculate Partner Investment
-                          this.investmentPartner.forEach((x: any) => { // client
-
-                              this.investmentContribution = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "C");
-                              this.investmentWithdrawal = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "W");
-
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-
-                              var obj = this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId);
-                              var begVal: any = {};
-                              var growth: any = {};
-                              var income: any = {};
-                              var incomePaidOut: any = {};
-                              var frankingCredits: any = {};
-                              var earnings: any = {};
-                              var purchaseOfAssets: any = {};
-                              var regularContributions: any = {};
-                              var contributions: any = {};
-                              var saleOfAssets: any = {};
-                              var regularWithdrawals: any = {};
-                              var withdrawals: any = {};
-                              var endingVal: any = {};
-                              var endingValPV: any = {};
-                              var realCG: any = {};
-                              var unrealCG: any = {};
-                              if (obj == null) {
-                                  obj = {};
-                              }
-                              else {
-                                  obj.values;
-                                  begVal = obj.BegValues;
-                                  growth = obj.growthValues;
-                                  income = obj.incomeValues;
-                                  incomePaidOut = obj.incomePaidOutValues;
-                                  frankingCredits = obj.frankingCreditsValues;
-                                  earnings = obj.earningsValues;
-                                  purchaseOfAssets = obj.purchaseOfAssetValues;
-                                  regularContributions = obj.regularContributionsValues;
-                                  contributions = obj.contributionsValues;
-                                  saleOfAssets = obj.saleOfAssetValues;
-                                  regularWithdrawals = obj.regularWithdrawalsValues;
-                                  withdrawals = obj.withdrawalsValues;
-                                  endingVal = obj.endingValues;
-                                  endingValPV = obj.endingValuesPV;
-                                  realCG = obj.realCGValues;
-                                  unrealCG = obj.unrealCGValues;
-                              }
-
-                              obj["owner"] = x.investmentId;
-                              obj["type"] = "Partner";
-                              obj["name"] = "Opening Value";
-
-                              //BeginningValue
-                              if (n == 1) {
-                                  if (x.startDateType == "Existing") {
-                                      begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      begVal[this.clientDetails.startDate + i] = 0;
-                                  }
+                          if (p == 0) {
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (j == 0) {
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
 
                               }
                               else {
-                                  if ((this.clientDetails.startDate + i) == x.startDate) {
-                                      begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else if ((this.clientDetails.startDate + i) < x.startDate) {
-
-                                      begVal[this.clientDetails.startDate + i] = 0;
-                                  }
-                                  else {
-                                      begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
-                                  }
+                                obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
                               }
+                              j++;
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
 
-                              //growth & income
-                              var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
-                              var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
 
-                              var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
+                          if (indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
+                            indexRangeOutflowOptimized[indexRangeOutflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          }
+                          else {
+                            indexRangeOutflowOptimized.push(obj);
+                          }
 
 
-                              var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
-                              var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
+                        })
+                        this.cfeJoint.forEach((x: any) => { // joint
+                          if (x.startDateType == "Start") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
 
-                              if (typeof growthVal === "number" && !isNaN(growthVal)) {
-                                  growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+                          var obj = indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId);
+                          var obj1: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            j = obj.increment;
+                          }
+                          obj["owner"] = x.owner;
+                          obj["name"] = x.cfname;
+                          obj["id"] = x.cflowId;
+
+                          if (p == 0) {
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (j == 0) {
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+
                               }
                               else {
-                                  growth[this.clientDetails.startDate + i] = 0;
+                                obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
                               }
+                              j++;
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
 
-                              if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
-                                  income[this.clientDetails.startDate + i] = incomeVal.toFixed();
-                              }
-                              else {
-                                  income[this.clientDetails.startDate + i] = 0;
-                              }
+                          if (indexRangeOutflowOptimized.find((y: any) => y.id === x.cflowId) != null) {
+                            indexRangeOutflowOptimized[indexRangeOutflowOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          }
+                          else {
+                            indexRangeOutflowOptimized.push(obj);
+                          }
+
+                        })
+                        this.outflowOptimized = indexRangeOutflowOptimized;
 
 
-                              //incomePaidOut
+                       
+                        //Different method for the first year and subsequent years
+                        this.investmentClientOptimized.forEach((x: any) => {
+                          var investmentStrategy: any = [];
+                          if (p == 1) {
+                            investmentStrategy = strategyOrder.filter(c => c.id === x.investmentId).filter(c => c.status === "Existing");
+                          }
 
-                              if (x.reinvest == "N") {
-                                  incomePaidOut[this.clientDetails.startDate + i] = income[this.clientDetails.startDate + i];
 
-                              }
-                              else {
-                                  incomePaidOut[this.clientDetails.startDate + i] = 0;
-                              }
 
-                              //FrankingCredits
+                          this.investmentContribution = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "C");
+                          this.investmentWithdrawal = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "W");
 
-                              var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
-                              var ctr = Number(corporateTaxRate[0].percentage) / 100;
 
-                              frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
+                          if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                            x.startDate = this.clientDetails.startDate
+                          } else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
 
-                              //Earnings
-                              earnings[this.clientDetails.startDate + i] = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])).toFixed();
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          } else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
 
+
+
+                          var obj = this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId);
+                          var begVal: any = {};
+                          var growth: any = {};
+                          var income: any = {};
+                          var incomePaidOut: any = {};
+                          var frankingCredits: any = {};
+                          var earnings: any = {};
+                          var purchaseOfAssets: any = {};
+                          var regularContributions: any = {};
+                          var contributions: any = {};
+                          var saleOfAssets: any = {};
+                          var regularWithdrawals: any = {};
+                          var withdrawals: any = {};
+                          var endingVal: any = {};
+                          var endingValPV: any = {};
+                          var realCG: any = {};
+                          var unrealCG: any = {};
+                          var cashFlow: any = {};
+
+                          if (obj == null) {
+                            obj = {};
+                          } else {
+                            obj.values;
+                            begVal = obj.BegValues;
+                            growth = obj.growthValues;
+                            income = obj.incomeValues;
+                            incomePaidOut = obj.incomePaidOutValues;
+                            frankingCredits = obj.frankingCreditsValues;
+                            earnings = obj.earningsValues;
+                            purchaseOfAssets = obj.purchaseOfAssetValues;
+                            regularContributions = obj.regularContributionsValues;
+                            contributions = obj.contributionsValues;
+                            saleOfAssets = obj.saleOfAssetValues;
+                            regularWithdrawals = obj.regularWithdrawalsValues;
+                            withdrawals = obj.withdrawalsValues;
+                            endingVal = obj.endingValues;
+                            endingValPV = obj.endingValuesPV;
+                            realCG = obj.realCGValues;
+                            unrealCG = obj.unrealCGValues;
+                            cashFlow = obj.cashFlowValues;
+                          }
+
+
+
+                          obj["owner"] = x.investmentId;
+                          obj["type"] = "Client";
+                          obj["name"] = "Opening Value";
+
+                          //BeginningValue
+                          if (n == 1) {
+                            if (x.startDateType == "Existing") {
+                              begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                            } else {
+                              begVal[this.clientDetails.startDate + i] = 0;
+                            }
+
+                          } else {
+
+
+
+                            if ((this.clientDetails.startDate + i) == x.startDate) {
+                              begVal[this.clientDetails.startDate + i] = (x.value).toFixed();
+                            } else if ((this.clientDetails.startDate + i) < x.startDate) {
+
+                              begVal[this.clientDetails.startDate + i] = 0;
+                            } else {
+                              begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]);
+                            }
+
+
+                          }
+
+
+
+                          cashFlow[(this.clientDetails.startDate + i)] = 0;
+
+
+                          //growth & income
+                          var growthUnAdj = (x.growth / 100) * (Number(begVal[this.clientDetails.startDate + i]));
+                          var incomeUnAdj = (x.income / 100) * (Number(begVal[this.clientDetails.startDate + i]));
+
+                          var ICR = (x.productFees / 100) * (Number(begVal[this.clientDetails.startDate + i]));
+
+
+                          var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
+                          var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
+
+                          if (typeof growthVal === "number" && !isNaN(growthVal)) {
+                            growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                          } else {
+                            growth[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
+                            income[this.clientDetails.startDate + i] = incomeVal.toFixed();
+                          } else {
+                            income[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          //incomePaidOut
+
+                          if (x.reinvest == "N") {
+                            incomePaidOut[this.clientDetails.startDate + i] = income[this.clientDetails.startDate + i];
+
+                          } else {
+                            incomePaidOut[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //FrankingCredits
+
+                          var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
+                          var ctr = Number(corporateTaxRate[0].percentage) / 100;
+
+                          frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
+
+                          //Earnings
+                          earnings[this.clientDetails.startDate + i] = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])).toFixed();
+
+                          if (p == 0) {
+                            regularContributions[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            if ((investmentStrategy.length > 0) && (investmentStrategy[0].AllocatedValue > 0) && (investmentStrategy[0].AllocatedValue > ((Number(begVal[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i]))))) {
+                              regularContributions[this.clientDetails.startDate + i] = Number(investmentStrategy[0].AllocatedValue) - (Number(begVal[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i]));
+                            } else {
                               //List of Contributions
                               let ContributionSum: number = 0;
                               this.investmentContribution.forEach((y: any) => { // client
 
-                                  if (y.fromDateType == "Start") {
-                                      y.fromDate = this.clientDetails.startDate;
-                                  }
-                                  if (y.toDateType == "End") {
-                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                  }
+                                if (y.fromDateType == "Start") {
+                                  y.fromDate = this.clientDetails.startDate;
+                                }
+                                if (y.toDateType == "End") {
+                                  y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                }
 
-                                  if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                      var t = parseInt(y.value);
-                                      ContributionSum = ContributionSum + t;
-                                  }
+                                if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                  var t = parseInt(y.value);
+                                  ContributionSum = ContributionSum + t;
+                                }
 
                               });
 
                               regularContributions[this.clientDetails.startDate + i] = ContributionSum;
+                            }
+                          }
 
 
+                          //Purchase of assets
+                          if (x.startDateType != "Existing") {
 
-                              //Purchase of assets
-                              if (x.startDateType != "Existing") {
+                            if (x.startDate == this.clientDetails.startDate + i) {
+                              purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
+                            } else {
+                              purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
+                          } else {
+                            purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                          }
 
-                                  if (x.startDate == this.clientDetails.startDate + i) {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
+                          //Contributions
+                          contributions[this.clientDetails.startDate + i] = regularContributions[this.clientDetails.startDate + i] + Number(purchaseOfAssets[this.clientDetails.startDate + i]);
 
-                              //Contributions
-                              contributions[this.clientDetails.startDate + i] = regularContributions[this.clientDetails.startDate + i] + Number(purchaseOfAssets[this.clientDetails.startDate + i]);
 
+                          if (p == 0) {
+                            regularWithdrawals[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            if ((investmentStrategy.length > 0) && (investmentStrategy[0].AllocatedValue < (Number(begVal[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])))) {
+                              regularWithdrawals[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])) - Number(investmentStrategy[0].AllocatedValue);
+                            } else {
                               //List of Withdrawals
+                              //TODO: only if main date started
                               let WithdrawalSum: number = 0;
                               this.investmentWithdrawal.forEach((y: any) => { // client
 
-                                  if (y.fromDateType == "Start") {
-                                      y.fromDate = this.clientDetails.startDate;
-                                  }
-                                  if (y.toDateType == "End") {
-                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                  }
+                                if (y.fromDateType == "Start") {
+                                  y.fromDate = this.clientDetails.startDate;
+                                }
+                                if (y.toDateType == "End") {
+                                  y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                }
 
-                                  if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                      var t = parseInt(y.value);
-                                      WithdrawalSum = WithdrawalSum + t;
-                                  }
+                                if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                  var t = parseInt(y.value);
+                                  WithdrawalSum = WithdrawalSum + t;
+                                }
 
                               });
 
                               regularWithdrawals[this.clientDetails.startDate + i] = WithdrawalSum;
+                            }
+                          }
 
-                              //Sale of assets
-                              if (x.endDateType != "Retain") {
+                          //Sale of assets
+                          if (x.endDateType != "Retain") {
 
-                                  if (x.endDate == this.clientDetails.startDate + i) {
-                                      saleOfAssets[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(regularWithdrawals[this.clientDetails.startDate + i]);
-                                  }
-                                  else {
-                                      saleOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
+                            if (x.endDate == this.clientDetails.startDate + i) {
+                              saleOfAssets[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(regularWithdrawals[this.clientDetails.startDate + i]);
+                            } else {
+                              saleOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
+                          } else {
+                            saleOfAssets[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //Withdrawals
+                          withdrawals[this.clientDetails.startDate + i] = Number(regularWithdrawals[this.clientDetails.startDate + i]) + Number(saleOfAssets[this.clientDetails.startDate + i]);
+
+
+                          endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(cashFlow[(this.clientDetails.startDate + i)]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(withdrawals[this.clientDetails.startDate + i])).toFixed();
+
+                          //Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = Number(inflation[0].percentage) / 100;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+
+                          if (x.type == "Domestic Cash" || x.type == "Domestic Fixed Interest") {
+                            realCG[this.clientDetails.startDate + i] = 0;
+                            unrealCG[this.clientDetails.startDate + i] = 0;
+                          } else {
+                            if ((begVal[this.clientDetails.startDate + i]) != 0) {
+                              //Real and Unreal CG
+                              var TotalCG = 0;
+                              var RateCG = 0
+
+
+                              if (Number(this.clientDetails.startDate + i) == x.startDate) {
+                                TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(growth[this.clientDetails.startDate + i])));
+                              } else if (Number(this.clientDetails.startDate + i) > x.startDate) {
+                                TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(growth[this.clientDetails.startDate + i]);
                               }
-                              else {
-                                  saleOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
 
-                              //Withdrawals
-                              withdrawals[this.clientDetails.startDate + i] = Number(regularWithdrawals[this.clientDetails.startDate + i]) + Number(saleOfAssets[this.clientDetails.startDate + i]);
-
-                              //Ending Value
-                              endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(withdrawals[this.clientDetails.startDate + i])).toFixed();
-
-                              //Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = Number(inflation[0].percentage) / 100;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-                              if (x.type == "Domestic Cash" || x.type == "Domestic Fixed Interest") {
+                              if (endingVal[this.clientDetails.startDate + i] == 0) {
+                                realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
+                              } else {
+                                if (Number(withdrawals[this.clientDetails.startDate + i]) != 0) {
+                                  realCG[this.clientDetails.startDate + i] = ((Number(withdrawals[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
+                                } else {
                                   realCG[this.clientDetails.startDate + i] = 0;
-                                  unrealCG[this.clientDetails.startDate + i] = 0;
+                                }
+                              }
+
+                              unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+
+                            } else {
+                              realCG[this.clientDetails.startDate + i] = 0;
+                              unrealCG[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+
+
+                          obj["BegValues"] = begVal;
+                          obj["growthValues"] = growth;
+                          obj["incomeValues"] = income;
+                          obj["incomePaidOutValues"] = incomePaidOut;
+                          obj["frankingCreditsValues"] = frankingCredits;
+                          obj["earningsValues"] = earnings;
+                          obj["purchaseOfAssetValues"] = purchaseOfAssets;
+                          obj["regularContributionsValues"] = regularContributions;
+                          obj["contributionsValues"] = contributions;
+                          obj["saleOfAssetValues"] = saleOfAssets;
+                          obj["regularWithdrawalsValues"] = regularWithdrawals;
+                          obj["withdrawalsValues"] = withdrawals;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["realCGValues"] = realCG;
+                          obj["unrealCGValues"] = unrealCG;
+                          obj["cashFlowValues"] = cashFlow;
+
+
+                          if (this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId) != null) {
+                            this.BeginningValueOptimized[this.BeginningValueOptimized.findIndex((c: any) => c.owner === x.investmentId)] = obj;
+                          } else {
+                            this.BeginningValueOptimized.push(obj);
+                          }
+                        });
+
+                       
+                        //Calculate Partner Investment
+                        this.investmentPartner.forEach((x: any) => { // client
+
+                          this.investmentContribution = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "C");
+                          this.investmentWithdrawal = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "W");
+
+
+                          if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          var obj = this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId);
+                          var begVal: any = {};
+                          var growth: any = {};
+                          var income: any = {};
+                          var incomePaidOut: any = {};
+                          var frankingCredits: any = {};
+                          var earnings: any = {};
+                          var purchaseOfAssets: any = {};
+                          var regularContributions: any = {};
+                          var contributions: any = {};
+                          var saleOfAssets: any = {};
+                          var regularWithdrawals: any = {};
+                          var withdrawals: any = {};
+                          var endingVal: any = {};
+                          var endingValPV: any = {};
+                          var realCG: any = {};
+                          var unrealCG: any = {};
+                          if (obj == null) {
+                            obj = {};
+                          }
+                          else {
+                            obj.values;
+                            begVal = obj.BegValues;
+                            growth = obj.growthValues;
+                            income = obj.incomeValues;
+                            incomePaidOut = obj.incomePaidOutValues;
+                            frankingCredits = obj.frankingCreditsValues;
+                            earnings = obj.earningsValues;
+                            purchaseOfAssets = obj.purchaseOfAssetValues;
+                            regularContributions = obj.regularContributionsValues;
+                            contributions = obj.contributionsValues;
+                            saleOfAssets = obj.saleOfAssetValues;
+                            regularWithdrawals = obj.regularWithdrawalsValues;
+                            withdrawals = obj.withdrawalsValues;
+                            endingVal = obj.endingValues;
+                            endingValPV = obj.endingValuesPV;
+                            realCG = obj.realCGValues;
+                            unrealCG = obj.unrealCGValues;
+                          }
+
+                          obj["owner"] = x.investmentId;
+                          obj["type"] = "Partner";
+                          obj["name"] = "Opening Value";
+
+                          //BeginningValue
+                          if (n == 1) {
+                            if (x.startDateType == "Existing") {
+                              begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                            }
+                            else {
+                              begVal[this.clientDetails.startDate + i] = 0;
+                            }
+
+                          }
+                          else {
+                            if ((this.clientDetails.startDate + i) == x.startDate) {
+                              begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                            }
+                            else if ((this.clientDetails.startDate + i) < x.startDate) {
+
+                              begVal[this.clientDetails.startDate + i] = 0;
+                            }
+                            else {
+                              begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
+                            }
+                          }
+
+                          //growth & income
+                          var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
+                          var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+                          var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+
+                          var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
+                          var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
+
+                          if (typeof growthVal === "number" && !isNaN(growthVal)) {
+                            growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                          }
+                          else {
+                            growth[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
+                            income[this.clientDetails.startDate + i] = incomeVal.toFixed();
+                          }
+                          else {
+                            income[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          //incomePaidOut
+
+                          if (x.reinvest == "N") {
+                            incomePaidOut[this.clientDetails.startDate + i] = income[this.clientDetails.startDate + i];
+
+                          }
+                          else {
+                            incomePaidOut[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //FrankingCredits
+
+                          var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
+                          var ctr = Number(corporateTaxRate[0].percentage) / 100;
+
+                          frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
+
+                          //Earnings
+                          earnings[this.clientDetails.startDate + i] = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])).toFixed();
+
+                          //List of Contributions
+                          let ContributionSum: number = 0;
+                          this.investmentContribution.forEach((y: any) => { // client
+
+                            if (y.fromDateType == "Start") {
+                              y.fromDate = this.clientDetails.startDate;
+                            }
+                            if (y.toDateType == "End") {
+                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                            }
+
+                            if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                              var t = parseInt(y.value);
+                              ContributionSum = ContributionSum + t;
+                            }
+
+                          });
+
+                          regularContributions[this.clientDetails.startDate + i] = ContributionSum;
+
+
+
+                          //Purchase of assets
+                          if (x.startDateType != "Existing") {
+
+                            if (x.startDate == this.clientDetails.startDate + i) {
+                              purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
+                            }
+                            else {
+                              purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          else {
+                            purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //Contributions
+                          contributions[this.clientDetails.startDate + i] = regularContributions[this.clientDetails.startDate + i] + Number(purchaseOfAssets[this.clientDetails.startDate + i]);
+
+                          //List of Withdrawals
+                          let WithdrawalSum: number = 0;
+                          this.investmentWithdrawal.forEach((y: any) => { // client
+
+                            if (y.fromDateType == "Start") {
+                              y.fromDate = this.clientDetails.startDate;
+                            }
+                            if (y.toDateType == "End") {
+                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                            }
+
+                            if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                              var t = parseInt(y.value);
+                              WithdrawalSum = WithdrawalSum + t;
+                            }
+
+                          });
+
+                          regularWithdrawals[this.clientDetails.startDate + i] = WithdrawalSum;
+
+                          //Sale of assets
+                          if (x.endDateType != "Retain") {
+
+                            if (x.endDate == this.clientDetails.startDate + i) {
+                              saleOfAssets[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(regularWithdrawals[this.clientDetails.startDate + i]);
+                            }
+                            else {
+                              saleOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          else {
+                            saleOfAssets[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //Withdrawals
+                          withdrawals[this.clientDetails.startDate + i] = Number(regularWithdrawals[this.clientDetails.startDate + i]) + Number(saleOfAssets[this.clientDetails.startDate + i]);
+
+                          //Ending Value
+                          endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(withdrawals[this.clientDetails.startDate + i])).toFixed();
+
+                          //Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = Number(inflation[0].percentage) / 100;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+                          if (x.type == "Domestic Cash" || x.type == "Domestic Fixed Interest") {
+                            realCG[this.clientDetails.startDate + i] = 0;
+                            unrealCG[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            if (begVal[this.clientDetails.startDate + i] != 0) {
+                              //Real and Unreal CG
+                              var TotalCG = 0;
+                              var RateCG = 0
+
+
+                              if (Number(this.clientDetails.startDate + i) == x.startDate) {
+                                TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(growth[this.clientDetails.startDate + i])));
+                              }
+                              else if (Number(this.clientDetails.startDate + i) > x.startDate) {
+                                TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(growth[this.clientDetails.startDate + i]);
+                              }
+
+                              if (endingVal[this.clientDetails.startDate + i] == 0) {
+                                realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
                               }
                               else {
-                                  if (begVal[this.clientDetails.startDate + i] != 0) {
-                                      //Real and Unreal CG
-                                      var TotalCG = 0;
-                                      var RateCG = 0
+                                if (Number(withdrawals[this.clientDetails.startDate + i]) != 0) {
+                                  realCG[this.clientDetails.startDate + i] = ((Number(withdrawals[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
+                                }
+                                else {
+                                  realCG[this.clientDetails.startDate + i] = 0;
+                                }
+                              }
+
+                              unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+
+                            }
+                            else {
+                              realCG[this.clientDetails.startDate + i] = 0;
+                              unrealCG[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
 
 
-                                      if (Number(this.clientDetails.startDate + i) == x.startDate) {
-                                          TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(growth[this.clientDetails.startDate + i])));
-                                      }
-                                      else if (Number(this.clientDetails.startDate + i) > x.startDate) {
-                                          TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(growth[this.clientDetails.startDate + i]);
-                                      }
+                          obj["BegValues"] = begVal;
+                          obj["growthValues"] = growth;
+                          obj["incomeValues"] = income;
+                          obj["incomePaidOutValues"] = incomePaidOut;
+                          obj["frankingCreditsValues"] = frankingCredits;
+                          obj["earningsValues"] = earnings;
+                          obj["purchaseOfAssetValues"] = purchaseOfAssets;
+                          obj["regularContributionsValues"] = regularContributions;
+                          obj["contributionsValues"] = contributions;
+                          obj["saleOfAssetValues"] = saleOfAssets;
+                          obj["regularWithdrawalsValues"] = regularWithdrawals;
+                          obj["withdrawalsValues"] = withdrawals;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["realCGValues"] = realCG;
+                          obj["unrealCGValues"] = unrealCG;
 
-                                      if (endingVal[this.clientDetails.startDate + i] == 0) {
-                                          realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
-                                      }
-                                      else {
-                                          if (Number(withdrawals[this.clientDetails.startDate + i]) != 0) {
-                                              realCG[this.clientDetails.startDate + i] = ((Number(withdrawals[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
-                                          }
-                                          else {
-                                              realCG[this.clientDetails.startDate + i] = 0;
-                                          }
-                                      }
 
-                                      unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+                          if (this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId) != null) {
+                            this.BeginningValueOptimized[this.BeginningValueOptimized.findIndex((c: any) => c.owner === x.investmentId)] = obj;
+                          }
+                          else {
+                            this.BeginningValueOptimized.push(obj);
+                          }
 
+                        })
+                        //Calculate Joint Investment
+                        this.investmentJoint.forEach((x: any) => { // client
+
+                          this.investmentContribution = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "C");
+                          this.investmentWithdrawal = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "W");
+
+
+                          if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          var obj = this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId);
+                          var begVal: any = {};
+                          var growth: any = {};
+                          var income: any = {};
+                          var incomePaidOut: any = {};
+                          var frankingCredits: any = {};
+                          var earnings: any = {};
+                          var purchaseOfAssets: any = {};
+                          var regularContributions: any = {};
+                          var contributions: any = {};
+                          var saleOfAssets: any = {};
+                          var regularWithdrawals: any = {};
+                          var withdrawals: any = {};
+                          var endingVal: any = {};
+                          var endingValPV: any = {};
+                          var realCG: any = {};
+                          var unrealCG: any = {};
+                          if (obj == null) {
+                            obj = {};
+                          }
+                          else {
+                            obj.values;
+                            begVal = obj.BegValues;
+                            growth = obj.growthValues;
+                            income = obj.incomeValues;
+                            incomePaidOut = obj.incomePaidOutValues;
+                            frankingCredits = obj.frankingCreditsValues;
+                            earnings = obj.earningsValues;
+                            purchaseOfAssets = obj.purchaseOfAssetValues;
+                            regularContributions = obj.regularContributionsValues;
+                            contributions = obj.contributionsValues;
+                            saleOfAssets = obj.saleOfAssetValues;
+                            regularWithdrawals = obj.regularWithdrawalsValues;
+                            withdrawals = obj.withdrawalsValues;
+                            endingVal = obj.endingValues;
+                            endingValPV = obj.endingValuesPV;
+                            realCG = obj.realCGValues;
+                            unrealCG = obj.unrealCGValues;
+                          }
+
+                          obj["owner"] = x.investmentId;
+                          obj["type"] = "Joint";
+                          obj["name"] = "Opening Value";
+
+                          //BeginningValue
+                          if (n == 1) {
+                            if (x.startDateType == "Existing") {
+                              begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                            }
+                            else {
+                              begVal[this.clientDetails.startDate + i] = 0;
+                            }
+
+                          }
+                          else {
+                            if ((this.clientDetails.startDate + i) == x.startDate) {
+                              begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                            }
+                            else if ((this.clientDetails.startDate + i) < x.startDate) {
+
+                              begVal[this.clientDetails.startDate + i] = 0;
+                            }
+                            else {
+                              begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
+                            }
+                          }
+
+                          //growth & income
+                          var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
+                          var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+                          var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+
+                          var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
+                          var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
+
+                          if (typeof growthVal === "number" && !isNaN(growthVal)) {
+                            growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                          }
+                          else {
+                            growth[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
+                            income[this.clientDetails.startDate + i] = incomeVal.toFixed();
+                          }
+                          else {
+                            income[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          //incomePaidOut
+
+                          if (x.reinvest == "N") {
+                            incomePaidOut[this.clientDetails.startDate + i] = income[this.clientDetails.startDate + i];
+
+                          }
+                          else {
+                            incomePaidOut[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //FrankingCredits
+
+                          var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
+                          var ctr = Number(corporateTaxRate[0].percentage) / 100;
+
+                          frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
+
+                          //Earnings
+                          earnings[this.clientDetails.startDate + i] = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])).toFixed();
+
+                          //List of Contributions
+                          let ContributionSum: number = 0;
+                          this.investmentContribution.forEach((y: any) => { // client
+
+                            if (y.fromDateType == "Start") {
+                              y.fromDate = this.clientDetails.startDate;
+                            }
+                            if (y.toDateType == "End") {
+                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                            }
+
+                            if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                              var t = parseInt(y.value);
+                              ContributionSum = ContributionSum + t;
+                            }
+
+                          });
+
+                          regularContributions[this.clientDetails.startDate + i] = ContributionSum;
+
+
+
+                          //Purchase of assets
+                          if (x.startDateType != "Existing") {
+
+                            if (x.startDate == this.clientDetails.startDate + i) {
+                              purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
+                            }
+                            else {
+                              purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          else {
+                            purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //Contributions
+                          contributions[this.clientDetails.startDate + i] = regularContributions[this.clientDetails.startDate + i] + Number(purchaseOfAssets[this.clientDetails.startDate + i]);
+
+                          //List of Withdrawals
+                          let WithdrawalSum: number = 0;
+                          this.investmentWithdrawal.forEach((y: any) => { // client
+
+                            if (y.fromDateType == "Start") {
+                              y.fromDate = this.clientDetails.startDate;
+                            }
+                            if (y.toDateType == "End") {
+                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                            }
+
+                            if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                              var t = parseInt(y.value);
+                              WithdrawalSum = WithdrawalSum + t;
+                            }
+
+                          });
+
+                          regularWithdrawals[this.clientDetails.startDate + i] = WithdrawalSum;
+
+                          //Sale of assets
+                          if (x.endDateType != "Retain") {
+
+                            if (x.endDate == this.clientDetails.startDate + i) {
+                              saleOfAssets[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(regularWithdrawals[this.clientDetails.startDate + i]);
+                            }
+                            else {
+                              saleOfAssets[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          else {
+                            saleOfAssets[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //Withdrawals
+                          withdrawals[this.clientDetails.startDate + i] = Number(regularWithdrawals[this.clientDetails.startDate + i]) + Number(saleOfAssets[this.clientDetails.startDate + i]);
+
+                          //Ending Value
+                          endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(withdrawals[this.clientDetails.startDate + i])).toFixed();
+
+                          //Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = inflation[0].percentage;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+                          if (x.type == "Domestic Cash" || x.type == "Domestic Fixed Interest") {
+                            realCG[this.clientDetails.startDate + i] = 0;
+                            unrealCG[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            if (begVal[this.clientDetails.startDate + i] != 0) {
+                              //Real and Unreal CG
+                              var TotalCG = 0;
+                              var RateCG = 0
+
+
+                              if (Number(this.clientDetails.startDate + i) == x.startDate) {
+                                TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(growth[this.clientDetails.startDate + i])));
+                              }
+                              else if (Number(this.clientDetails.startDate + i) > x.startDate) {
+                                TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(growth[this.clientDetails.startDate + i]);
+                              }
+
+                              if (endingVal[this.clientDetails.startDate + i] == 0) {
+                                realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
+                              }
+                              else {
+                                if (Number(withdrawals[this.clientDetails.startDate + i]) != 0) {
+                                  realCG[this.clientDetails.startDate + i] = ((Number(withdrawals[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
+                                }
+                                else {
+                                  realCG[this.clientDetails.startDate + i] = 0;
+                                }
+                              }
+
+                              unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+
+                            }
+                            else {
+                              realCG[this.clientDetails.startDate + i] = 0;
+                              unrealCG[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+
+                          obj["BegValues"] = begVal;
+                          obj["growthValues"] = growth;
+                          obj["incomeValues"] = income;
+                          obj["incomePaidOutValues"] = incomePaidOut;
+                          obj["frankingCreditsValues"] = frankingCredits;
+                          obj["earningsValues"] = earnings;
+                          obj["purchaseOfAssetValues"] = purchaseOfAssets;
+                          obj["regularContributionsValues"] = regularContributions;
+                          obj["contributionsValues"] = contributions;
+                          obj["saleOfAssetValues"] = saleOfAssets;
+                          obj["regularWithdrawalsValues"] = regularWithdrawals;
+                          obj["withdrawalsValues"] = withdrawals;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["realCGValues"] = realCG;
+                          obj["unrealCGValues"] = unrealCG;
+
+                          if (this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId) != null) {
+                            this.BeginningValueOptimized[this.BeginningValueOptimized.findIndex((c: any) => c.owner === x.investmentId)] = obj;
+                          }
+                          else {
+                            this.BeginningValueOptimized.push(obj);
+                          }
+
+                        })
+
+                        //Calculate Financial Assets Totals
+                        this.calculateTotalInvestmentPaidOutOptimized("TotalIPO", i);
+                        this.calculateTotalInvestmentWithdrawalsOptimized("TotalIW", i);
+                        this.calculateTotalInvestmentContributionsOptimized("TotalIC", i);
+                        this.calculateTotalInvestmentEarningsOptimized("TotalTaxIE-client", "Client", i);
+                        this.calculateTotalInvestmentEarningsOptimized("TotalTaxIE-partner", "Partner", i);
+                        this.calculateRealizedCGFAOptimized("RCGFA-client", "Client", i);
+                        this.calculateRealizedCGFAOptimized("RCGFA-partner", "Partner", i);
+                        this.calculateFrankingCreditsOptimized("FrankingCredits-client", "Client", i);
+                        this.calculateFrankingCreditsOptimized("FrankingCredits-partner", "Partner", i);
+
+                        //Calculate Client Properties
+                        this.propertiesClient.forEach((x: any) => { // client
+
+                          if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                            x.startDate = this.clientDetails.startDate;
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Retain") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+
+
+                          var obj = this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId);
+                          var begVal: any = {};
+                          var propertyPurchase: any = {};
+                          var propertySale: any = {};
+                          var capitalGrowth: any = {};
+                          var endingVal: any = {};
+                          var endingValPV: any = {};
+                          var rent: any = {};
+                          var expenses: any = {};
+                          var realCG: any = {};
+                          var unrealCG: any = {};
+                          var propPurchase: number = 0;
+                          var propSale: number = 0;
+
+                          if (obj == null) {
+                            obj = {};
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            propertyPurchase = obj.PropertyPurchaseValues;
+                            propertySale = obj.PropertySaleValues;
+                            capitalGrowth = obj.capitalGrowthValues;
+                            endingVal = obj.endingValues;
+                            endingValPV = obj.endingValuesPV;
+                            rent = obj.rentValues;
+                            expenses = obj.expensesValues;
+                            realCG = obj.realCGValues;
+                            unrealCG = obj.unrealCGValues;
+                          }
+
+
+                          obj["owner"] = x.propertyId;
+                          obj["type"] = "Client";
+                          obj["name"] = x.name;
+                          obj["startDateType"] = x.startDateType;
+
+                          //BeginningValue
+                          if (n == 1 && x.startDateType == "Existing") {
+                            begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                          }
+                          else if ((this.clientDetails.startDate + i) <= x.startDate) {
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
+                          }
+
+                          //capital growth
+                          capitalGrowth[this.clientDetails.startDate + i] = ((x.growth / 100) * Number(begVal[this.clientDetails.startDate + i])).toFixed();
+
+                          ////Ending Value
+
+
+                          if ((this.clientDetails.startDate + i) == x.startDate) {
+                            endingVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                            propertyPurchase[this.clientDetails.startDate + i] = x.value.toFixed();
+                            propPurchase = this.clientDetails.startDate + i;
+                            propertySale[this.clientDetails.startDate + i] = 0;
+
+                          }
+                          else if ((this.clientDetails.startDate + i) < x.startDate) {
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                            propertyPurchase[this.clientDetails.startDate + i] = 0;
+
+
+                          }
+
+
+                          if ((this.clientDetails.startDate + i) == x.endDate) {
+                            propertySale[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                          }
+                          else if ((this.clientDetails.startDate + i) > x.startDate && (this.clientDetails.startDate + i) < x.endDate) {
+                            propSale = this.clientDetails.startDate + i;
+                            propertySale[this.clientDetails.startDate + i] = 0;
+                            endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
+
+                          }
+                          else if ((this.clientDetails.startDate + i) > x.endDate) {
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                            propertyPurchase[this.clientDetails.startDate + i] = 0;
+                            propertySale[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+
+
+                          ////Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = Number(inflation[0].percentage) / 100;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+                          //rent
+                          if ((this.clientDetails.startDate + i) >= x.endDate) {
+                            rent[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            let rentVal: number = 0;
+
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              rentVal = parseInt(x.rent);
+                            }
+
+                            rent[this.clientDetails.startDate + i] = rentVal;
+                          }
+
+
+                          //expenses
+                          if ((this.clientDetails.startDate + i) >= x.endDate) {
+                            expenses[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            let expensesVal: number = 0;
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              expensesVal = parseInt(x.expenses);
+                            }
+                            expenses[this.clientDetails.startDate + i] = expensesVal;
+                          }
+
+                          if (begVal[this.clientDetails.startDate + i] != 0) {
+                            //Real and Unreal CG
+                            var TotalCG = 0;
+                            var RateCG = 0
+
+
+                            if (Number(this.clientDetails.startDate + i) == x.startDate) {
+                              TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(capitalGrowth[this.clientDetails.startDate + i])));
+                            }
+                            else if (Number(this.clientDetails.startDate + i) > x.startDate) {
+                              TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(capitalGrowth[this.clientDetails.startDate + i]);
+                            }
+
+                            if (endingVal[this.clientDetails.startDate + i] == 0) {
+                              realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
+                            }
+                            else {
+                              if (Number(propertySale[this.clientDetails.startDate + i]) != 0) {
+                                realCG[this.clientDetails.startDate + i] = ((Number(propertySale[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
+                              }
+                              else {
+                                realCG[this.clientDetails.startDate + i] = 0;
+                              }
+                            }
+
+                            unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+
+                          }
+                          else {
+                            realCG[this.clientDetails.startDate + i] = 0;
+                            unrealCG[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          obj["BegValues"] = begVal;
+                          obj["PropertyPurchaseValues"] = propertyPurchase;
+                          obj["PropertySaleValues"] = propertySale;
+                          obj["capitalGrowthValues"] = capitalGrowth;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["rentValues"] = rent;
+                          obj["expensesValues"] = expenses;
+                          obj["realCGValues"] = realCG;
+                          obj["unrealCGValues"] = unrealCG;
+                          obj["propPurchase"] = propPurchase;
+
+                          if (this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId) != null) {
+                            this.PropertiesValueOptimized[this.PropertiesValueOptimized.findIndex((c: any) => c.owner === x.propertyId)] = obj;
+                          }
+                          else {
+                            this.PropertiesValueOptimized.push(obj);
+                          }
+
+                        })
+                        //Calculate Partner Properties
+                        this.propertiesPartner.forEach((x: any) => { // client
+
+                          if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                            x.startDate = this.clientDetails.startDate;
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+                          //TODO : Confirm retain end date value
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Retain") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+                          var obj = this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId);
+                          var begVal: any = {};
+                          var propertyPurchase: any = {};
+                          var propertySale: any = {};
+                          var capitalGrowth: any = {};
+                          var endingVal: any = {};
+                          var endingValPV: any = {};
+                          var rent: any = {};
+                          var expenses: any = {};
+                          var realCG: any = {};
+                          var unrealCG: any = {};
+                          var propPurchase: number = 0;
+                          var propSale: number = 0;
+
+                          if (obj == null) {
+                            obj = {};
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            propertyPurchase = obj.PropertyPurchaseValues;
+                            propertySale = obj.PropertySaleValues;
+                            capitalGrowth = obj.capitalGrowthValues;
+                            endingVal = obj.endingValues;
+                            endingValPV = obj.endingValuesPV;
+                            rent = obj.rentValues;
+                            expenses = obj.expensesValues;
+                            realCG = obj.realCGValues;
+                            unrealCG = obj.unrealCGValues;
+                          }
+
+                          obj["owner"] = x.propertyId;
+                          obj["type"] = "Partner";
+                          obj["name"] = x.name;
+                          obj["startDateType"] = x.startDateType;
+
+                          //BeginningValue
+                          if (n == 1 && x.startDateType == "Existing") {
+                            begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                          }
+                          else if ((this.clientDetails.startDate + i) <= x.startDate) {
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
+                          }
+
+                          //capital growth
+                          capitalGrowth[this.clientDetails.startDate + i] = ((x.growth / 100) * Number(begVal[this.clientDetails.startDate + i])).toFixed();
+
+                          ////Ending Value
+
+
+                          if ((this.clientDetails.startDate + i) == x.startDate) {
+                            endingVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                            propertyPurchase[this.clientDetails.startDate + i] = x.value.toFixed();
+                            propPurchase = this.clientDetails.startDate + i;
+                            propertySale[this.clientDetails.startDate + i] = 0;
+
+                          }
+                          else if ((this.clientDetails.startDate + i) < x.startDate) {
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                            propertyPurchase[this.clientDetails.startDate + i] = 0;
+
+
+                          }
+
+
+                          if ((this.clientDetails.startDate + i) == x.endDate) {
+                            propertySale[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                          }
+                          else if ((this.clientDetails.startDate + i) > x.startDate && (this.clientDetails.startDate + i) < x.endDate) {
+                            propSale = this.clientDetails.startDate + i;
+                            propertySale[this.clientDetails.startDate + i] = 0;
+                            endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
+
+                          }
+                          else if ((this.clientDetails.startDate + i) > x.endDate) {
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                            propertyPurchase[this.clientDetails.startDate + i] = 0;
+                            propertySale[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+
+
+                          ////Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = Number(inflation[0].percentage) / 100;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+                          //rent
+                          if ((this.clientDetails.startDate + i) >= x.endDate) {
+                            rent[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            let rentVal: number = 0;
+
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              rentVal = parseInt(x.rent);
+                            }
+
+                            rent[this.clientDetails.startDate + i] = rentVal;
+                          }
+
+
+                          //expenses
+                          if ((this.clientDetails.startDate + i) >= x.endDate) {
+                            expenses[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            let expensesVal: number = 0;
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              expensesVal = parseInt(x.expenses);
+                            }
+                            expenses[this.clientDetails.startDate + i] = expensesVal;
+                          }
+
+                          if (begVal[this.clientDetails.startDate + i] != 0) {
+                            //Real and Unreal CG
+                            var TotalCG = 0;
+                            var RateCG = 0
+
+
+                            if (Number(this.clientDetails.startDate + i) == x.startDate) {
+                              TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(capitalGrowth[this.clientDetails.startDate + i])));
+                            }
+                            else if (Number(this.clientDetails.startDate + i) > x.startDate) {
+                              TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(capitalGrowth[this.clientDetails.startDate + i]);
+                            }
+
+                            if (endingVal[this.clientDetails.startDate + i] == 0) {
+                              realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
+                            }
+                            else {
+                              if (Number(propertySale[this.clientDetails.startDate + i]) != 0) {
+                                realCG[this.clientDetails.startDate + i] = ((Number(propertySale[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
+                              }
+                              else {
+                                realCG[this.clientDetails.startDate + i] = 0;
+                              }
+                            }
+
+                            unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+
+                          }
+                          else {
+                            realCG[this.clientDetails.startDate + i] = 0;
+                            unrealCG[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          obj["BegValues"] = begVal;
+                          obj["PropertyPurchaseValues"] = propertyPurchase;
+                          obj["PropertySaleValues"] = propertySale;
+                          obj["capitalGrowthValues"] = capitalGrowth;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["rentValues"] = rent;
+                          obj["expensesValues"] = expenses;
+                          obj["realCGValues"] = realCG;
+                          obj["unrealCGValues"] = unrealCG;
+                          obj["propPurchase"] = propPurchase;
+
+                          if (this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId) != null) {
+                            this.PropertiesValueOptimized[this.PropertiesValueOptimized.findIndex((c: any) => c.owner === x.propertyId)] = obj;
+                          }
+                          else {
+                            this.PropertiesValueOptimized.push(obj);
+                          }
+                        })
+                        //Calculate Joint Properties
+                        this.propertiesJoint.forEach((x: any) => { // client
+
+                          if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                            x.startDate = this.clientDetails.startDate;
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          //TODO : Confirm retain end date value
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Retain") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          var obj = this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId);
+                          var begVal: any = {};
+                          var propertyPurchase: any = {};
+                          var propertySale: any = {};
+                          var capitalGrowth: any = {};
+                          var endingVal: any = {};
+                          var endingValPV: any = {};
+                          var rent: any = {};
+                          var expenses: any = {};
+                          var realCG: any = {};
+                          var unrealCG: any = {};
+                          var propPurchase: number = 0;
+                          var propSale: number = 0;
+
+                          if (obj == null) {
+                            obj = {};
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            propertyPurchase = obj.PropertyPurchaseValues;
+                            propertySale = obj.PropertySaleValues;
+                            capitalGrowth = obj.capitalGrowthValues;
+                            endingVal = obj.endingValues;
+                            endingValPV = obj.endingValuesPV;
+                            rent = obj.rentValues;
+                            expenses = obj.expensesValues;
+                            realCG = obj.realCGValues;
+                            unrealCG = obj.unrealCGValues;
+                          }
+
+                          obj["owner"] = x.propertyId;
+                          obj["type"] = "Joint";
+                          obj["name"] = x.name;
+                          obj["startDateType"] = x.startDateType;
+
+                          //BeginningValue
+                          if (n == 1 && x.startDateType == "Existing") {
+                            begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                          }
+                          else if ((this.clientDetails.startDate + i) <= x.startDate) {
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
+                          }
+
+                          //capital growth
+                          capitalGrowth[this.clientDetails.startDate + i] = ((x.growth / 100) * Number(begVal[this.clientDetails.startDate + i])).toFixed();
+
+                          ////Ending Value
+
+
+                          if ((this.clientDetails.startDate + i) == x.startDate) {
+                            endingVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                            propertyPurchase[this.clientDetails.startDate + i] = x.value.toFixed();
+                            propPurchase = this.clientDetails.startDate + i;
+                            propertySale[this.clientDetails.startDate + i] = 0;
+
+                          }
+                          else if ((this.clientDetails.startDate + i) < x.startDate) {
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                            propertyPurchase[this.clientDetails.startDate + i] = 0;
+
+
+                          }
+
+
+                          if ((this.clientDetails.startDate + i) == x.endDate) {
+                            propertySale[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                          }
+                          else if ((this.clientDetails.startDate + i) > x.startDate && (this.clientDetails.startDate + i) < x.endDate) {
+                            propSale = this.clientDetails.startDate + i;
+                            propertySale[this.clientDetails.startDate + i] = 0;
+                            endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
+
+                          }
+                          else if ((this.clientDetails.startDate + i) > x.endDate) {
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                            propertyPurchase[this.clientDetails.startDate + i] = 0;
+                            propertySale[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+
+
+                          ////Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = Number(inflation[0].percentage) / 100;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+                          //rent
+                          if ((this.clientDetails.startDate + i) >= x.endDate) {
+                            rent[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            let rentVal: number = 0;
+
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              rentVal = parseInt(x.rent);
+                            }
+
+                            rent[this.clientDetails.startDate + i] = rentVal;
+                          }
+
+
+                          //expenses
+                          if ((this.clientDetails.startDate + i) >= x.endDate) {
+                            expenses[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            let expensesVal: number = 0;
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              expensesVal = parseInt(x.expenses);
+                            }
+                            expenses[this.clientDetails.startDate + i] = expensesVal;
+                          }
+
+                          if (begVal[this.clientDetails.startDate + i] != 0) {
+                            //Real and Unreal CG
+                            var TotalCG = 0;
+                            var RateCG = 0
+
+
+                            if (Number(this.clientDetails.startDate + i) == x.startDate) {
+                              TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(capitalGrowth[this.clientDetails.startDate + i])));
+                            }
+                            else if (Number(this.clientDetails.startDate + i) > x.startDate) {
+                              TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(capitalGrowth[this.clientDetails.startDate + i]);
+                            }
+
+                            if (endingVal[this.clientDetails.startDate + i] == 0) {
+                              realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
+                            }
+                            else {
+                              if (Number(propertySale[this.clientDetails.startDate + i]) != 0) {
+                                realCG[this.clientDetails.startDate + i] = ((Number(propertySale[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
+                              }
+                              else {
+                                realCG[this.clientDetails.startDate + i] = 0;
+                              }
+                            }
+
+                            unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+
+                          }
+                          else {
+                            realCG[this.clientDetails.startDate + i] = 0;
+                            unrealCG[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          obj["BegValues"] = begVal;
+                          obj["PropertyPurchaseValues"] = propertyPurchase;
+                          obj["PropertySaleValues"] = propertySale;
+                          obj["capitalGrowthValues"] = capitalGrowth;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["rentValues"] = rent;
+                          obj["expensesValues"] = expenses;
+                          obj["realCGValues"] = realCG;
+                          obj["unrealCGValues"] = unrealCG;
+                          obj["propPurchase"] = propPurchase;
+
+                          if (this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId) != null) {
+                            this.PropertiesValueOptimized[this.PropertiesValueOptimized.findIndex((c: any) => c.owner === x.propertyId)] = obj;
+                          }
+                          else {
+                            this.PropertiesValueOptimized.push(obj);
+                          }
+
+                        })
+
+                        //Calculate PropertyTotal
+                        this.calculateTotalRentOptimized("TotalRent", i);
+                        this.calculateTotalSaleProceedsOptimized("TotalSaleProceeds", i);
+                        this.calculateTotalPropertyExpensesOptimized("TotalPropertyExpenses", i);
+                        this.calculateInvestmentPropertyExpensesOptimized("InvestmentPropertyExpenses-client", "Client", i);
+                        this.calculateInvestmentPropertyExpensesOptimized("InvestmentPropertyExpenses-partner", "Partner", i);
+                        this.calculateRealizedCGPOptimized("RCGP-client", "Client", i);
+                        this.calculateRealizedCGPOptimized("RCGP-partner", "Partner", i);
+
+                        ////Calculate Client Liability
+                        this.liabilityClient.forEach((x: any) => { // client
+
+                          var debtStrategy: any = [];
+                          if (p == 1) {
+                            debtStrategy = strategyOrder.filter(c => c.id === x.liabilityId).filter(c => c.type === "Debt");
+                          }
+
+                          this.liabilityDrawDown = this.liabilityDD.filter((c: any) => c.liabilityId === x.liabilityId);
+
+
+                          if (x.commenceOnDateType == "Start" || x.commenceOnDateType == "Existing") {
+                            x.commenceOnDate = this.clientDetails.startDate;
+                          }
+                          if (x.repaymentDateType == "End") {
+                            x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.repaymentDateType == "Retain") {
+                            x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+
+
+                          var obj = this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId);
+                          var begVal: any = {};
+                          var accruedInterest: any = {};
+                          var repmt: any = {};
+                          var endingVal: any = {};
+
+                          if (obj == null) {
+                            obj = {};
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            accruedInterest = obj.accruedInterestValues;
+                            repmt = obj.repmtValues;
+                            endingVal = obj.endingValues;
+                          }
+
+                          obj["owner"] = x.liabilityId;
+                          obj["type"] = "Client";
+                          obj["name"] = "Opening Value";
+                          obj["deductibility"] = x.deductibility;
+
+                          if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
+                            //BeginningValue
+                            if (n == 1) {
+                              if (x.commenceOnDateType == "Existing") {
+                                begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
+                              }
+                              else {
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+
+                            }
+                            else {
+                              if ((this.clientDetails.startDate + i) == x.commenceOnDate) {
+                                begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
+                              }
+                              else if ((this.clientDetails.startDate + i) < x.commenceOnDate) {
+
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+                              else {
+                                begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]);
+                              }
+                            }
+                          }
+                          else {
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //accrued Interest
+                          accruedInterest[this.clientDetails.startDate + i] = (begVal[this.clientDetails.startDate + i] * (x.interestRate / 100)).toFixed();
+
+                          //Optimize Debt
+                          if (debtStrategy.length > 0 && debtStrategy[0].AllocatedValue > 0) {
+                            repmt[this.clientDetails.startDate + i] = Number(debtStrategy[0].AllocatedValue);
+                          }
+                          else {
+                            var PMT: number = 0;
+                            if (x.repaymentType == "IO") {
+                              PMT = Number(accruedInterest[this.clientDetails.startDate + i]);
+                            }
+                            else {
+                              PMT = Number(x.principal) * (x.interestRate / 100) * (Math.pow((1 + (x.interestRate / 100)), x.term) / (Math.pow((1 + (x.interestRate / 100)), x.term) - 1));
+                            }
+                            if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
+
+                              //Repayment Value
+                              var Repmt: number = 0;
+                              if (x.repaymentDateType == "Retain") {
+                                Repmt = Math.max(x.repayment, PMT);
+                              }
+                              else if ((this.clientDetails.startDate + i) == x.repaymentDate) {
+                                Repmt = Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]);
+                              }
+                              else {
+                                Repmt = Math.max(x.repayment, PMT);
+                              }
+                              var repayment = Math.min((begVal[this.clientDetails.startDate + i] + accruedInterest[this.clientDetails.startDate + i]), Repmt);
+                              repmt[this.clientDetails.startDate + i] = repayment.toFixed();
+                            }
+                            else {
+                              repmt[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          ////Ending Value
+
+                          if (Number(repmt[this.clientDetails.startDate + i]) > (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]))) {
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]) - Number(repmt[this.clientDetails.startDate + i])).toFixed();
+                          }
+                          obj["BegValues"] = begVal;
+                          obj["accruedInterestValues"] = accruedInterest;
+                          obj["repmtValues"] = repmt;
+                          obj["endingValues"] = endingVal;
+
+
+                          if (this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId) != null) {
+                            this.LBValueOptimized[this.LBValueOptimized.findIndex((c: any) => c.owner === x.liabilityId)] = obj;
+                          }
+                          else {
+                            this.LBValueOptimized.push(obj);
+                          }
+
+                        })
+                        //Calculate Partner Liability
+                        this.liabilityPartner.forEach((x: any) => { // client
+
+                          this.liabilityDrawDown = this.liabilityDD.filter((c: any) => c.liabilityId === x.liabilityId);
+
+
+                          if (x.commenceOnDateType == "Start" || x.commenceOnDateType == "Existing") {
+                            x.commenceOnDate = this.clientDetails.startDate;
+                          }
+                          if (x.repaymentDateType == "End") {
+                            x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.repaymentDateType == "Retain") {
+                            x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+
+
+                          var obj = this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId);
+                          var begVal: any = {};
+                          var accruedInterest: any = {};
+                          var repmt: any = {};
+                          var endingVal: any = {};
+
+                          if (obj == null) {
+                            obj = {};
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            accruedInterest = obj.accruedInterestValues;
+                            repmt = obj.repmtValues;
+                            endingVal = obj.endingValues;
+                          }
+
+
+                          obj["owner"] = x.liabilityId;
+                          obj["type"] = "Partner";
+                          obj["name"] = "Opening Value";
+                          obj["deductibility"] = x.deductibility;
+
+                          if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
+                            //BeginningValue
+                            if (n == 1) {
+                              if (x.commenceOnDateType == "Existing") {
+                                begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
+                              }
+                              else {
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+
+                            }
+                            else {
+                              if ((this.clientDetails.startDate + i) == x.commenceOnDate) {
+                                begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
+                              }
+                              else if ((this.clientDetails.startDate + i) < x.commenceOnDate) {
+
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+                              else {
+                                begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]);
+                              }
+                            }
+                          }
+                          else {
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //accrued Interest
+                          accruedInterest[this.clientDetails.startDate + i] = (begVal[this.clientDetails.startDate + i] * (x.interestRate / 100)).toFixed();
+
+                          //Minimum repayment
+
+                          var PMT: number = 0;
+                          if (x.repaymentType == "IO") {
+                            PMT = Number(accruedInterest[this.clientDetails.startDate + i]);
+                          }
+                          else {
+                            PMT = Number(x.principal) * (x.interestRate / 100) * (Math.pow((1 + (x.interestRate / 100)), x.term) / (Math.pow((1 + (x.interestRate / 100)), x.term) - 1));
+                          }
+                          if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
+
+                            //Repayment Value
+                            var Repmt: number = 0;
+                            if (x.repaymentDateType == "Retain") {
+                              Repmt = Math.max(x.repayment, PMT);
+                            }
+                            else if ((this.clientDetails.startDate + i) == x.repaymentDate) {
+                              Repmt = Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]);
+                            }
+                            else {
+                              Repmt = Math.max(x.repayment, PMT);
+                            }
+                            var repayment = Math.min((begVal[this.clientDetails.startDate + i] + accruedInterest[this.clientDetails.startDate + i]), Repmt);
+                            repmt[this.clientDetails.startDate + i] = repayment.toFixed();
+                          }
+                          else {
+                            repmt[this.clientDetails.startDate + i] = 0;
+                          }
+                          ////Ending Value
+                          if (Number(repmt[this.clientDetails.startDate + i]) > (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]))) {
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]) - Number(repmt[this.clientDetails.startDate + i])).toFixed();
+                          }
+                          obj["BegValues"] = begVal;
+                          obj["accruedInterestValues"] = accruedInterest;
+                          obj["repmtValues"] = repmt;
+                          obj["endingValues"] = endingVal;
+
+                          if (this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId) != null) {
+                            this.LBValueOptimized[this.LBValueOptimized.findIndex((c: any) => c.owner === x.liabilityId)] = obj;
+                          }
+                          else {
+                            this.LBValueOptimized.push(obj);
+                          }
+
+                        })
+                        //Calculate Joint Liability
+                        this.liabilityJoint.forEach((x: any) => { // client
+
+                          this.liabilityDrawDown = this.liabilityDD.filter((c: any) => c.liabilityId === x.liabilityId);
+
+
+                          if (x.commenceOnDateType == "Start" || x.commenceOnDateType == "Existing") {
+                            x.commenceOnDate = this.clientDetails.startDate;
+                          }
+                          if (x.repaymentDateType == "End") {
+                            x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.repaymentDateType == "Retain") {
+                            x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+
+
+
+                          var obj = this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId);
+                          var begVal: any = {};
+                          var accruedInterest: any = {};
+                          var repmt: any = {};
+                          var endingVal: any = {};
+
+                          if (obj == null) {
+                            obj = {};
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            accruedInterest = obj.accruedInterestValues;
+                            repmt = obj.repmtValues;
+                            endingVal = obj.endingValues;
+                          }
+
+
+                          obj["owner"] = x.liabilityId;
+                          obj["type"] = "Joint";
+                          obj["name"] = "Opening Value";
+                          obj["deductibility"] = x.deductibility;
+
+                          if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
+                            //BeginningValue
+                            if (n == 1) {
+                              if (x.commenceOnDateType == "Existing") {
+                                begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
+                              }
+                              else {
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+
+                            }
+                            else {
+                              if ((this.clientDetails.startDate + i) == x.commenceOnDate) {
+                                begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
+                              }
+                              else if ((this.clientDetails.startDate + i) < x.commenceOnDate) {
+
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+                              else {
+                                begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]);
+                              }
+                            }
+                          }
+                          else {
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //accrued Interest
+                          accruedInterest[this.clientDetails.startDate + i] = (begVal[this.clientDetails.startDate + i] * (x.interestRate / 100)).toFixed();
+
+                          //Minimum repayment
+
+                          var PMT: number = 0;
+                          if (x.repaymentType == "IO") {
+                            PMT = Number(accruedInterest[this.clientDetails.startDate + i]);
+                          }
+                          else {
+                            PMT = Number(x.principal) * (x.interestRate / 100) * (Math.pow((1 + (x.interestRate / 100)), x.term) / (Math.pow((1 + (x.interestRate / 100)), x.term) - 1));
+                          }
+                          if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
+
+                            //Repayment Value
+                            var Repmt: number = 0;
+                            if (x.repaymentDateType == "Retain") {
+                              Repmt = Math.max(x.repayment, PMT);
+                            }
+                            else if ((this.clientDetails.startDate + i) == x.repaymentDate) {
+                              Repmt = Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]);
+                            }
+                            else {
+                              Repmt = Math.max(x.repayment, PMT);
+                            }
+                            var repayment = Math.min((begVal[this.clientDetails.startDate + i] + accruedInterest[this.clientDetails.startDate + i]), Repmt);
+                            repmt[this.clientDetails.startDate + i] = repayment.toFixed();
+                          }
+                          else {
+                            repmt[this.clientDetails.startDate + i] = 0;
+                          }
+                          ////Ending Value
+                          if (Number(repmt[this.clientDetails.startDate + i]) > (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]))) {
+                            endingVal[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]) - Number(repmt[this.clientDetails.startDate + i])).toFixed();
+                          }
+
+                          obj["BegValues"] = begVal;
+                          obj["accruedInterestValues"] = accruedInterest;
+                          obj["repmtValues"] = repmt;
+                          obj["endingValues"] = endingVal;
+
+                          if (this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId) != null) {
+                            this.LBValueOptimized[this.LBValueOptimized.findIndex((c: any) => c.owner === x.liabilityId)] = obj;
+                          }
+                          else {
+                            this.LBValueOptimized.push(obj);
+                          }
+
+                        })
+                        //Calculate Liability Total
+
+                        this.calculateTotalDebtRepaymentOptimized("TotalDebtRepayment", i);
+                        this.calculateAccruedLiabilitiesOptimized("Accruedliability-client", "Client", i);
+                        this.calculateAccruedLiabilitiesOptimized("Accruedliability-partner", "Partner", i);
+
+                        //Pension - Client
+                        this.pensionClient.forEach((x: any) => {
+
+                          this.pensionDrawDown = this.pensionDD.filter((c: any) => c.pensionId === x.pensionId);
+
+
+                          if (x.pensionRebootFromType == "Start" || x.pensionRebootFromType == "Existing") {
+                            x.pensionRebootFromDate = this.clientDetails.startDate
+                          }
+                          else if (x.pensionRebootFromType == "Client Retirement") {
+                            x.pensionRebootFromDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Retain") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+
+                          var obj = this.PensionValueOptimized.find((y: any) => y.owner === x.pensionId);
+                          var begVal: any = {};
+                          var TaxableBegVal: any = {};
+                          var TaxFreeBegVal: any = {};
+
+                          var growth: any = {};
+                          var income: any = {};
+                          var frankingCredits: any = {};
+
+                          var pensionIncome: any = {};
+                          var pITaxAssessable: any = {};
+                          var pITaxExempt: any = {};
+
+                          var endingVal: any = {};
+                          var TaxableEndingVal: any = {};
+                          var TaxFreeEndingVal: any = {};
+                          var endingValPV: any = {};
+                          var TaxableProp: number = 0;
+                          var TaxFreeProp: number = 0;
+
+                          if (obj == null) {
+                            obj = {};
+                            TaxableProp = 0;
+                            TaxFreeProp = 0;
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            TaxableBegVal = obj.TaxableBegValues;
+                            TaxFreeBegVal = obj.TaxFreeBegValues;
+                            growth = obj.growthValues;
+                            income = obj.incomeValues;
+                            frankingCredits = obj.frankingCreditsValues;
+                            pensionIncome = obj.pensionIncomeValues;
+                            pITaxAssessable = obj.pITaxAssessableValues;
+                            pITaxExempt = obj.pITaxExemptValues;
+                            endingVal = obj.endingValues;
+                            TaxableEndingVal = obj.TaxableEndingValues;
+                            TaxFreeEndingVal = obj.TaxFreeEndingValues;
+                            endingValPV = obj.endingValuesPV;
+                            TaxableProp = obj.taxableProp;
+                            TaxFreeProp = obj.taxfreeProp;
+
+                          }
+
+                          obj["owner"] = x.pensionId;
+                          obj["type"] = "Client";
+                          obj["name"] = "Opening Value";
+
+
+                          if (x.pensionRebootFromDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            //BeginningValue
+                            if (n == 1) {
+                              if (x.pensionRebootFromType == "Existing") {
+                                begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                              }
+                              else {
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+
+                            }
+                            else {
+                              if ((this.clientDetails.startDate + i) == x.pensionRebootFromDate) {
+                                begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                              }
+                              else if ((this.clientDetails.startDate + i) < x.pensionRebootFromDate) {
+
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+                              else {
+
+                                begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
+                              }
+                            }
+
+
+                            if ((this.clientDetails.startDate + i) == x.pensionRebootFromDate || x.pensionRebootFromType == "Existing") {
+                              //TODO Confirm negative
+                              if (x.taxableComponent != 0 && x.value != 0) {
+                                TaxableProp = (Number(x.taxableComponent) / Number(x.value));
+                              }
+                              else {
+                                TaxableProp = 0;
+                              }
+                              TaxFreeProp = 1 - TaxableProp;
+
+                              TaxableBegVal[this.clientDetails.startDate + i] = x.taxableComponent.toFixed();
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = x.taxFreeComponent.toFixed();
+                            }
+                            else if ((this.clientDetails.startDate + i) < x.pensionRebootFromDate) {
+
+                              TaxableBegVal[this.clientDetails.startDate + i] = 0;
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
+                            }
+                            else {
+
+                              TaxableBegVal[this.clientDetails.startDate + i] = Number(TaxableEndingVal[Number(this.clientDetails.startDate + i) - 1]);
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = Number(TaxFreeEndingVal[Number(this.clientDetails.startDate + i) - 1]);
+                            }
+                          }
+                          else {
+                            TaxableBegVal[this.clientDetails.startDate + i] = 0;
+                            TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          ////growth & income
+                          var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
+                          var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+                          var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+
+                          var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
+                          var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
+
+                          if (typeof growthVal === "number" && !isNaN(growthVal)) {
+                            growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                          }
+                          else {
+                            growth[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
+                            income[this.clientDetails.startDate + i] = incomeVal.toFixed();
+                          }
+                          else {
+                            income[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //FrankingCredits
+
+                          var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
+                          var ctr = Number(corporateTaxRate[0].percentage) / 100;
+
+                          frankingCredits[this.clientDetails.startDate + i] = (Number(income[this.clientDetails.startDate + i]) * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
+
+                          //pension Income
+                          var preservation = this.preservationAge.sort((a: any, b: any) => a.dob - b.dob);
+                          var minPendionDD = this.minimumPensionDrawdown.sort((a: any, b: any) => a.age - b.age);
+                          var currentYear = this.clientDetails.startDate + i;
+                          var pAge: number = 0;
+                          var minRate: number = 0;
+
+                          for (var k = 0; k < preservation.length; k++) {
+
+
+                            if ((k == (preservation.length - 1)) && (this.clientDetails.clientDob >= preservation[k].dob)) {
+                              pAge = preservation[k].age;
+
+                            }
+                            else if (k == 0 && ((this.clientDetails.clientDob) <= preservation[k].dob)) {
+                              pAge = preservation[k].age;
+                              break;
+
+                            }
+                            else if ((this.clientDetails.clientDob) > preservation[k].dob && (this.clientDetails.clientDob) <= preservation[k + 1].dob) {
+                              pAge = preservation[k + 1].age;
+                              break;
+
+                            }
+                          }
+                          var date1 = new Date("7/01/ " + (this.clientDetails.startDate + i));
+                          var date2 = new Date(this.clientDetails.clientDob);
+                          var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+                          var diffDays = (Math.ceil(timeDiff / (1000 * 3600 * 24))) / 365;
+
+                          var clientAge = Math.round(diffDays * 10) / 10;
+
+                          for (var l = 0; l < minPendionDD.length; l++) {
+
+
+                            if ((l == (minPendionDD.length - 1)) && (clientAge >= minPendionDD[l].age)) {
+                              minRate = minPendionDD[l].minimumDrawdown;
+
+                            }
+                            else if (l == 0 && (clientAge <= minPendionDD[l].age)) {
+                              minRate = minPendionDD[l].minimumDrawdown;
+                              break;
+
+                            }
+                            else if (clientAge > minPendionDD[l].age && clientAge <= minPendionDD[l + 1].age) {
+                              minRate = minPendionDD[l + 1].minimumDrawdown;
+                              break;
+
+                            }
+                          }
+
+
+                          var minDrawdown: number = 0;
+                          var maxDrawdown: number = 0;
+
+                          if (clientAge < pAge) {
+                            minDrawdown = 0;
+                            maxDrawdown = 0;
+                          }
+                          else if (clientAge >= pAge && clientAge < 65) {
+                            if (this.clientRetirementYear != 0 && this.clientRetirementYear <= (this.clientDetails.startDate + i)) {
+                              minDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (minRate / 100);
+                              maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]);
+
+                            }
+                            else {
+                              minDrawdown = 0;
+                              maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (10 / 100);
+                            }
+
+                          }
+                          else if (clientAge >= 65) {
+                            minDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (minRate / 100);
+                            maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]);
+                          }
+
+
+                          if (x.pensionRebootFromDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+
+                            if (this.pensionDrawDown.length > 0) {
+                              let pIncomeSum: number = 0;
+                              this.pensionDrawDown.forEach((y: any) => {
+
+                                if (y.fromDateType == "Start") {
+                                  y.fromDate = this.clientDetails.startDate;
+                                }
+                                if (y.toDateType == "End") {
+                                  y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                }
+
+                                if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                  if (y.amount == 0) {
+                                    if (y.type == "Minimum") {
+                                      pensionIncome[this.clientDetails.startDate + i] = minDrawdown.toFixed();
+                                    } else if (y.type == "Maximum") {
+                                      pensionIncome[this.clientDetails.startDate + i] = maxDrawdown.toFixed();
+                                    }
                                   }
                                   else {
-                                      realCG[this.clientDetails.startDate + i] = 0;
-                                      unrealCG[this.clientDetails.startDate + i] = 0;
+                                    pensionIncome[this.clientDetails.startDate + i] = (Math.min(maxDrawdown, Math.max(minDrawdown, y.amount))).toFixed();
                                   }
-                              }
+                                  //var t = parseInt(y.amount);
+                                  //ContributionSum = ContributionSum + t;
+                                }
+
+                              });
+                            }
+                            else {
+                              pensionIncome[this.clientDetails.startDate + i] = 0;
+                            }
+
+                          }
+                          else {
+                            pensionIncome[this.clientDetails.startDate + i] = 0;
+                          }
 
 
-                              obj["BegValues"] = begVal;
-                              obj["growthValues"] = growth;
-                              obj["incomeValues"] = income;
-                              obj["incomePaidOutValues"] = incomePaidOut;
-                              obj["frankingCreditsValues"] = frankingCredits;
-                              obj["earningsValues"] = earnings;
-                              obj["purchaseOfAssetValues"] = purchaseOfAssets;
-                              obj["regularContributionsValues"] = regularContributions;
-                              obj["contributionsValues"] = contributions;
-                              obj["saleOfAssetValues"] = saleOfAssets;
-                              obj["regularWithdrawalsValues"] = regularWithdrawals;
-                              obj["withdrawalsValues"] = withdrawals;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["realCGValues"] = realCG;
-                              obj["unrealCGValues"] = unrealCG;
+                          if (clientAge >= pAge && clientAge < 60) {
+                            pITaxAssessable[this.clientDetails.startDate + i] = (Number(pensionIncome[this.clientDetails.startDate + i]) * TaxableProp).toFixed();
+                            pITaxExempt[this.clientDetails.startDate + i] = (Number(pensionIncome[this.clientDetails.startDate + i]) - pITaxAssessable[this.clientDetails.startDate + i]).toFixed();
+                          }
+                          else if (clientAge >= 60) {
+                            pITaxAssessable[this.clientDetails.startDate + i] = 0;
+                            pITaxExempt[this.clientDetails.startDate + i] = Number(pensionIncome[this.clientDetails.startDate + i]).toFixed();
+                          }
+
+                          //Ending Value
+                          endingVal[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(pensionIncome[this.clientDetails.startDate + i]);
+
+                          ////Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = Number(inflation[0].percentage) / 100;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+                          ////Ending Value - Taxable
+                          TaxableEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) * TaxableProp).toFixed();
+
+                          TaxFreeEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) - TaxFreeProp).toFixed();
 
 
-                              if (this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId) != null) {
-                                  this.BeginningValueOptimized[this.BeginningValueOptimized.findIndex((c: any) => c.owner === x.investmentId)] = obj;
+                          obj["BegValues"] = begVal;
+                          obj["TaxableBegValues"] = TaxableBegVal;
+                          obj["TaxFreeBegValues"] = TaxFreeBegVal;
+                          obj["growthValues"] = growth;
+                          obj["incomeValues"] = income;
+                          obj["frankingCreditsValues"] = frankingCredits;
+                          obj["pensionIncomeValues"] = pensionIncome;
+                          obj["pITaxAssessableValues"] = pITaxAssessable;
+                          obj["pITaxExemptValues"] = pITaxExempt;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["TaxableEndingValues"] = TaxableEndingVal;
+                          obj["TaxFreeEndingValues"] = TaxFreeEndingVal;
+                          //TODO: Verify
+                          obj["taxableProp"] = TaxableProp;
+                          obj["taxfreeProp"] = TaxFreeProp;
+
+
+                          if (this.PensionValueOptimized.find((y: any) => y.owner === x.pensionId) != null) {
+                            this.PensionValueOptimized[this.PensionValueOptimized.findIndex((c: any) => c.owner === x.pensionId)] = obj;
+                          }
+                          else {
+                            this.PensionValueOptimized.push(obj);
+
+                          }
+                        });
+                        //Pension - Partner
+                        this.pensionPartner.forEach((x: any) => { // client
+
+                          this.pensionDrawDown = this.pensionDD.filter((c: any) => c.pensionId === x.pensionId);
+
+
+                          if (x.pensionRebootFromType == "Start" || x.pensionRebootFromType == "Existing") {
+                            x.pensionRebootFromDate = this.clientDetails.startDate
+                          }
+                          else if (x.pensionRebootFromType == "Partner Retirement") {
+                            x.pensionRebootFromDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Retain") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          var obj = this.PensionValueOptimized.find((y: any) => y.owner === x.pensionId);
+                          var begVal: any = {};
+                          var TaxableBegVal: any = {};
+                          var TaxFreeBegVal: any = {};
+
+                          var growth: any = {};
+                          var income: any = {};
+                          var frankingCredits: any = {};
+
+                          var pensionIncome: any = {};
+                          var pITaxAssessable: any = {};
+                          var pITaxExempt: any = {};
+
+                          var endingVal: any = {};
+                          var TaxableEndingVal: any = {};
+                          var TaxFreeEndingVal: any = {};
+                          var endingValPV: any = {};
+                          var TaxableProp: number = 0;
+                          var TaxFreeProp: number = 0;
+
+                          if (obj == null) {
+                            obj = {};
+                            TaxableProp = 0;
+                            TaxFreeProp = 0;
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            TaxableBegVal = obj.TaxableBegValues;
+                            TaxFreeBegVal = obj.TaxFreeBegValues;
+                            growth = obj.growthValues;
+                            income = obj.incomeValues;
+                            frankingCredits = obj.frankingCreditsValues;
+                            pensionIncome = obj.pensionIncomeValues;
+                            pITaxAssessable = obj.pITaxAssessableValues;
+                            pITaxExempt = obj.pITaxExemptValues;
+                            endingVal = obj.endingValues;
+                            TaxableEndingVal = obj.TaxableEndingValues;
+                            TaxFreeEndingVal = obj.TaxFreeEndingValues;
+                            endingValPV = obj.endingValuesPV;
+                            TaxableProp = obj.taxableProp;
+                            TaxFreeProp = obj.taxfreeProp;
+
+                          }
+
+
+                          obj["owner"] = x.pensionId;
+                          obj["type"] = "Partner";
+                          obj["name"] = "Opening Value";
+
+
+                          if (x.pensionRebootFromDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            //BeginningValue
+                            if (n == 1) {
+                              if (x.pensionRebootFromType == "Existing") {
+                                begVal[this.clientDetails.startDate + i] = x.value.toFixed();
                               }
                               else {
-                                  this.BeginningValueOptimized.push(obj);
+                                begVal[this.clientDetails.startDate + i] = 0;
                               }
 
-                          })
-
-                          //Calculate Joint Investment
-                          this.investmentJoint.forEach((x: any) => { // client
-
-                              this.investmentContribution = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "C");
-                              this.investmentWithdrawal = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "W");
-
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate
+                            }
+                            else {
+                              if ((this.clientDetails.startDate + i) == x.pensionRebootFromDate) {
+                                begVal[this.clientDetails.startDate + i] = x.value.toFixed();
                               }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
+                              else if ((this.clientDetails.startDate + i) < x.pensionRebootFromDate) {
 
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId);
-                              var begVal: any = {};
-                              var growth: any = {};
-                              var income: any = {};
-                              var incomePaidOut: any = {};
-                              var frankingCredits: any = {};
-                              var earnings: any = {};
-                              var purchaseOfAssets: any = {};
-                              var regularContributions: any = {};
-                              var contributions: any = {};
-                              var saleOfAssets: any = {};
-                              var regularWithdrawals: any = {};
-                              var withdrawals: any = {};
-                              var endingVal: any = {};
-                              var endingValPV: any = {};
-                              var realCG: any = {};
-                              var unrealCG: any = {};
-                              if (obj == null) {
-                                  obj = {};
+                                begVal[this.clientDetails.startDate + i] = 0;
                               }
                               else {
-                                  obj.values;
-                                  begVal = obj.BegValues;
-                                  growth = obj.growthValues;
-                                  income = obj.incomeValues;
-                                  incomePaidOut = obj.incomePaidOutValues;
-                                  frankingCredits = obj.frankingCreditsValues;
-                                  earnings = obj.earningsValues;
-                                  purchaseOfAssets = obj.purchaseOfAssetValues;
-                                  regularContributions = obj.regularContributionsValues;
-                                  contributions = obj.contributionsValues;
-                                  saleOfAssets = obj.saleOfAssetValues;
-                                  regularWithdrawals = obj.regularWithdrawalsValues;
-                                  withdrawals = obj.withdrawalsValues;
-                                  endingVal = obj.endingValues;
-                                  endingValPV = obj.endingValuesPV;
-                                  realCG = obj.realCGValues;
-                                  unrealCG = obj.unrealCGValues;
+
+                                begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
                               }
+                            }
 
-                              obj["owner"] = x.investmentId;
-                              obj["type"] = "Joint";
-                              obj["name"] = "Opening Value";
 
-                              //BeginningValue
-                              if (n == 1) {
-                                  if (x.startDateType == "Existing") {
-                                      begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                            if ((this.clientDetails.startDate + i) == x.pensionRebootFromDate || x.pensionRebootFromType == "Existing") {
+                              //TODO Confirm negative
+                              if (x.taxableComponent != 0 && x.value != 0) {
+                                TaxableProp = (Number(x.taxableComponent) / Number(x.value));
+                              }
+                              else {
+                                TaxableProp = 0;
+                              }
+                              TaxFreeProp = 1 - TaxableProp;
+
+                              TaxableBegVal[this.clientDetails.startDate + i] = x.taxableComponent.toFixed();
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = x.taxFreeComponent.toFixed();
+                            }
+                            else if ((this.clientDetails.startDate + i) < x.pensionRebootFromDate) {
+
+                              TaxableBegVal[this.clientDetails.startDate + i] = 0;
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
+                            }
+                            else {
+
+                              TaxableBegVal[this.clientDetails.startDate + i] = Number(TaxableEndingVal[Number(this.clientDetails.startDate + i) - 1]);
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = Number(TaxFreeEndingVal[Number(this.clientDetails.startDate + i) - 1]);
+                            }
+                          }
+                          else {
+                            TaxableBegVal[this.clientDetails.startDate + i] = 0;
+                            TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          ////growth & income
+                          var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
+                          var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+                          var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+
+                          var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
+                          var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
+
+                          if (typeof growthVal === "number" && !isNaN(growthVal)) {
+                            growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                          }
+                          else {
+                            growth[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
+                            income[this.clientDetails.startDate + i] = incomeVal.toFixed();
+                          }
+                          else {
+                            income[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //FrankingCredits
+
+                          var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
+                          var ctr = Number(corporateTaxRate[0].percentage) / 100;
+
+                          frankingCredits[this.clientDetails.startDate + i] = (Number(income[this.clientDetails.startDate + i]) * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
+
+                          //pension Income
+                          var preservation = this.preservationAge.sort((a: any, b: any) => a.dob - b.dob);
+                          var minPendionDD = this.minimumPensionDrawdown.sort((a: any, b: any) => a.age - b.age);
+                          var currentYear = this.clientDetails.startDate + i;
+                          var pAge: number = 0;
+                          var minRate: number = 0;
+
+                          for (var k = 0; k < preservation.length; k++) {
+
+
+                            if ((k == (preservation.length - 1)) && (this.clientDetails.partnerDob >= preservation[k].dob)) {
+                              pAge = preservation[k].age;
+
+                            }
+                            else if (k == 0 && ((this.clientDetails.partnerDob) <= preservation[k].dob)) {
+                              pAge = preservation[k].age;
+                              break;
+
+                            }
+                            else if ((this.clientDetails.partnerDob) > preservation[k].dob && (this.clientDetails.partnerDob) <= preservation[k + 1].dob) {
+                              pAge = preservation[k + 1].age;
+                              break;
+
+                            }
+                          }
+                          var date1 = new Date("7/01/ " + (this.clientDetails.startDate + i));
+                          var date2 = new Date(this.clientDetails.partnerDob);
+                          var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+                          var diffDays = (Math.ceil(timeDiff / (1000 * 3600 * 24))) / 365;
+
+                          var partnerAge = Math.round(diffDays * 10) / 10;
+
+                          for (var l = 0; l < minPendionDD.length; l++) {
+
+
+                            if ((l == (minPendionDD.length - 1)) && (partnerAge >= minPendionDD[l].age)) {
+                              minRate = minPendionDD[l].minimumDrawdown;
+
+                            }
+                            else if (l == 0 && (partnerAge <= minPendionDD[l].age)) {
+                              minRate = minPendionDD[l].minimumDrawdown;
+                              break;
+
+                            }
+                            else if (partnerAge > minPendionDD[l].age && partnerAge <= minPendionDD[l + 1].age) {
+                              minRate = minPendionDD[l + 1].minimumDrawdown;
+                              break;
+
+                            }
+                          }
+
+
+                          var minDrawdown: number = 0;
+                          var maxDrawdown: number = 0;
+
+                          if (partnerAge < pAge) {
+                            minDrawdown = 0;
+                            maxDrawdown = 0;
+                          }
+                          else if (partnerAge >= pAge && partnerAge < 65) {
+                            if (this.partnerRetirementYear != 0 && this.partnerRetirementYear <= (this.clientDetails.startDate + i)) {
+                              minDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (minRate / 100);
+                              maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]);
+
+                            }
+                            else {
+                              minDrawdown = 0;
+                              maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (10 / 100);
+                            }
+
+                          }
+                          else if (partnerAge >= 65) {
+                            minDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (minRate / 100);
+                            maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]);
+                          }
+
+
+                          if (x.pensionRebootFromDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+
+                            if (this.pensionDrawDown.length > 0) {
+                              let pIncomeSum: number = 0;
+                              this.pensionDrawDown.forEach((y: any) => {
+
+                                if (y.fromDateType == "Start") {
+                                  y.fromDate = this.clientDetails.startDate;
+                                }
+                                if (y.toDateType == "End") {
+                                  y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                }
+
+                                if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                  if (y.amount == 0) {
+                                    if (y.type == "Minimum") {
+                                      pensionIncome[this.clientDetails.startDate + i] = minDrawdown.toFixed();
+                                    } else if (y.type == "Maximum") {
+                                      pensionIncome[this.clientDetails.startDate + i] = maxDrawdown.toFixed();
+                                    }
                                   }
                                   else {
-                                      begVal[this.clientDetails.startDate + i] = 0;
+                                    pensionIncome[this.clientDetails.startDate + i] = (Math.min(maxDrawdown, Math.max(minDrawdown, y.amount))).toFixed();
                                   }
+                                  //var t = parseInt(y.amount);
+                                  //ContributionSum = ContributionSum + t;
+                                }
 
+                              });
+
+                            }
+                            else {
+                              pensionIncome[this.clientDetails.startDate + i] = 0;
+                            }
+
+                          }
+                          else {
+                            pensionIncome[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          if (partnerAge >= pAge && partnerAge < 60) {
+                            pITaxAssessable[this.clientDetails.startDate + i] = (Number(pensionIncome[this.clientDetails.startDate + i]) * TaxableProp).toFixed();
+                            pITaxExempt[this.clientDetails.startDate + i] = (Number(pensionIncome[this.clientDetails.startDate + i]) - pITaxAssessable[this.clientDetails.startDate + i]).toFixed();
+                          }
+                          else if (partnerAge >= 60) {
+                            pITaxAssessable[this.clientDetails.startDate + i] = 0;
+                            pITaxExempt[this.clientDetails.startDate + i] = Number(pensionIncome[this.clientDetails.startDate + i]).toFixed();
+                          }
+
+                          //Ending Value
+                          endingVal[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(pensionIncome[this.clientDetails.startDate + i]);
+
+                          ////Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = Number(inflation[0].percentage) / 100;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+                          ////Ending Value - Taxable
+                          TaxableEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) * TaxableProp).toFixed();
+
+                          TaxFreeEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) - TaxFreeProp).toFixed();
+
+
+                          obj["BegValues"] = begVal;
+                          obj["TaxableBegValues"] = TaxableBegVal;
+                          obj["TaxFreeBegValues"] = TaxFreeBegVal;
+                          obj["growthValues"] = growth;
+                          obj["incomeValues"] = income;
+                          obj["frankingCreditsValues"] = frankingCredits;
+                          obj["pensionIncomeValues"] = pensionIncome;
+                          obj["pITaxAssessableValues"] = pITaxAssessable;
+                          obj["pITaxExemptValues"] = pITaxExempt;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["TaxableEndingValues"] = TaxableEndingVal;
+                          obj["TaxFreeEndingValues"] = TaxFreeEndingVal;
+                          //TODO: Verify
+                          obj["taxableProp"] = TaxableProp;
+                          obj["taxfreeProp"] = TaxFreeProp;
+
+
+                          if (this.PensionValueOptimized.find((y: any) => y.owner === x.pensionId) != null) {
+                            this.PensionValueOptimized[this.PensionValueOptimized.findIndex((c: any) => c.owner === x.pensionId)] = obj;
+                          }
+                          else {
+                            this.PensionValueOptimized.push(obj);
+
+                          }
+
+
+                        });
+                        //PensionTotals
+
+                        this.calculateTotalPensionIncomeOptimized("TotalPensionIncome", i);
+                        this.calculatePensionIncomeTaxableOptimized("PensionIncome-client", "Client", i);
+                        this.calculatePensionIncomeTaxableOptimized("PensionIncome-partner", "Partner", i);
+                        this.calculateSuperIncomeTaxOffsetOptimized("SIncomeTaxOffset-client", "Client", i);
+                        this.calculateSuperIncomeTaxOffsetOptimized("SIncomeTaxOffset-partner", "Partner", i);
+
+                        //Super Client
+                        this.superClient.forEach((x: any) => { // client
+                          var superStrategySS: any = [];
+                          var superStrategyNCC: any = [];
+                          if (p == 1) {
+                            superStrategySS = strategyOrder.filter(c => c.id === x.superId).filter(c => c.type === "SS");
+                            superStrategyNCC = strategyOrder.filter(c => c.id === x.superId).filter(c => c.type === "NCC");
+                          }
+                          this.superSS = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "SS");
+                          this.superPNC = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "PNC");
+                          this.superSpouse = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "Spouse");
+                          this.superLumpSum = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "LumpSum");
+
+
+                          if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Retain") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+
+                          var obj = this.SuperValueOptimized.find((y: any) => y.owner === x.superId);
+                          var begVal: any = {};
+                          var TaxableBegVal: any = {};
+                          var TaxFreeBegVal: any = {};
+                          var growth: any = {};
+                          var income: any = {};
+                          var frankingCredits: any = {};
+                          var insurance: any = {};
+                          var sgContr: any = {};
+                          var ssContr: any = {};
+                          var pncContr: any = {};
+                          var spouseContr: any = {};
+                          var lumpSum: any = {};
+                          var lumpSumTaxable: any = {};
+                          var taxPayable: any = {};
+
+                          var endingVal: any = {};
+                          var TaxableEndingVal: any = {};
+                          var TaxFreeEndingVal: any = {};
+                          var endingValPV: any = {};
+
+                          if (obj == null) {
+                            obj = {};
+
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            TaxableBegVal = obj.TaxableBegValues;
+                            TaxFreeBegVal = obj.TaxFreeBegValues;
+                            growth = obj.growthValues;
+                            income = obj.incomeValues;
+                            frankingCredits = obj.frankingCreditsValues;
+
+                            insurance = obj.insuranceValues;
+                            sgContr = obj.sgContrValues;
+                            ssContr = obj.ssContrValues;
+                            pncContr = obj.pncContrValues;
+                            spouseContr = obj.spouseContrValues;
+                            lumpSum = obj.lumpSumValues;
+                            lumpSumTaxable = obj.lumpSumTaxableValues;
+                            taxPayable = obj.taxPayableValues;
+
+                            endingVal = obj.endingValues;
+                            TaxableEndingVal = obj.TaxableEndingValues;
+                            TaxFreeEndingVal = obj.TaxFreeEndingValues;
+                            endingValPV = obj.endingValuesPV;
+
+
+                          }
+
+
+                          obj["owner"] = x.superId;
+                          obj["type"] = "Client";
+                          obj["name"] = "Opening Value";
+
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            //BeginningValue
+                            if (n == 1) {
+                              if (x.startDateType == "Existing") {
+                                begVal[this.clientDetails.startDate + i] = x.value.toFixed();
                               }
                               else {
-                                  if ((this.clientDetails.startDate + i) == x.startDate) {
-                                      begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else if ((this.clientDetails.startDate + i) < x.startDate) {
-
-                                      begVal[this.clientDetails.startDate + i] = 0;
-                                  }
-                                  else {
-                                      begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
-                                  }
+                                begVal[this.clientDetails.startDate + i] = 0;
                               }
 
-                              //growth & income
-                              var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
-                              var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
+                            }
+                            else {
+                              if ((this.clientDetails.startDate + i) == x.startDate) {
+                                begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                              }
+                              else if ((this.clientDetails.startDate + i) < x.startDate) {
 
-                              var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
-
-
-                              var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
-                              var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
-
-                              if (typeof growthVal === "number" && !isNaN(growthVal)) {
-                                  growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                                begVal[this.clientDetails.startDate + i] = 0;
                               }
                               else {
-                                  growth[this.clientDetails.startDate + i] = 0;
+
+                                begVal[this.clientDetails.startDate + i] = (Number(endingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
                               }
-
-                              if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
-                                  income[this.clientDetails.startDate + i] = incomeVal.toFixed();
-                              }
-                              else {
-                                  income[this.clientDetails.startDate + i] = 0;
-                              }
+                            }
 
 
-                              //incomePaidOut
+                            if ((this.clientDetails.startDate + i) == x.startDate) {
+                              TaxableBegVal[this.clientDetails.startDate + i] = x.taxableComponent.toFixed();
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = x.taxFreeComponent.toFixed();
+                            }
+                            else if ((this.clientDetails.startDate + i) < x.startDate) {
 
-                              if (x.reinvest == "N") {
-                                  incomePaidOut[this.clientDetails.startDate + i] = income[this.clientDetails.startDate + i];
+                              TaxableBegVal[this.clientDetails.startDate + i] = 0;
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
+                            }
+                            else {
 
-                              }
-                              else {
-                                  incomePaidOut[this.clientDetails.startDate + i] = 0;
-                              }
+                              TaxableBegVal[this.clientDetails.startDate + i] = (Number(TaxableEndingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = (Number(TaxFreeEndingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
+                            }
+                          }
+                          else {
+                            TaxableBegVal[this.clientDetails.startDate + i] = 0;
+                            TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
 
-                              //FrankingCredits
 
-                              var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
-                              var ctr = Number(corporateTaxRate[0].percentage) / 100;
+                          ////growth & income
+                          var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
+                          var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
 
-                              frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
+                          var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
 
-                              //Earnings
-                              earnings[this.clientDetails.startDate + i] = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])).toFixed();
 
-                              //List of Contributions
+                          var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
+                          var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
+
+                          if (typeof growthVal === "number" && !isNaN(growthVal)) {
+                            growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                          }
+                          else {
+                            growth[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
+                            income[this.clientDetails.startDate + i] = incomeVal.toFixed();
+                          }
+                          else {
+                            income[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //FrankingCredits
+
+                          var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
+                          var ctr = Number(corporateTaxRate[0].percentage) / 100;
+
+                          frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
+
+                          //insurance
+
+                          let insuranceVal: number = 0;
+
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            insuranceVal = parseInt(x.insuranceCost);
+                          }
+
+                          insurance[this.clientDetails.startDate + i] = insuranceVal;
+
+                          //Super Guarantee
+
+                          var cc_cap = this.superAssumptions.filter((a: any) => a.type == "CC_Cap");
+                          var cc_cap_val = cc_cap[0].value;
+
+                          var ncc_cap = this.superAssumptions.filter((a: any) => a.type == "NCC_Cap");
+                          var ncc_cap_val = cc_cap[0].value;
+
+                          var mscb = this.superAssumptions.filter((a: any) => a.type == "MSCB");
+                          var mscb_val = mscb[0].value;
+
+
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            if (x.increaseToLimit == "Y") {
+
                               let ContributionSum: number = 0;
-                              this.investmentContribution.forEach((y: any) => { // client
+                              this.superSS.forEach((y: any) => {
 
-                                  if (y.fromDateType == "Start") {
-                                      y.fromDate = this.clientDetails.startDate;
-                                  }
-                                  if (y.toDateType == "End") {
-                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                  }
+                                if (y.fromDateType == "Start") {
+                                  y.fromDate = this.clientDetails.startDate;
+                                }
+                                if (y.toDateType == "End") {
+                                  y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                }
 
-                                  if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                      var t = parseInt(y.value);
-                                      ContributionSum = ContributionSum + t;
-                                  }
-
-                              });
-
-                              regularContributions[this.clientDetails.startDate + i] = ContributionSum;
-
-
-
-                              //Purchase of assets
-                              if (x.startDateType != "Existing") {
-
-                                  if (x.startDate == this.clientDetails.startDate + i) {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Contributions
-                              contributions[this.clientDetails.startDate + i] = regularContributions[this.clientDetails.startDate + i] + Number(purchaseOfAssets[this.clientDetails.startDate + i]);
-
-                              //List of Withdrawals
-                              let WithdrawalSum: number = 0;
-                              this.investmentWithdrawal.forEach((y: any) => { // client
-
-                                  if (y.fromDateType == "Start") {
-                                      y.fromDate = this.clientDetails.startDate;
-                                  }
-                                  if (y.toDateType == "End") {
-                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                  }
-
-                                  if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                      var t = parseInt(y.value);
-                                      WithdrawalSum = WithdrawalSum + t;
-                                  }
+                                if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                  var t = parseInt(y.amount);
+                                  ContributionSum = ContributionSum + t;
+                                }
 
                               });
 
-                              regularWithdrawals[this.clientDetails.startDate + i] = WithdrawalSum;
+                              sgContr[this.clientDetails.startDate + i] = (cc_cap_val - ContributionSum).toFixed();
+                            }
+                            else {
+                              //TODO: get SGCRatev-verify
+                              var sgcRate: number = 1;
 
-                              //Sale of assets
-                              if (x.endDateType != "Retain") {
-
-                                  if (x.endDate == this.clientDetails.startDate + i) {
-                                      saleOfAssets[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(regularWithdrawals[this.clientDetails.startDate + i]);
-                                  }
-                                  else {
-                                      saleOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  saleOfAssets[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Withdrawals
-                              withdrawals[this.clientDetails.startDate + i] = Number(regularWithdrawals[this.clientDetails.startDate + i]) + Number(saleOfAssets[this.clientDetails.startDate + i]);
-
-                              //Ending Value
-                              endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(withdrawals[this.clientDetails.startDate + i])).toFixed();
-
-                              //Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = inflation[0].percentage;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-                              if (x.type == "Domestic Cash" || x.type == "Domestic Fixed Interest") {
-                                  realCG[this.clientDetails.startDate + i] = 0;
-                                  unrealCG[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  if (begVal[this.clientDetails.startDate + i] != 0) {
-                                      //Real and Unreal CG
-                                      var TotalCG = 0;
-                                      var RateCG = 0
+                              if (x.sgrate == "SGC") {
+                                var sgc = this.sgcRates.sort((a: any, b: any) => a.year - b.year);
+                                var currentYear = this.clientDetails.startDate + i;
 
 
-                                      if (Number(this.clientDetails.startDate + i) == x.startDate) {
-                                          TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(growth[this.clientDetails.startDate + i])));
-                                      }
-                                      else if (Number(this.clientDetails.startDate + i) > x.startDate) {
-                                          TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(growth[this.clientDetails.startDate + i]);
-                                      }
+                                for (var j = 0; j < sgc.length; j++) {
 
-                                      if (endingVal[this.clientDetails.startDate + i] == 0) {
-                                          realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
-                                      }
-                                      else {
-                                          if (Number(withdrawals[this.clientDetails.startDate + i]) != 0) {
-                                              realCG[this.clientDetails.startDate + i] = ((Number(withdrawals[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
-                                          }
-                                          else {
-                                              realCG[this.clientDetails.startDate + i] = 0;
-                                          }
-                                      }
 
-                                      unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+                                  if ((j == (sgc.length - 1)) && ((this.clientDetails.startDate + i) >= sgc[j].year)) {
+                                    sgcRate = sgc[j].sgcrate1;
 
                                   }
-                                  else {
-                                      realCG[this.clientDetails.startDate + i] = 0;
-                                      unrealCG[this.clientDetails.startDate + i] = 0;
+                                  else if (j == 0 && ((this.clientDetails.startDate + i) <= sgc[j].year)) {
+                                    sgcRate = sgc[j].sgcrate1;
+                                    break;
+
                                   }
-                              }
+                                  else if ((this.clientDetails.startDate + i) > sgc[j].year && (this.clientDetails.startDate + i) <= sgc[j + 1].year) {
+                                    sgcRate = sgc[j + 1].sgcrate1;
+                                    break;
 
-                              obj["BegValues"] = begVal;
-                              obj["growthValues"] = growth;
-                              obj["incomeValues"] = income;
-                              obj["incomePaidOutValues"] = incomePaidOut;
-                              obj["frankingCreditsValues"] = frankingCredits;
-                              obj["earningsValues"] = earnings;
-                              obj["purchaseOfAssetValues"] = purchaseOfAssets;
-                              obj["regularContributionsValues"] = regularContributions;
-                              obj["contributionsValues"] = contributions;
-                              obj["saleOfAssetValues"] = saleOfAssets;
-                              obj["regularWithdrawalsValues"] = regularWithdrawals;
-                              obj["withdrawalsValues"] = withdrawals;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["realCGValues"] = realCG;
-                              obj["unrealCGValues"] = unrealCG;
-
-                              if (this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId) != null) {
-                                  this.BeginningValueOptimized[this.BeginningValueOptimized.findIndex((c: any) => c.owner === x.investmentId)] = obj;
-                              }
-                              else {
-                                  this.BeginningValueOptimized.push(obj);
-                              }
-
-                          })
-
-                          //Calculate Financial Assets Totals
-                          this.calculateTotalInvestmentPaidOutOptimized("TotalIPO", i);
-                          this.calculateTotalInvestmentWithdrawalsOptimized("TotalIW", i);
-                          this.calculateTotalInvestmentContributionsOptimized("TotalIC", i);
-                          this.calculateTotalInvestmentEarningsOptimized("TotalTaxIE-client", "Client", i);
-                          this.calculateTotalInvestmentEarningsOptimized("TotalTaxIE-partner", "Partner", i);
-                          this.calculateRealizedCGFAOptimized("RCGFA-client", "Client", i);
-                          this.calculateRealizedCGFAOptimized("RCGFA-partner", "Partner", i);
-                          this.calculateFrankingCreditsOptimized("FrankingCredits-client", "Client", i);
-                          this.calculateFrankingCreditsOptimized("FrankingCredits-partner", "Partner", i);
-
-
-                          //Calculate Client Properties
-                          this.propertiesClient.forEach((x: any) => { // client
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate;
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                            
-
-
-                              var obj = this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId);
-                              var begVal: any = {};
-                              var propertyPurchase: any = {};
-                              var propertySale: any = {};
-                              var capitalGrowth: any = {};
-                              var endingVal: any = {};
-                              var endingValPV: any = {};
-                              var rent: any = {};
-                              var expenses: any = {};
-                              var realCG: any = {};
-                              var unrealCG: any = {};
-                              var propPurchase: number = 0;
-                              var propSale: number = 0;
-
-                              if (obj == null) {
-                                  obj = {};
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  propertyPurchase = obj.PropertyPurchaseValues;
-                                  propertySale = obj.PropertySaleValues;
-                                  capitalGrowth = obj.capitalGrowthValues;
-                                  endingVal = obj.endingValues;
-                                  endingValPV = obj.endingValuesPV;
-                                  rent = obj.rentValues;
-                                  expenses = obj.expensesValues;
-                                  realCG = obj.realCGValues;
-                                  unrealCG = obj.unrealCGValues;
-                              }
-
-
-                              obj["owner"] = x.propertyId;
-                              obj["type"] = "Client";
-                              obj["name"] = x.name;
-                              obj["startDateType"] = x.startDateType;
-
-                              //BeginningValue
-                              if (n == 1 && x.startDateType == "Existing") {
-                                  begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                              }
-                              else if ((this.clientDetails.startDate + i) <= x.startDate) {
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
-                              }
-
-                              //capital growth
-                              capitalGrowth[this.clientDetails.startDate + i] = ((x.growth / 100) * Number(begVal[this.clientDetails.startDate + i])).toFixed();
-
-                              ////Ending Value
-
-
-                              if ((this.clientDetails.startDate + i) == x.startDate) {
-                                  endingVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  propertyPurchase[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  propPurchase = this.clientDetails.startDate + i;
-                                  propertySale[this.clientDetails.startDate + i] = 0;
-
-                              }
-                              else if ((this.clientDetails.startDate + i) < x.startDate) {
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                                  propertyPurchase[this.clientDetails.startDate + i] = 0;
-
-
-                              }
-
-
-                              if ((this.clientDetails.startDate + i) == x.endDate) {
-                                  propertySale[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                              }
-                              else if ((this.clientDetails.startDate + i) > x.startDate && (this.clientDetails.startDate + i) < x.endDate) {
-                                  propSale = this.clientDetails.startDate + i;
-                                  propertySale[this.clientDetails.startDate + i] = 0;
-                                  endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
-
-                              }
-                              else if ((this.clientDetails.startDate + i) > x.endDate) {
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                                  propertyPurchase[this.clientDetails.startDate + i] = 0;
-                                  propertySale[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-
-
-                              ////Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = Number(inflation[0].percentage) / 100;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-                              //rent
-                              if ((this.clientDetails.startDate + i) >= x.endDate) {
-                                  rent[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  let rentVal: number = 0;
-
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      rentVal = parseInt(x.rent);
                                   }
-
-                                  rent[this.clientDetails.startDate + i] = rentVal;
-                              }
-
-
-                              //expenses
-                              if ((this.clientDetails.startDate + i) >= x.endDate) {
-                                  expenses[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  let expensesVal: number = 0;
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      expensesVal = parseInt(x.expenses);
-                                  }
-                                  expenses[this.clientDetails.startDate + i] = expensesVal;
-                              }
-
-                              if (begVal[this.clientDetails.startDate + i] != 0) {
-                                  //Real and Unreal CG
-                                  var TotalCG = 0;
-                                  var RateCG = 0
-
-
-                                  if (Number(this.clientDetails.startDate + i) == x.startDate) {
-                                      TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(capitalGrowth[this.clientDetails.startDate + i])));
-                                  }
-                                  else if (Number(this.clientDetails.startDate + i) > x.startDate) {
-                                      TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(capitalGrowth[this.clientDetails.startDate + i]);
-                                  }
-
-                                  if (endingVal[this.clientDetails.startDate + i] == 0) {
-                                      realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
-                                  }
-                                  else {
-                                      if (Number(propertySale[this.clientDetails.startDate + i]) != 0) {
-                                          realCG[this.clientDetails.startDate + i] = ((Number(propertySale[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
-                                      }
-                                      else {
-                                          realCG[this.clientDetails.startDate + i] = 0;
-                                      }
-                                  }
-
-                                  unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+                                }
 
                               }
                               else {
-                                  realCG[this.clientDetails.startDate + i] = 0;
-                                  unrealCG[this.clientDetails.startDate + i] = 0;
+                                sgcRate = Number(x.sgrate);
                               }
 
+                              var cEmploymentIncome = clientEmploymentIncome.filter((g: any) => g.type === "Employment");
 
-                              obj["BegValues"] = begVal;
-                              obj["PropertyPurchaseValues"] = propertyPurchase;
-                              obj["PropertySaleValues"] = propertySale;
-                              obj["capitalGrowthValues"] = capitalGrowth;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["rentValues"] = rent;
-                              obj["expensesValues"] = expenses;
-                              obj["realCGValues"] = realCG;
-                              obj["unrealCGValues"] = unrealCG;
-                              obj["propPurchase"] = propPurchase;
-
-                              if (this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId) != null) {
-                                  this.PropertiesValueOptimized[this.PropertiesValueOptimized.findIndex((c: any) => c.owner === x.propertyId)] = obj;
-                              }
-                              else {
-                                  this.PropertiesValueOptimized.push(obj);
-                              }
-
-                          })
-
-                          //Calculate Partner Properties
-                          this.propertiesPartner.forEach((x: any) => { // client
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate;
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-                              //TODO : Confirm retain end date value
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId);
-                              var begVal: any = {};
-                              var propertyPurchase: any = {};
-                              var propertySale: any = {};
-                              var capitalGrowth: any = {};
-                              var endingVal: any = {};
-                              var endingValPV: any = {};
-                              var rent: any = {};
-                              var expenses: any = {};
-                              var realCG: any = {};
-                              var unrealCG: any = {};
-                              var propPurchase: number = 0;
-                              var propSale: number = 0;
-
-                              if (obj == null) {
-                                  obj = {};
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  propertyPurchase = obj.PropertyPurchaseValues;
-                                  propertySale = obj.PropertySaleValues;
-                                  capitalGrowth = obj.capitalGrowthValues;
-                                  endingVal = obj.endingValues;
-                                  endingValPV = obj.endingValuesPV;
-                                  rent = obj.rentValues;
-                                  expenses = obj.expensesValues;
-                                  realCG = obj.realCGValues;
-                                  unrealCG = obj.unrealCGValues;
-                              }
-
-                              obj["owner"] = x.propertyId;
-                              obj["type"] = "Partner";
-                              obj["name"] = x.name;
-                              obj["startDateType"] = x.startDateType;
-
-                              //BeginningValue
-                              if (n == 1 && x.startDateType == "Existing") {
-                                  begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                              }
-                              else if ((this.clientDetails.startDate + i) <= x.startDate) {
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
-                              }
-
-                              //capital growth
-                              capitalGrowth[this.clientDetails.startDate + i] = ((x.growth / 100) * Number(begVal[this.clientDetails.startDate + i])).toFixed();
-
-                              ////Ending Value
-
-
-                              if ((this.clientDetails.startDate + i) == x.startDate) {
-                                  endingVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  propertyPurchase[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  propPurchase = this.clientDetails.startDate + i;
-                                  propertySale[this.clientDetails.startDate + i] = 0;
-
-                              }
-                              else if ((this.clientDetails.startDate + i) < x.startDate) {
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                                  propertyPurchase[this.clientDetails.startDate + i] = 0;
-
-
-                              }
-
-
-                              if ((this.clientDetails.startDate + i) == x.endDate) {
-                                  propertySale[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                              }
-                              else if ((this.clientDetails.startDate + i) > x.startDate && (this.clientDetails.startDate + i) < x.endDate) {
-                                  propSale = this.clientDetails.startDate + i;
-                                  propertySale[this.clientDetails.startDate + i] = 0;
-                                  endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
-
-                              }
-                              else if ((this.clientDetails.startDate + i) > x.endDate) {
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                                  propertyPurchase[this.clientDetails.startDate + i] = 0;
-                                  propertySale[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-
-
-                              ////Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = Number(inflation[0].percentage) / 100;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-                              //rent
-                              if ((this.clientDetails.startDate + i) >= x.endDate) {
-                                  rent[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  let rentVal: number = 0;
-
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      rentVal = parseInt(x.rent);
-                                  }
-
-                                  rent[this.clientDetails.startDate + i] = rentVal;
-                              }
-
-
-                              //expenses
-                              if ((this.clientDetails.startDate + i) >= x.endDate) {
-                                  expenses[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  let expensesVal: number = 0;
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      expensesVal = parseInt(x.expenses);
-                                  }
-                                  expenses[this.clientDetails.startDate + i] = expensesVal;
-                              }
-
-                              if (begVal[this.clientDetails.startDate + i] != 0) {
-                                  //Real and Unreal CG
-                                  var TotalCG = 0;
-                                  var RateCG = 0
-
-
-                                  if (Number(this.clientDetails.startDate + i) == x.startDate) {
-                                      TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(capitalGrowth[this.clientDetails.startDate + i])));
-                                  }
-                                  else if (Number(this.clientDetails.startDate + i) > x.startDate) {
-                                      TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(capitalGrowth[this.clientDetails.startDate + i]);
-                                  }
-
-                                  if (endingVal[this.clientDetails.startDate + i] == 0) {
-                                      realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
-                                  }
-                                  else {
-                                      if (Number(propertySale[this.clientDetails.startDate + i]) != 0) {
-                                          realCG[this.clientDetails.startDate + i] = ((Number(propertySale[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
-                                      }
-                                      else {
-                                          realCG[this.clientDetails.startDate + i] = 0;
-                                      }
-                                  }
-
-                                  unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
-
-                              }
-                              else {
-                                  realCG[this.clientDetails.startDate + i] = 0;
-                                  unrealCG[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              obj["BegValues"] = begVal;
-                              obj["PropertyPurchaseValues"] = propertyPurchase;
-                              obj["PropertySaleValues"] = propertySale;
-                              obj["capitalGrowthValues"] = capitalGrowth;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["rentValues"] = rent;
-                              obj["expensesValues"] = expenses;
-                              obj["realCGValues"] = realCG;
-                              obj["unrealCGValues"] = unrealCG;
-                              obj["propPurchase"] = propPurchase;
-
-                              if (this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId) != null) {
-                                  this.PropertiesValueOptimized[this.PropertiesValueOptimized.findIndex((c: any) => c.owner === x.propertyId)] = obj;
-                              }
-                              else {
-                                  this.PropertiesValueOptimized.push(obj);
-                              }
-                          })
-                          //Calculate Joint Properties
-                          this.propertiesJoint.forEach((x: any) => { // client
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate;
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              //TODO : Confirm retain end date value
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId);
-                              var begVal: any = {};
-                              var propertyPurchase: any = {};
-                              var propertySale: any = {};
-                              var capitalGrowth: any = {};
-                              var endingVal: any = {};
-                              var endingValPV: any = {};
-                              var rent: any = {};
-                              var expenses: any = {};
-                              var realCG: any = {};
-                              var unrealCG: any = {};
-                              var propPurchase: number = 0;
-                              var propSale: number = 0;
-
-                              if (obj == null) {
-                                  obj = {};
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  propertyPurchase = obj.PropertyPurchaseValues;
-                                  propertySale = obj.PropertySaleValues;
-                                  capitalGrowth = obj.capitalGrowthValues;
-                                  endingVal = obj.endingValues;
-                                  endingValPV = obj.endingValuesPV;
-                                  rent = obj.rentValues;
-                                  expenses = obj.expensesValues;
-                                  realCG = obj.realCGValues;
-                                  unrealCG = obj.unrealCGValues;
-                              }
-
-                              obj["owner"] = x.propertyId;
-                              obj["type"] = "Joint";
-                              obj["name"] = x.name;
-                              obj["startDateType"] = x.startDateType;
-
-                              //BeginningValue
-                              if (n == 1 && x.startDateType == "Existing") {
-                                  begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                              }
-                              else if ((this.clientDetails.startDate + i) <= x.startDate) {
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
-                              }
-
-                              //capital growth
-                              capitalGrowth[this.clientDetails.startDate + i] = ((x.growth / 100) * Number(begVal[this.clientDetails.startDate + i])).toFixed();
-
-                              ////Ending Value
-
-
-                              if ((this.clientDetails.startDate + i) == x.startDate) {
-                                  endingVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  propertyPurchase[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  propPurchase = this.clientDetails.startDate + i;
-                                  propertySale[this.clientDetails.startDate + i] = 0;
-
-                              }
-                              else if ((this.clientDetails.startDate + i) < x.startDate) {
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                                  propertyPurchase[this.clientDetails.startDate + i] = 0;
-
-
-                              }
-
-
-                              if ((this.clientDetails.startDate + i) == x.endDate) {
-                                  propertySale[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                              }
-                              else if ((this.clientDetails.startDate + i) > x.startDate && (this.clientDetails.startDate + i) < x.endDate) {
-                                  propSale = this.clientDetails.startDate + i;
-                                  propertySale[this.clientDetails.startDate + i] = 0;
-                                  endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(capitalGrowth[this.clientDetails.startDate + i])).toFixed();
-
-                              }
-                              else if ((this.clientDetails.startDate + i) > x.endDate) {
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                                  propertyPurchase[this.clientDetails.startDate + i] = 0;
-                                  propertySale[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-
-
-                              ////Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = Number(inflation[0].percentage) / 100;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-                              //rent
-                              if ((this.clientDetails.startDate + i) >= x.endDate) {
-                                  rent[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  let rentVal: number = 0;
-
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      rentVal = parseInt(x.rent);
-                                  }
-
-                                  rent[this.clientDetails.startDate + i] = rentVal;
-                              }
-
-
-                              //expenses
-                              if ((this.clientDetails.startDate + i) >= x.endDate) {
-                                  expenses[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  let expensesVal: number = 0;
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      expensesVal = parseInt(x.expenses);
-                                  }
-                                  expenses[this.clientDetails.startDate + i] = expensesVal;
-                              }
-
-                              if (begVal[this.clientDetails.startDate + i] != 0) {
-                                  //Real and Unreal CG
-                                  var TotalCG = 0;
-                                  var RateCG = 0
-
-
-                                  if (Number(this.clientDetails.startDate + i) == x.startDate) {
-                                      TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(capitalGrowth[this.clientDetails.startDate + i])));
-                                  }
-                                  else if (Number(this.clientDetails.startDate + i) > x.startDate) {
-                                      TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(capitalGrowth[this.clientDetails.startDate + i]);
-                                  }
-
-                                  if (endingVal[this.clientDetails.startDate + i] == 0) {
-                                      realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
-                                  }
-                                  else {
-                                      if (Number(propertySale[this.clientDetails.startDate + i]) != 0) {
-                                          realCG[this.clientDetails.startDate + i] = ((Number(propertySale[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
-                                      }
-                                      else {
-                                          realCG[this.clientDetails.startDate + i] = 0;
-                                      }
-                                  }
-
-                                  unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
-
-                              }
-                              else {
-                                  realCG[this.clientDetails.startDate + i] = 0;
-                                  unrealCG[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              obj["BegValues"] = begVal;
-                              obj["PropertyPurchaseValues"] = propertyPurchase;
-                              obj["PropertySaleValues"] = propertySale;
-                              obj["capitalGrowthValues"] = capitalGrowth;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["rentValues"] = rent;
-                              obj["expensesValues"] = expenses;
-                              obj["realCGValues"] = realCG;
-                              obj["unrealCGValues"] = unrealCG;
-                              obj["propPurchase"] = propPurchase;
-
-                              if (this.PropertiesValueOptimized.find((y: any) => y.owner === x.propertyId) != null) {
-                                  this.PropertiesValueOptimized[this.PropertiesValueOptimized.findIndex((c: any) => c.owner === x.propertyId)] = obj;
-                              }
-                              else {
-                                  this.PropertiesValueOptimized.push(obj);
-                              }
-
-                          })
-
-
-                          //Calculate PropertyTotal
-                          this.calculateTotalRentOptimized("TotalRent", i);
-                          this.calculateTotalSaleProceedsOptimized("TotalSaleProceeds", i);
-                          this.calculateTotalPropertyExpensesOptimized("TotalPropertyExpenses", i);
-                          this.calculateInvestmentPropertyExpensesOptimized("InvestmentPropertyExpenses-client", "Client", i);
-                          this.calculateInvestmentPropertyExpensesOptimized("InvestmentPropertyExpenses-partner", "Partner", i);
-                          this.calculateRealizedCGPOptimized("RCGP-client", "Client", i);
-                          this.calculateRealizedCGPOptimized("RCGP-partner", "Partner", i);
-
-                          ////Calculate Client Liability
-                          this.liabilityClient.forEach((x: any) => { // client
-                              var debtStrategy = strategyOrder.filter(c => c.id === x.liabilityId).filter(c => c.type === "Debt");
-
-
-                              this.liabilityDrawDown = this.liabilityDD.filter((c: any) => c.liabilityId === x.liabilityId);
-
-
-                              if (x.commenceOnDateType == "Start" || x.commenceOnDateType == "Existing") {
-                                  x.commenceOnDate = this.clientDetails.startDate;
-                              }
-                              if (x.repaymentDateType == "End") {
-                                  x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.repaymentDateType == "Retain") {
-                                  x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-
-
-                              var obj = this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId);
-                              var begVal: any = {};
-                              var accruedInterest: any = {};
-                              var repmt: any = {};
-                              var endingVal: any = {};
-
-                              if (obj == null) {
-                                  obj = {};
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  accruedInterest = obj.accruedInterestValues;
-                                  repmt = obj.repmtValues;
-                                  endingVal = obj.endingValues;
-                              }
-
-                              obj["owner"] = x.liabilityId;
-                              obj["type"] = "Client";
-                              obj["name"] = "Opening Value";
-                              obj["deductibility"] = x.deductibility;
-
-                              if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
-                                  //BeginningValue
-                                  if (n == 1) {
-                                      if (x.commenceOnDateType == "Existing") {
-                                          begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-
-                                  }
-                                  else {
-                                      if ((this.clientDetails.startDate + i) == x.commenceOnDate) {
-                                          begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
-                                      }
-                                      else if ((this.clientDetails.startDate + i) < x.commenceOnDate) {
-
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]);
-                                      }
-                                  }
-                              }
-                              else {
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //accrued Interest
-                              accruedInterest[this.clientDetails.startDate + i] = (begVal[this.clientDetails.startDate + i] * (x.interestRate / 100)).toFixed();
-
-                              //Optimize Debt
-                              if (debtStrategy.length > 0 && debtStrategy[0].AllocatedValue > 0) {
-                                  repmt[this.clientDetails.startDate + i] = Number(debtStrategy[0].AllocatedValue);
-                              }
-                              else {
-                                  var PMT: number = 0;
-                                  if (x.repaymentType == "IO") {
-                                      PMT = Number(accruedInterest[this.clientDetails.startDate + i]);
-                                  }
-                                  else {
-                                      PMT = Number(x.principal) * (x.interestRate / 100) * (Math.pow((1 + (x.interestRate / 100)), x.term) / (Math.pow((1 + (x.interestRate / 100)), x.term) - 1));
-                                  }
-                                  if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
-
-                                      //Repayment Value
-                                      var Repmt: number = 0;
-                                      if (x.repaymentDateType == "Retain") {
-                                          Repmt = Math.max(x.repayment, PMT);
-                                      }
-                                      else if ((this.clientDetails.startDate + i) == x.repaymentDate) {
-                                          Repmt = Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]);
-                                      }
-                                      else {
-                                          Repmt = Math.max(x.repayment, PMT);
-                                      }
-                                      var repayment = Math.min((begVal[this.clientDetails.startDate + i] + accruedInterest[this.clientDetails.startDate + i]), Repmt);
-                                      repmt[this.clientDetails.startDate + i] = repayment.toFixed();
-                                  }
-                                  else {
-                                      repmt[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              ////Ending Value
-
-                              if (Number(repmt[this.clientDetails.startDate + i]) > (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]))) {
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]) - Number(repmt[this.clientDetails.startDate + i])).toFixed();
-                              }
-                             
-                              obj["BegValues"] = begVal;
-                              obj["accruedInterestValues"] = accruedInterest;
-                              obj["repmtValues"] = repmt;
-                              obj["endingValues"] = endingVal;
-
-
-                              if (this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId) != null) {
-                                  this.LBValueOptimized[this.LBValueOptimized.findIndex((c: any) => c.owner === x.liabilityId)] = obj;
-                              }
-                              else {
-                                  this.LBValueOptimized.push(obj);
-                              }
-                          })
-
-                          //Calculate Partner Liability
-                          this.liabilityPartner.forEach((x: any) => { // client
-
-                              this.liabilityDrawDown = this.liabilityDD.filter((c: any) => c.liabilityId === x.liabilityId);
-
-
-                              if (x.commenceOnDateType == "Start" || x.commenceOnDateType == "Existing") {
-                                  x.commenceOnDate = this.clientDetails.startDate;
-                              }
-                              if (x.repaymentDateType == "End") {
-                                  x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.repaymentDateType == "Retain") {
-                                  x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-
-
-                              var obj = this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId);
-                              var begVal: any = {};
-                              var accruedInterest: any = {};
-                              var repmt: any = {};
-                              var endingVal: any = {};
-
-                              if (obj == null) {
-                                  obj = {};
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  accruedInterest = obj.accruedInterestValues;
-                                  repmt = obj.repmtValues;
-                                  endingVal = obj.endingValues;
-                              }
-
-
-                              obj["owner"] = x.liabilityId;
-                              obj["type"] = "Partner";
-                              obj["name"] = "Opening Value";
-                              obj["deductibility"] = x.deductibility;
-
-                              if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
-                                  //BeginningValue
-                                  if (n == 1) {
-                                      if (x.commenceOnDateType == "Existing") {
-                                          begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-
-                                  }
-                                  else {
-                                      if ((this.clientDetails.startDate + i) == x.commenceOnDate) {
-                                          begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
-                                      }
-                                      else if ((this.clientDetails.startDate + i) < x.commenceOnDate) {
-
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]);
-                                      }
-                                  }
-                              }
-                              else {
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //accrued Interest
-                              accruedInterest[this.clientDetails.startDate + i] = (begVal[this.clientDetails.startDate + i] * (x.interestRate / 100)).toFixed();
-
-                              //Minimum repayment
-
-                              var PMT: number = 0;
-                              if (x.repaymentType == "IO") {
-                                  PMT = Number(accruedInterest[this.clientDetails.startDate + i]);
-                              }
-                              else {
-                                  PMT = Number(x.principal) * (x.interestRate / 100) * (Math.pow((1 + (x.interestRate / 100)), x.term) / (Math.pow((1 + (x.interestRate / 100)), x.term) - 1));
-                              }
-                              if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
-
-                                  //Repayment Value
-                                  var Repmt: number = 0;
-                                  if (x.repaymentDateType == "Retain") {
-                                      Repmt = Math.max(x.repayment, PMT);
-                                  }
-                                  else if ((this.clientDetails.startDate + i) == x.repaymentDate) {
-                                      Repmt = Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]);
-                                  }
-                                  else {
-                                      Repmt = Math.max(x.repayment, PMT);
-                                  }
-                                  var repayment = Math.min((begVal[this.clientDetails.startDate + i] + accruedInterest[this.clientDetails.startDate + i]), Repmt);
-                                  repmt[this.clientDetails.startDate + i] = repayment.toFixed();
-                              }
-                              else {
-                                  repmt[this.clientDetails.startDate + i] = 0;
-                              }
-                              ////Ending Value
-                              if (Number(repmt[this.clientDetails.startDate + i]) > (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]))) {
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]) - Number(repmt[this.clientDetails.startDate + i])).toFixed();
-                              }
-
-                              obj["BegValues"] = begVal;
-                              obj["accruedInterestValues"] = accruedInterest;
-                              obj["repmtValues"] = repmt;
-                              obj["endingValues"] = endingVal;
-
-                              if (this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId) != null) {
-                                  this.LBValueOptimized[this.LBValueOptimized.findIndex((c: any) => c.owner === x.liabilityId)] = obj;
-                              }
-                              else {
-                                  this.LBValueOptimized.push(obj);
-                              }
-
-                          })
-                          //Calculate Joint Liability
-                          this.liabilityJoint.forEach((x: any) => { // client
-
-                              this.liabilityDrawDown = this.liabilityDD.filter((c: any) => c.liabilityId === x.liabilityId);
-
-
-                              if (x.commenceOnDateType == "Start" || x.commenceOnDateType == "Existing") {
-                                  x.commenceOnDate = this.clientDetails.startDate;
-                              }
-                              if (x.repaymentDateType == "End") {
-                                  x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.repaymentDateType == "Retain") {
-                                  x.repaymentDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-
-
-
-                              var obj = this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId);
-                              var begVal: any = {};
-                              var accruedInterest: any = {};
-                              var repmt: any = {};
-                              var endingVal: any = {};
-
-                              if (obj == null) {
-                                  obj = {};
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  accruedInterest = obj.accruedInterestValues;
-                                  repmt = obj.repmtValues;
-                                  endingVal = obj.endingValues;
-                              }
-
-
-                              obj["owner"] = x.liabilityId;
-                              obj["type"] = "Joint";
-                              obj["name"] = "Opening Value";
-                              obj["deductibility"] = x.deductibility;
-
-                              if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
-                                  //BeginningValue
-                                  if (n == 1) {
-                                      if (x.commenceOnDateType == "Existing") {
-                                          begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-
-                                  }
-                                  else {
-                                      if ((this.clientDetails.startDate + i) == x.commenceOnDate) {
-                                          begVal[this.clientDetails.startDate + i] = x.principal.toFixed();
-                                      }
-                                      else if ((this.clientDetails.startDate + i) < x.commenceOnDate) {
-
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]);
-                                      }
-                                  }
-                              }
-                              else {
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //accrued Interest
-                              accruedInterest[this.clientDetails.startDate + i] = (begVal[this.clientDetails.startDate + i] * (x.interestRate / 100)).toFixed();
-
-                              //Minimum repayment
-
-                              var PMT: number = 0;
-                              if (x.repaymentType == "IO") {
-                                  PMT = Number(accruedInterest[this.clientDetails.startDate + i]);
-                              }
-                              else {
-                                  PMT = Number(x.principal) * (x.interestRate / 100) * (Math.pow((1 + (x.interestRate / 100)), x.term) / (Math.pow((1 + (x.interestRate / 100)), x.term) - 1));
-                              }
-                              if (x.commenceOnDate <= this.clientDetails.startDate + i && x.repaymentDate >= this.clientDetails.startDate + i) {
-
-                                  //Repayment Value
-                                  var Repmt: number = 0;
-                                  if (x.repaymentDateType == "Retain") {
-                                      Repmt = Math.max(x.repayment, PMT);
-                                  }
-                                  else if ((this.clientDetails.startDate + i) == x.repaymentDate) {
-                                      Repmt = Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]);
-                                  }
-                                  else {
-                                      Repmt = Math.max(x.repayment, PMT);
-                                  }
-                                  var repayment = Math.min((begVal[this.clientDetails.startDate + i] + accruedInterest[this.clientDetails.startDate + i]), Repmt);
-                                  repmt[this.clientDetails.startDate + i] = repayment.toFixed();
-                              }
-                              else {
-                                  repmt[this.clientDetails.startDate + i] = 0;
-                              }
-                              ////Ending Value
-
-                              if (Number(repmt[this.clientDetails.startDate + i]) > (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]))) {
-                                  endingVal[this.clientDetails.startDate + i] = 0;
-                              }
-                              else {
-                                  endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(accruedInterest[this.clientDetails.startDate + i]) - Number(repmt[this.clientDetails.startDate + i])).toFixed();
+                              var totalcEmploymentIncome = 0;
+                              for (var k = 0; k < cEmploymentIncome.length; k++) {
+                                if (isNaN(cEmploymentIncome[k].values[this.clientDetails.startDate + i])) {
+                                  continue;
+                                }
+                                totalcEmploymentIncome += Number(cEmploymentIncome[k].values[this.clientDetails.startDate + i]);
                               }
 
-                              obj["BegValues"] = begVal;
-                              obj["accruedInterestValues"] = accruedInterest;
-                              obj["repmtValues"] = repmt;
-                              obj["endingValues"] = endingVal;
 
-                              if (this.LBValueOptimized.find((y: any) => y.owner === x.liabilityId) != null) {
-                                  this.LBValueOptimized[this.LBValueOptimized.findIndex((c: any) => c.owner === x.liabilityId)] = obj;
-                              }
-                              else {
-                                  this.LBValueOptimized.push(obj);
-                              }
-
-                          })
-
-                          //Calculate Liability Total
-
-                          this.calculateTotalDebtRepaymentOptimized("TotalDebtRepayment", i);
-                          this.calculateAccruedLiabilitiesOptimized("Accruedliability-client", "Client", i);
-                          this.calculateAccruedLiabilitiesOptimized("Accruedliability-partner", "Partner", i);
-
-
-                          //Pension - Client
-                          this.pensionClient.forEach((x: any) => {
-
-                              this.pensionDrawDown = this.pensionDD.filter((c: any) => c.pensionId === x.pensionId);
-
-
-                              if (x.pensionRebootFromType == "Start" || x.pensionRebootFromType == "Existing") {
-                                  x.pensionRebootFromDate = this.clientDetails.startDate
-                              }
-                              else if (x.pensionRebootFromType == "Client Retirement") {
-                                  x.pensionRebootFromDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = this.PensionValueOptimized.find((y: any) => y.owner === x.pensionId);
-                              var begVal: any = {};
-                              var TaxableBegVal: any = {};
-                              var TaxFreeBegVal: any = {};
-
-                              var growth: any = {};
-                              var income: any = {};
-                              var frankingCredits: any = {};
-
-                              var pensionIncome: any = {};
-                              var pITaxAssessable: any = {};
-                              var pITaxExempt: any = {};
-
-                              var endingVal: any = {};
-                              var TaxableEndingVal: any = {};
-                              var TaxFreeEndingVal: any = {};
-                              var endingValPV: any = {};
-                              var TaxableProp: number = 0;
-                              var TaxFreeProp: number = 0;
-
-                              if (obj == null) {
-                                  obj = {};
-                                  TaxableProp = 0;
-                                  TaxFreeProp = 0;
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  TaxableBegVal = obj.TaxableBegValues;
-                                  TaxFreeBegVal = obj.TaxFreeBegValues;
-                                  growth = obj.growthValues;
-                                  income = obj.incomeValues;
-                                  frankingCredits = obj.frankingCreditsValues;
-                                  pensionIncome = obj.pensionIncomeValues;
-                                  pITaxAssessable = obj.pITaxAssessableValues;
-                                  pITaxExempt = obj.pITaxExemptValues;
-                                  endingVal = obj.endingValues;
-                                  TaxableEndingVal = obj.TaxableEndingValues;
-                                  TaxFreeEndingVal = obj.TaxFreeEndingValues;
-                                  endingValPV = obj.endingValuesPV;
-                                  TaxableProp = obj.taxableProp;
-                                  TaxFreeProp = obj.taxfreeProp;
-
-                              }
-
-                              obj["owner"] = x.pensionId;
-                              obj["type"] = "Client";
-                              obj["name"] = "Opening Value";
-
-
-                              if (x.pensionRebootFromDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  //BeginningValue
-                                  if (n == 1) {
-                                      if (x.pensionRebootFromType == "Existing") {
-                                          begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-
-                                  }
-                                  else {
-                                      if ((this.clientDetails.startDate + i) == x.pensionRebootFromDate) {
-                                          begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-                                      else if ((this.clientDetails.startDate + i) < x.pensionRebootFromDate) {
-
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-                                      else {
-
-                                          begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
-                                      }
-                                  }
-
-
-                                  if ((this.clientDetails.startDate + i) == x.pensionRebootFromDate || x.pensionRebootFromType == "Existing") {
-                                      //TODO Confirm negative
-                                      if (x.taxableComponent != 0 && x.value != 0) {
-                                          TaxableProp = (Number(x.taxableComponent) / Number(x.value));
-                                      }
-                                      else {
-                                          TaxableProp = 0;
-                                      }
-                                      TaxFreeProp = 1 - TaxableProp;
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = x.taxableComponent.toFixed();
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = x.taxFreeComponent.toFixed();
-                                  }
-                                  else if ((this.clientDetails.startDate + i) < x.pensionRebootFromDate) {
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = 0;
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
-                                  }
-                                  else {
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = Number(TaxableEndingVal[Number(this.clientDetails.startDate + i) - 1]);
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = Number(TaxFreeEndingVal[Number(this.clientDetails.startDate + i) - 1]);
-                                  }
-                              }
-                              else {
-                                  TaxableBegVal[this.clientDetails.startDate + i] = 0;
-                                  TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              ////growth & income
-                              var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
-                              var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
-
-                              var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
-
-
-                              var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
-                              var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
-
-                              if (typeof growthVal === "number" && !isNaN(growthVal)) {
-                                  growth[this.clientDetails.startDate + i] = growthVal.toFixed();
-                              }
-                              else {
-                                  growth[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
-                                  income[this.clientDetails.startDate + i] = incomeVal.toFixed();
-                              }
-                              else {
-                                  income[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //FrankingCredits
-
-                              var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
-                              var ctr = Number(corporateTaxRate[0].percentage) / 100;
-
-                              frankingCredits[this.clientDetails.startDate + i] = (Number(income[this.clientDetails.startDate + i]) * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
-
-                              //pension Income
-                              var preservation = this.preservationAge.sort((a: any, b: any) => a.dob - b.dob);
-                              var minPendionDD = this.minimumPensionDrawdown.sort((a: any, b: any) => a.age - b.age);
-                              var currentYear = this.clientDetails.startDate + i;
-                              var pAge: number = 0;
-                              var minRate: number = 0;
-
-                              for (var k = 0; k < preservation.length; k++) {
-
-
-                                  if ((k == (preservation.length - 1)) && (this.clientDetails.clientDob >= preservation[k].dob)) {
-                                      pAge = preservation[k].age;
-
-                                  }
-                                  else if (k == 0 && ((this.clientDetails.clientDob) <= preservation[k].dob)) {
-                                      pAge = preservation[k].age;
-                                      break;
-
-                                  }
-                                  else if ((this.clientDetails.clientDob) > preservation[k].dob && (this.clientDetails.clientDob) <= preservation[k + 1].dob) {
-                                      pAge = preservation[k + 1].age;
-                                      break;
-
-                                  }
-                              }
-                              var date1 = new Date("7/01/ " + (this.clientDetails.startDate + i));
-                              var date2 = new Date(this.clientDetails.clientDob);
-                              var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-                              var diffDays = (Math.ceil(timeDiff / (1000 * 3600 * 24))) / 365;
-
-                              var clientAge = Math.round(diffDays * 10) / 10;
-
-                              for (var l = 0; l < minPendionDD.length; l++) {
-
-
-                                  if ((l == (minPendionDD.length - 1)) && (clientAge >= minPendionDD[l].age)) {
-                                      minRate = minPendionDD[l].minimumDrawdown;
-
-                                  }
-                                  else if (l == 0 && (clientAge <= minPendionDD[l].age)) {
-                                      minRate = minPendionDD[l].minimumDrawdown;
-                                      break;
-
-                                  }
-                                  else if (clientAge > minPendionDD[l].age && clientAge <= minPendionDD[l + 1].age) {
-                                      minRate = minPendionDD[l + 1].minimumDrawdown;
-                                      break;
-
-                                  }
-                              }
-
-
-                              var minDrawdown: number = 0;
-                              var maxDrawdown: number = 0;
-
-                              if (clientAge < pAge) {
-                                  minDrawdown = 0;
-                                  maxDrawdown = 0;
-                              }
-                              else if (clientAge >= pAge && clientAge < 65) {
-                                  if (this.clientRetirementYear != 0 && this.clientRetirementYear <= (this.clientDetails.startDate + i)) {
-                                      minDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (minRate / 100);
-                                      maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]);
-
-                                  }
-                                  else {
-                                      minDrawdown = 0;
-                                      maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (10 / 100);
-                                  }
-
-                              }
-                              else if (clientAge >= 65) {
-                                  minDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (minRate / 100);
-                                  maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]);
-                              }
-
-
-                              if (x.pensionRebootFromDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-
-                                  if (this.pensionDrawDown.length > 0) {
-                                  let pIncomeSum: number = 0;
-                                  this.pensionDrawDown.forEach((y: any) => {
-
-                                      if (y.fromDateType == "Start") {
-                                          y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
-                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
-
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                          if (y.amount == 0) {
-                                              if (y.type == "Minimum") {
-                                                  pensionIncome[this.clientDetails.startDate + i] = minDrawdown.toFixed();
-                                              } else if (y.type == "Maximum") {
-                                                  pensionIncome[this.clientDetails.startDate + i] = maxDrawdown.toFixed();
-                                              }
-                                          }
-                                          else {
-                                              pensionIncome[this.clientDetails.startDate + i] = (Math.min(maxDrawdown, Math.max(minDrawdown, y.amount))).toFixed();
-                                          }
-                                          //var t = parseInt(y.amount);
-                                          //ContributionSum = ContributionSum + t;
-                                      }
-
-                                  });
-
-                                  }
-                                  else {
-                                      pensionIncome[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-                              else {
-                                  pensionIncome[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              if (clientAge >= pAge && clientAge < 60) {
-                                  pITaxAssessable[this.clientDetails.startDate + i] = (Number(pensionIncome[this.clientDetails.startDate + i]) * TaxableProp).toFixed();
-                                  pITaxExempt[this.clientDetails.startDate + i] = (Number(pensionIncome[this.clientDetails.startDate + i]) - pITaxAssessable[this.clientDetails.startDate + i]).toFixed();
-                              }
-                              else if (clientAge >= 60) {
-                                  pITaxAssessable[this.clientDetails.startDate + i] = 0;
-                                  pITaxExempt[this.clientDetails.startDate + i] = Number(pensionIncome[this.clientDetails.startDate + i]).toFixed();
-                              }
-
-                              //Ending Value
-                              endingVal[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(pensionIncome[this.clientDetails.startDate + i]);
-
-                              ////Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = Number(inflation[0].percentage) / 100;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-                              ////Ending Value - Taxable
-                              TaxableEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) * TaxableProp).toFixed();
-
-                              TaxFreeEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) - TaxFreeProp).toFixed();
-
-
-                              obj["BegValues"] = begVal;
-                              obj["TaxableBegValues"] = TaxableBegVal;
-                              obj["TaxFreeBegValues"] = TaxFreeBegVal;
-                              obj["growthValues"] = growth;
-                              obj["incomeValues"] = income;
-                              obj["frankingCreditsValues"] = frankingCredits;
-                              obj["pensionIncomeValues"] = pensionIncome;
-                              obj["pITaxAssessableValues"] = pITaxAssessable;
-                              obj["pITaxExemptValues"] = pITaxExempt;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["TaxableEndingValues"] = TaxableEndingVal;
-                              obj["TaxFreeEndingValues"] = TaxFreeEndingVal;
-                              //TODO: Verify
-                              obj["taxableProp"] = TaxableProp;
-                              obj["taxfreeProp"] = TaxFreeProp;
-
-
-                              if (this.PensionValueOptimized.find((y: any) => y.owner === x.pensionId) != null) {
-                                  this.PensionValueOptimized[this.PensionValueOptimized.findIndex((c: any) => c.owner === x.pensionId)] = obj;
-                              }
-                              else {
-                                  this.PensionValueOptimized.push(obj);
-
-                              }
-                          });
-                          //Pension - Partner
-                          this.pensionPartner.forEach((x: any) => { // client
-
-                              this.pensionDrawDown = this.pensionDD.filter((c: any) => c.pensionId === x.pensionId);
-
-
-                              if (x.pensionRebootFromType == "Start" || x.pensionRebootFromType == "Existing") {
-                                  x.pensionRebootFromDate = this.clientDetails.startDate
-                              }
-                              else if (x.pensionRebootFromType == "Partner Retirement") {
-                                  x.pensionRebootFromDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = this.PensionValueOptimized.find((y: any) => y.owner === x.pensionId);
-                              var begVal: any = {};
-                              var TaxableBegVal: any = {};
-                              var TaxFreeBegVal: any = {};
 
-                              var growth: any = {};
-                              var income: any = {};
-                              var frankingCredits: any = {};
-
-                              var pensionIncome: any = {};
-                              var pITaxAssessable: any = {};
-                              var pITaxExempt: any = {};
-
-                              var endingVal: any = {};
-                              var TaxableEndingVal: any = {};
-                              var TaxFreeEndingVal: any = {};
-                              var endingValPV: any = {};
-                              var TaxableProp: number = 0;
-                              var TaxFreeProp: number = 0;
-
-                              if (obj == null) {
-                                  obj = {};
-                                  TaxableProp = 0;
-                                  TaxFreeProp = 0;
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  TaxableBegVal = obj.TaxableBegValues;
-                                  TaxFreeBegVal = obj.TaxFreeBegValues;
-                                  growth = obj.growthValues;
-                                  income = obj.incomeValues;
-                                  frankingCredits = obj.frankingCreditsValues;
-                                  pensionIncome = obj.pensionIncomeValues;
-                                  pITaxAssessable = obj.pITaxAssessableValues;
-                                  pITaxExempt = obj.pITaxExemptValues;
-                                  endingVal = obj.endingValues;
-                                  TaxableEndingVal = obj.TaxableEndingValues;
-                                  TaxFreeEndingVal = obj.TaxFreeEndingValues;
-                                  endingValPV = obj.endingValuesPV;
-                                  TaxableProp = obj.taxableProp;
-                                  TaxFreeProp = obj.taxfreeProp;
-
-                              }
-
-
-                              obj["owner"] = x.pensionId;
-                              obj["type"] = "Partner";
-                              obj["name"] = "Opening Value";
-
-
-                              if (x.pensionRebootFromDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  //BeginningValue
-                                  if (n == 1) {
-                                      if (x.pensionRebootFromType == "Existing") {
-                                          begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-
-                                  }
-                                  else {
-                                      if ((this.clientDetails.startDate + i) == x.pensionRebootFromDate) {
-                                          begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-                                      else if ((this.clientDetails.startDate + i) < x.pensionRebootFromDate) {
-
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-                                      else {
-
-                                          begVal[this.clientDetails.startDate + i] = endingVal[Number(this.clientDetails.startDate + i) - 1];
-                                      }
-                                  }
-
-
-                                  if ((this.clientDetails.startDate + i) == x.pensionRebootFromDate || x.pensionRebootFromType == "Existing") {
-                                      //TODO Confirm negative
-                                      if (x.taxableComponent != 0 && x.value != 0) {
-                                          TaxableProp = (Number(x.taxableComponent) / Number(x.value));
-                                      }
-                                      else {
-                                          TaxableProp = 0;
-                                      }
-                                      TaxFreeProp = 1 - TaxableProp;
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = x.taxableComponent.toFixed();
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = x.taxFreeComponent.toFixed();
-                                  }
-                                  else if ((this.clientDetails.startDate + i) < x.pensionRebootFromDate) {
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = 0;
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
-                                  }
-                                  else {
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = Number(TaxableEndingVal[Number(this.clientDetails.startDate + i) - 1]);
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = Number(TaxFreeEndingVal[Number(this.clientDetails.startDate + i) - 1]);
-                                  }
-                              }
-                              else {
-                                  TaxableBegVal[this.clientDetails.startDate + i] = 0;
-                                  TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              ////growth & income
-                              var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
-                              var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
-
-                              var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
-
-
-                              var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
-                              var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
-
-                              if (typeof growthVal === "number" && !isNaN(growthVal)) {
-                                  growth[this.clientDetails.startDate + i] = growthVal.toFixed();
-                              }
-                              else {
-                                  growth[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
-                                  income[this.clientDetails.startDate + i] = incomeVal.toFixed();
-                              }
-                              else {
-                                  income[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //FrankingCredits
-
-                              var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
-                              var ctr = Number(corporateTaxRate[0].percentage) / 100;
-
-                              frankingCredits[this.clientDetails.startDate + i] = (Number(income[this.clientDetails.startDate + i]) * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
-
-                              //pension Income
-                              var preservation = this.preservationAge.sort((a: any, b: any) => a.dob - b.dob);
-                              var minPendionDD = this.minimumPensionDrawdown.sort((a: any, b: any) => a.age - b.age);
-                              var currentYear = this.clientDetails.startDate + i;
-                              var pAge: number = 0;
-                              var minRate: number = 0;
-
-                              for (var k = 0; k < preservation.length; k++) {
-
-
-                                  if ((k == (preservation.length - 1)) && (this.clientDetails.partnerDob >= preservation[k].dob)) {
-                                      pAge = preservation[k].age;
-
-                                  }
-                                  else if (k == 0 && ((this.clientDetails.partnerDob) <= preservation[k].dob)) {
-                                      pAge = preservation[k].age;
-                                      break;
-
-                                  }
-                                  else if ((this.clientDetails.partnerDob) > preservation[k].dob && (this.clientDetails.partnerDob) <= preservation[k + 1].dob) {
-                                      pAge = preservation[k + 1].age;
-                                      break;
-
-                                  }
-                              }
-                              var date1 = new Date("7/01/ " + (this.clientDetails.startDate + i));
-                              var date2 = new Date(this.clientDetails.partnerDob);
-                              var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-                              var diffDays = (Math.ceil(timeDiff / (1000 * 3600 * 24))) / 365;
-
-                              var partnerAge = Math.round(diffDays * 10) / 10;
-
-                              for (var l = 0; l < minPendionDD.length; l++) {
-
-
-                                  if ((l == (minPendionDD.length - 1)) && (partnerAge >= minPendionDD[l].age)) {
-                                      minRate = minPendionDD[l].minimumDrawdown;
-
-                                  }
-                                  else if (l == 0 && (partnerAge <= minPendionDD[l].age)) {
-                                      minRate = minPendionDD[l].minimumDrawdown;
-                                      break;
-
-                                  }
-                                  else if (partnerAge > minPendionDD[l].age && partnerAge <= minPendionDD[l + 1].age) {
-                                      minRate = minPendionDD[l + 1].minimumDrawdown;
-                                      break;
-
-                                  }
-                              }
-
-
-                              var minDrawdown: number = 0;
-                              var maxDrawdown: number = 0;
-
-                              if (partnerAge < pAge) {
-                                  minDrawdown = 0;
-                                  maxDrawdown = 0;
-                              }
-                              else if (partnerAge >= pAge && partnerAge < 65) {
-                                  if (this.partnerRetirementYear != 0 && this.partnerRetirementYear <= (this.clientDetails.startDate + i)) {
-                                      minDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (minRate / 100);
-                                      maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]);
-
-                                  }
-                                  else {
-                                      minDrawdown = 0;
-                                      maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (10 / 100);
-                                  }
-
-                              }
-                              else if (partnerAge >= 65) {
-                                  minDrawdown = Number(begVal[this.clientDetails.startDate + i]) * (minRate / 100);
-                                  maxDrawdown = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]);
-                              }
-
-
-                              if (x.pensionRebootFromDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-
-                                  if (this.pensionDrawDown.length > 0) {
-                                  let pIncomeSum: number = 0;
-                                  this.pensionDrawDown.forEach((y: any) => {
-
-                                      if (y.fromDateType == "Start") {
-                                          y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
-                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
-
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                          if (y.amount == 0) {
-                                              if (y.type == "Minimum") {
-                                                  pensionIncome[this.clientDetails.startDate + i] = minDrawdown.toFixed();
-                                              } else if (y.type == "Maximum") {
-                                                  pensionIncome[this.clientDetails.startDate + i] = maxDrawdown.toFixed();
-                                              }
-                                          }
-                                          else {
-                                              pensionIncome[this.clientDetails.startDate + i] = (Math.min(maxDrawdown, Math.max(minDrawdown, y.amount))).toFixed();
-                                          }
-                                          //var t = parseInt(y.amount);
-                                          //ContributionSum = ContributionSum + t;
-                                      }
-
-                                  });
-                                  }
-                                  else {
-                                      pensionIncome[this.clientDetails.startDate + i] = 0;
-                                  }
-
-                              }
-                              else {
-                                  pensionIncome[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              if (partnerAge >= pAge && partnerAge < 60) {
-                                  pITaxAssessable[this.clientDetails.startDate + i] = (Number(pensionIncome[this.clientDetails.startDate + i]) * TaxableProp).toFixed();
-                                  pITaxExempt[this.clientDetails.startDate + i] = (Number(pensionIncome[this.clientDetails.startDate + i]) - pITaxAssessable[this.clientDetails.startDate + i]).toFixed();
-                              }
-                              else if (partnerAge >= 60) {
-                                  pITaxAssessable[this.clientDetails.startDate + i] = 0;
-                                  pITaxExempt[this.clientDetails.startDate + i] = Number(pensionIncome[this.clientDetails.startDate + i]).toFixed();
-                              }
-
-                              //Ending Value
-                              endingVal[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(pensionIncome[this.clientDetails.startDate + i]);
-
-                              ////Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = Number(inflation[0].percentage) / 100;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-                              ////Ending Value - Taxable
-                              TaxableEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) * TaxableProp).toFixed();
-
-                              TaxFreeEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) - TaxFreeProp).toFixed();
-
-
-                              obj["BegValues"] = begVal;
-                              obj["TaxableBegValues"] = TaxableBegVal;
-                              obj["TaxFreeBegValues"] = TaxFreeBegVal;
-                              obj["growthValues"] = growth;
-                              obj["incomeValues"] = income;
-                              obj["frankingCreditsValues"] = frankingCredits;
-                              obj["pensionIncomeValues"] = pensionIncome;
-                              obj["pITaxAssessableValues"] = pITaxAssessable;
-                              obj["pITaxExemptValues"] = pITaxExempt;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["TaxableEndingValues"] = TaxableEndingVal;
-                              obj["TaxFreeEndingValues"] = TaxFreeEndingVal;
-                              //TODO: Verify
-                              obj["taxableProp"] = TaxableProp;
-                              obj["taxfreeProp"] = TaxFreeProp;
-
-
-                              if (this.PensionValueOptimized.find((y: any) => y.owner === x.pensionId) != null) {
-                                  this.PensionValueOptimized[this.PensionValueOptimized.findIndex((c: any) => c.owner === x.pensionId)] = obj;
-                              }
-                              else {
-                                  this.PensionValueOptimized.push(obj);
-
-                              }
-
-
-                          });
-
-                          //PensionTotals
-
-                          this.calculateTotalPensionIncomeOptimized("TotalPensionIncome", i);
-                          this.calculatePensionIncomeTaxableOptimized("PensionIncome-client", "Client", i);
-                          this.calculatePensionIncomeTaxableOptimized("PensionIncome-partner", "Partner", i);
-                          this.calculateSuperIncomeTaxOffsetOptimized("SIncomeTaxOffset-client", "Client", i);
-                          this.calculateSuperIncomeTaxOffsetOptimized("SIncomeTaxOffset-partner", "Partner", i);
-
-
-
-                          //Super Client
-                          this.superClient.forEach((x: any) => { // client
-                              var superStrategySS = strategyOrder.filter(c => c.id === x.superId).filter(c => c.type === "SS");
-                              var superStrategyNCC = strategyOrder.filter(c => c.id === x.superId).filter(c => c.type === "NCC");
-
-                              this.superSS = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "SS");
-                              this.superPNC = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "PNC");
-                              this.superSpouse = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "Spouse");
-                              this.superLumpSum = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "LumpSum");
-
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-
-
-                              var obj = this.SuperValueOptimized.find((y: any) => y.owner === x.superId);
-                              var begVal: any = {};
-                              var TaxableBegVal: any = {};
-                              var TaxFreeBegVal: any = {};
-                              var growth: any = {};
-                              var income: any = {};
-                              var frankingCredits: any = {};
-                              var insurance: any = {};
-                              var sgContr: any = {};
-                              var ssContr: any = {};
-                              var pncContr: any = {};
-                              var spouseContr: any = {};
-                              var lumpSum: any = {};
-                              var lumpSumTaxable: any = {};
-                              var taxPayable: any = {};
-
-                              var endingVal: any = {};
-                              var TaxableEndingVal: any = {};
-                              var TaxFreeEndingVal: any = {};
-                              var endingValPV: any = {};
-
-                              if (obj == null) {
-                                  obj = {};
-
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  TaxableBegVal = obj.TaxableBegValues;
-                                  TaxFreeBegVal = obj.TaxFreeBegValues;
-                                  growth = obj.growthValues;
-                                  income = obj.incomeValues;
-                                  frankingCredits = obj.frankingCreditsValues;
-
-                                  insurance = obj.insuranceValues;
-                                  sgContr = obj.sgContrValues;
-                                  ssContr = obj.ssContrValues;
-                                  pncContr = obj.pncContrValues;
-                                  spouseContr = obj.spouseContrValues;
-                                  lumpSum = obj.lumpSumValues;
-                                  lumpSumTaxable = obj.lumpSumTaxableValues;
-                                  taxPayable = obj.taxPayableValues;
-
-                                  endingVal = obj.endingValues;
-                                  TaxableEndingVal = obj.TaxableEndingValues;
-                                  TaxFreeEndingVal = obj.TaxFreeEndingValues;
-                                  endingValPV = obj.endingValuesPV;
-
-
-                              }
 
+                              // sgContr[this.clientDetails.startDate + i] = Math.min((x.superSalary * (sgcRate / 100)), mscb_val);
+                              sgContr[this.clientDetails.startDate + i] = (Math.min((totalcEmploymentIncome * (sgcRate / 100)), mscb_val)).toFixed();
 
-                              obj["owner"] = x.superId;
-                              obj["type"] = "Client";
-                              obj["name"] = "Opening Value";
+                            }
+                          }
+                          else {
+                            sgContr[this.clientDetails.startDate + i] = 0;
+                          }
 
+                          //Salary Sacrifice
+                          if (p == 0) {
+                            ssContr[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            if (superStrategySS.length > 0 && superStrategySS[0].AllocatedValue > 0) {
+                              ssContr[this.clientDetails.startDate + i] = Number(superStrategySS[0].AllocatedValue);
+                            }
+                            else {
+                              let SalarySacrificeSum: number = 0;
                               if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  //BeginningValue
-                                  if (n == 1) {
-                                      if (x.startDateType == "Existing") {
-                                          begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
+                                this.superSS.forEach((y: any) => { // client
 
+                                  if (y.fromDateType == "Start") {
+                                    y.fromDate = this.clientDetails.startDate;
                                   }
-                                  else {
-                                      if ((this.clientDetails.startDate + i) == x.startDate) {
-                                          begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-                                      else if ((this.clientDetails.startDate + i) < x.startDate) {
-
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-                                      else {
-
-                                          begVal[this.clientDetails.startDate + i] = (Number(endingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
-                                      }
+                                  if (y.toDateType == "End") {
+                                    y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
                                   }
 
+                                  if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                    if (y.increaseToLimit == "Y") {
 
-                                  if ((this.clientDetails.startDate + i) == x.startDate) {
-                                      TaxableBegVal[this.clientDetails.startDate + i] = x.taxableComponent.toFixed();
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = x.taxFreeComponent.toFixed();
-                                  }
-                                  else if ((this.clientDetails.startDate + i) < x.startDate) {
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = 0;
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
-                                  }
-                                  else {
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = (Number(TaxableEndingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = (Number(TaxFreeEndingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
-                                  }
-                              }
-                              else {
-                                  TaxableBegVal[this.clientDetails.startDate + i] = 0;
-                                  TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              ////growth & income
-                              var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
-                              var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
-
-                              var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
-
-
-                              var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
-                              var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
-
-                              if (typeof growthVal === "number" && !isNaN(growthVal)) {
-                                  growth[this.clientDetails.startDate + i] = growthVal.toFixed();
-                              }
-                              else {
-                                  growth[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
-                                  income[this.clientDetails.startDate + i] = incomeVal.toFixed();
-                              }
-                              else {
-                                  income[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //FrankingCredits
-
-                              var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
-                              var ctr = Number(corporateTaxRate[0].percentage) / 100;
-
-                              frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
-
-                              //insurance
-
-                              let insuranceVal: number = 0;
-
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  insuranceVal = parseInt(x.insuranceCost);
-                              }
-
-                              insurance[this.clientDetails.startDate + i] = insuranceVal;
-
-                              //Super Guarantee
-
-                              var cc_cap = this.superAssumptions.filter((a: any) => a.type == "CC_Cap");
-                              var cc_cap_val = cc_cap[0].value;
-
-                              var ncc_cap = this.superAssumptions.filter((a: any) => a.type == "NCC_Cap");
-                              var ncc_cap_val = cc_cap[0].value;
-
-                              var mscb = this.superAssumptions.filter((a: any) => a.type == "MSCB");
-                              var mscb_val = mscb[0].value;
-
-
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (x.increaseToLimit == "Y") {
-
-                                      let ContributionSum: number = 0;
-                                      this.superSS.forEach((y: any) => {
-
-                                          if (y.fromDateType == "Start") {
-                                              y.fromDate = this.clientDetails.startDate;
-                                          }
-                                          if (y.toDateType == "End") {
-                                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                          }
-
-                                          if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                              var t = parseInt(y.amount);
-                                              ContributionSum = ContributionSum + t;
-                                          }
-
-                                      });
-
-                                      sgContr[this.clientDetails.startDate + i] = (cc_cap_val - ContributionSum).toFixed();
-                                  }
-                                  else {
-                                      //TODO: get SGCRatev-verify
+                                      var sgContr: number = 0;
                                       var sgcRate: number = 1;
 
+
+
                                       if (x.sgrate == "SGC") {
-                                          var sgc = this.sgcRates.sort((a: any, b: any) => a.year - b.year);
-                                          var currentYear = this.clientDetails.startDate + i;
+                                        var sgc = this.sgcRates.sort((a: any, b: any) => a.year - b.year);
+                                        var currentYear = this.clientDetails.startDate + i;
+                                        for (var j = 0; j < sgc.length; j++) {
+                                          if ((j == (sgc.length - 1)) && ((this.clientDetails.startDate + i) >= sgc[j].year)) {
+                                            sgcRate = sgc[j].sgcrate1;
 
-
-                                          for (var j = 0; j < sgc.length; j++) {
-
-
-                                              if ((j == (sgc.length - 1)) && ((this.clientDetails.startDate + i) >= sgc[j].year)) {
-                                                  sgcRate = sgc[j].sgcrate1;
-
-                                              }
-                                              else if (j == 0 && ((this.clientDetails.startDate + i) <= sgc[j].year)) {
-                                                  sgcRate = sgc[j].sgcrate1;
-                                                  break;
-
-                                              }
-                                              else if ((this.clientDetails.startDate + i) > sgc[j].year && (this.clientDetails.startDate + i) <= sgc[j + 1].year) {
-                                                  sgcRate = sgc[j + 1].sgcrate1;
-                                                  break;
-
-                                              }
                                           }
+                                          else if (j == 0 && ((this.clientDetails.startDate + i) <= sgc[j].year)) {
+                                            sgcRate = sgc[j].sgcrate1;
+                                            break;
+
+                                          }
+                                          else if ((this.clientDetails.startDate + i) > sgc[j].year && (this.clientDetails.startDate + i) <= sgc[j + 1].year) {
+                                            sgcRate = sgc[j + 1].sgcrate1;
+                                            break;
+
+                                          }
+                                        }
 
                                       }
                                       else {
-                                          sgcRate = Number(x.sgrate);
+                                        sgcRate = Number(x.sgrate);
                                       }
 
                                       var cEmploymentIncome = clientEmploymentIncome.filter((g: any) => g.type === "Employment");
 
                                       var totalcEmploymentIncome = 0;
                                       for (var k = 0; k < cEmploymentIncome.length; k++) {
-                                          if (isNaN(cEmploymentIncome[k].values[this.clientDetails.startDate + i])) {
-                                              continue;
-                                          }
-                                          totalcEmploymentIncome += Number(cEmploymentIncome[k].values[this.clientDetails.startDate + i]);
+                                        if (isNaN(cEmploymentIncome[k].values[this.clientDetails.startDate + i])) {
+                                          continue;
+                                        }
+                                        totalcEmploymentIncome += Number(cEmploymentIncome[k].values[this.clientDetails.startDate + i]);
                                       }
 
+                                      //sgContr = Math.min((x.superSalary * (sgcRate / 100)), mscb_val);
+                                      sgContr = Math.min((totalcEmploymentIncome * (sgcRate / 100)), mscb_val);
+                                      SalarySacrificeSum = cc_cap_val - sgContr;
+                                    }
+                                    else {
+                                      var t = parseInt(y.amount);
+                                      SalarySacrificeSum = SalarySacrificeSum + t;
+                                    }
 
 
-
-                                      // sgContr[this.clientDetails.startDate + i] = Math.min((x.superSalary * (sgcRate / 100)), mscb_val);
-                                      sgContr[this.clientDetails.startDate + i] = (Math.min((totalcEmploymentIncome * (sgcRate / 100)), mscb_val)).toFixed();
 
                                   }
+
+                                });
+
+                                ssContr[this.clientDetails.startDate + i] = (SalarySacrificeSum).toFixed();
                               }
                               else {
-                                  sgContr[this.clientDetails.startDate + i] = 0;
+                                ssContr[this.clientDetails.startDate + i] = 0;
                               }
-
-                              //Salary Sacrifice
-                              if (superStrategySS.length > 0 && superStrategySS[0].AllocatedValue > 0) {
-                                  ssContr[this.clientDetails.startDate + i] = Number(superStrategySS[0].AllocatedValue);
-                              }
-                              else {
-                                  let SalarySacrificeSum: number = 0;
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      this.superSS.forEach((y: any) => { // client
-
-                                          if (y.fromDateType == "Start") {
-                                              y.fromDate = this.clientDetails.startDate;
-                                          }
-                                          if (y.toDateType == "End") {
-                                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                          }
-
-                                          if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                              if (y.increaseToLimit == "Y") {
-
-                                                  var sgContr: number = 0;
-                                                  var sgcRate: number = 1;
-
-
-
-                                                  if (x.sgrate == "SGC") {
-                                                      var sgc = this.sgcRates.sort((a: any, b: any) => a.year - b.year);
-                                                      var currentYear = this.clientDetails.startDate + i;
-                                                      for (var j = 0; j < sgc.length; j++) {
-                                                          if ((j == (sgc.length - 1)) && ((this.clientDetails.startDate + i) >= sgc[j].year)) {
-                                                              sgcRate = sgc[j].sgcrate1;
-
-                                                          }
-                                                          else if (j == 0 && ((this.clientDetails.startDate + i) <= sgc[j].year)) {
-                                                              sgcRate = sgc[j].sgcrate1;
-                                                              break;
-
-                                                          }
-                                                          else if ((this.clientDetails.startDate + i) > sgc[j].year && (this.clientDetails.startDate + i) <= sgc[j + 1].year) {
-                                                              sgcRate = sgc[j + 1].sgcrate1;
-                                                              break;
-
-                                                          }
-                                                      }
-
-                                                  }
-                                                  else {
-                                                      sgcRate = Number(x.sgrate);
-                                                  }
-
-                                                  var cEmploymentIncome = clientEmploymentIncome.filter((g: any) => g.type === "Employment");
-
-                                                  var totalcEmploymentIncome = 0;
-                                                  for (var k = 0; k < cEmploymentIncome.length; k++) {
-                                                      if (isNaN(cEmploymentIncome[k].values[this.clientDetails.startDate + i])) {
-                                                          continue;
-                                                      }
-                                                      totalcEmploymentIncome += Number(cEmploymentIncome[k].values[this.clientDetails.startDate + i]);
-                                                  }
-
-                                                  //sgContr = Math.min((x.superSalary * (sgcRate / 100)), mscb_val);
-                                                  sgContr = Math.min((totalcEmploymentIncome * (sgcRate / 100)), mscb_val);
-                                                  SalarySacrificeSum = cc_cap_val - sgContr;
-                                              }
-                                              else {
-                                                  var t = parseInt(y.amount);
-                                                  SalarySacrificeSum = SalarySacrificeSum + t;
-                                              }
-
-
-
-                                          }
-
-                                      });
-
-                                      ssContr[this.clientDetails.startDate + i] = (SalarySacrificeSum).toFixed();
-                                  }
-                                  else {
-                                      ssContr[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-
-                              //PNC Contribution
-                              if (superStrategyNCC.length > 0 && superStrategyNCC[0].AllocatedValue > 0) {
-                                  pncContr[this.clientDetails.startDate + i] = Number(superStrategyNCC[0].AllocatedValue);
-                              }
-                              else {
-                                  let PNCContributionSum: number = 0;
-                                  if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                      this.superPNC.forEach((y: any) => { // client
-
-                                          if (y.fromDateType == "Start") {
-                                              y.fromDate = this.clientDetails.startDate;
-                                          }
-                                          if (y.toDateType == "End") {
-                                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                          }
-
-                                          if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                              if (y.increaseToLimit == "Y") {
-                                                  let SpouseSum: number = 0;
-                                                  this.superSpouse.forEach((y: any) => {
-
-                                                      if (y.fromDateType == "Start") {
-                                                          y.fromDate = this.clientDetails.startDate;
-                                                      }
-                                                      if (y.toDateType == "End") {
-                                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                                      }
-
-                                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                                          var t = parseInt(y.amount);
-                                                          SpouseSum = SpouseSum + t;
-                                                      }
-
-                                                  });
-
-                                                  PNCContributionSum = ncc_cap_val - SpouseSum;
-
-                                              }
-                                              else {
-                                                  var t = parseInt(y.amount);
-                                                  PNCContributionSum = PNCContributionSum + t;
-                                              }
-                                          }
-
-                                      });
-                                      pncContr[this.clientDetails.startDate + i] = (PNCContributionSum).toFixed();;
-                                  }
-                                  else {
-                                      pncContr[this.clientDetails.startDate + i] = 0;
-                                  }
-                              }
-
-
-                              //Spouse Contribution
-                              let SpouseContributionSum: number = 0;
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  this.superSpouse.forEach((y: any) => { // client
-
-                                      if (y.fromDateType == "Start") {
-                                          y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
-                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
-
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                          if (y.increaseToLimit == "Y") {
-                                              let PNCSum: number = 0;
-                                              this.superPNC.forEach((y: any) => {
-
-                                                  if (y.fromDateType == "Start") {
-                                                      y.fromDate = this.clientDetails.startDate;
-                                                  }
-                                                  if (y.toDateType == "End") {
-                                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                                  }
-
-                                                  if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                                      var t = parseInt(y.amount);
-                                                      PNCSum = PNCSum + t;
-                                                  }
-
-                                              });
-
-                                              SpouseContributionSum = ncc_cap_val - PNCSum;
-
-                                          }
-                                          else {
-                                              var t = parseInt(y.amount);
-                                              SpouseContributionSum = SpouseContributionSum + t;
-                                          }
-                                      }
-
-                                  });
-                                  spouseContr[this.clientDetails.startDate + i] = (SpouseContributionSum).toFixed();
-                              }
-                              else {
-                                  spouseContr[this.clientDetails.startDate + i] = 0;
-                              }
-                              //Lumpsum Withdrawals
-                              let LumpsumWithdrawalsSum: number = 0;
-                              let LumpsumTaxableSum: number = 0;
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  this.superLumpSum.forEach((y: any) => { // client
-
-                                      if (y.fromDateType == "Start") {
-                                          y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
-                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
-
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                          var t = parseInt(y.amount);
-                                          LumpsumWithdrawalsSum = LumpsumWithdrawalsSum + t;
-                                      }
-
-                                  });
-                                  lumpSum[this.clientDetails.startDate + i] = LumpsumWithdrawalsSum;
-
-
-                                  if (LumpsumWithdrawalsSum > 0) {
-                                      var TaxableBeforLS = Number(TaxableBegVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]);
-                                      //TODO: Add govtContr
-                                      var ValueBeforeLS = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) + Number(pncContr[this.clientDetails.startDate + i]) + Number(spouseContr[this.clientDetails.startDate + i]);
-                                      if (TaxableBeforLS != 0 && ValueBeforeLS != 0) {
-                                          lumpSumTaxable[this.clientDetails.startDate + i] = LumpsumWithdrawalsSum * (TaxableBeforLS / ValueBeforeLS);
-                                      }
-                                      else {
-                                          lumpSumTaxable[this.clientDetails.startDate + i] = 0;
-                                      }
-                                  }
-                                  else {
-                                      lumpSumTaxable[this.clientDetails.startDate + i] = 0;
-                                  }
-
-                              }
-                              else {
-                                  lumpSum[this.clientDetails.startDate + i] = 0;
-                                  lumpSumTaxable[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              //Taxes Payable
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  var earningsTax = this.superAssumptions.filter((a: any) => a.type == "EarningsTaxRate");
-                                  var earningsTax_val = earningsTax[0].value;
-
-                                  var ccTaxRate = this.superAssumptions.filter((a: any) => a.type == "CCTaxRate");
-                                  var ccTaxRate_val = ccTaxRate[0].value;
-
-                                  var addTaxRate = this.superAssumptions.filter((a: any) => a.type == "AddTaxRate");
-                                  var addTaxRate_val = addTaxRate[0].value;
-
-                                  let ccTax: number = 0;
-                                  var EarningsTax = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i])) * (earningsTax_val / 100);
-
-                                  //var taxableIncome: any = {};
-                                  //taxableIncome = this.clientTaxableIncome.filter(c => c.owner === "ClientTaxableIncome");
-                                  //let taxableIncomeVal: number = Number(taxableIncome[0].values[this.clientDetails.startDate + i]);
-                                  //if (taxableIncomeVal <= 250000) {
-                                  ccTax = (Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i])) * (ccTaxRate_val / 100);
-                                  //}
-                                  //else {
-                                  //    ccTax = (sgContr[this.clientDetails.startDate + i] + ssContr[this.clientDetails.startDate + i]) * ((ccTaxRate_val / 100) + (addTaxRate_val / 100));
-
-                                  //}
-                                  taxPayable[this.clientDetails.startDate + i] = (EarningsTax + ccTax).toFixed()
-                              }
-                              else {
-                                  taxPayable[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-
-
-                              //Ending Value
-                              endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) + Number(pncContr[this.clientDetails.startDate + i]) + Number(spouseContr[this.clientDetails.startDate + i]) - Number(taxPayable[this.clientDetails.startDate + i]) - Number(lumpSum[this.clientDetails.startDate + i])).toFixed()
-
-                              ////Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = Number(inflation[0].percentage) / 100;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-                              //Ending Value - Taxable
-                              TaxableEndingVal[this.clientDetails.startDate + i] = (Number(TaxableBegVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) - Number(taxPayable[this.clientDetails.startDate + i]) - Number(lumpSum[this.clientDetails.startDate + i])).toFixed();
-
-                              TaxFreeEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) - Number(TaxableEndingVal[this.clientDetails.startDate + i])).toFixed();
-
-
-                              obj["BegValues"] = begVal;
-                              obj["TaxableBegValues"] = TaxableBegVal;
-                              obj["TaxFreeBegValues"] = TaxFreeBegVal;
-                              obj["growthValues"] = growth;
-                              obj["incomeValues"] = income;
-                              obj["frankingCreditsValues"] = frankingCredits;
-                              obj["insuranceValues"] = insurance;
-                              obj["sgContrValues"] = sgContr;
-                              obj["ssContrValues"] = ssContr;
-                              obj["pncContrValues"] = pncContr;
-                              obj["spouseContrValues"] = spouseContr;
-                              obj["lumpSumValues"] = lumpSum;
-                              obj["lumpSumTaxableValues"] = lumpSumTaxable;
-                              obj["taxPayableValues"] = taxPayable;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["TaxableEndingValues"] = TaxableEndingVal;
-                              obj["TaxFreeEndingValues"] = TaxFreeEndingVal;
-
-                              if (this.SuperValueOptimized.find((y: any) => y.owner === x.superId) != null) {
-                                  this.SuperValueOptimized[this.SuperValueOptimized.findIndex((c: any) => c.owner === x.superId)] = obj;
-                              }
-                              else {
-                                  this.SuperValueOptimized.push(obj);
-
-                              }
-
-                          });
-                          this.superPartner.forEach((x: any) => { // client
-
-                              this.superSS = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "SS");
-                              this.superPNC = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "PNC");
-                              this.superSpouse = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "Spouse");
-                              this.superLumpSum = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "LumpSum");
-
-
-                              if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Retain") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = this.SuperValueOptimized.find((y: any) => y.owner === x.superId);
-                              var begVal: any = {};
-                              var TaxableBegVal: any = {};
-                              var TaxFreeBegVal: any = {};
-                              var growth: any = {};
-                              var income: any = {};
-                              var frankingCredits: any = {};
-                              var insurance: any = {};
-                              var sgContr: any = {};
-                              var ssContr: any = {};
-                              var pncContr: any = {};
-                              var spouseContr: any = {};
-                              var lumpSum: any = {};
-                              var lumpSumTaxable: any = {};
-                              var taxPayable: any = {};
-
-                              var endingVal: any = {};
-                              var TaxableEndingVal: any = {};
-                              var TaxFreeEndingVal: any = {};
-                              var endingValPV: any = {};
-
-                              if (obj == null) {
-                                  obj = {};
-
-                              }
-                              else {
-                                  begVal = obj.BegValues;
-                                  TaxableBegVal = obj.TaxableBegValues;
-                                  TaxFreeBegVal = obj.TaxFreeBegValues;
-                                  growth = obj.growthValues;
-                                  income = obj.incomeValues;
-                                  frankingCredits = obj.frankingCreditsValues;
-
-                                  insurance = obj.insuranceValues;
-                                  sgContr = obj.sgContrValues;
-                                  ssContr = obj.ssContrValues;
-                                  pncContr = obj.pncContrValues;
-                                  spouseContr = obj.spouseContrValues;
-                                  lumpSum = obj.lumpSumValues;
-                                  lumpSumTaxable = obj.lumpSumTaxableValues;
-                                  taxPayable = obj.taxPayableValues;
-
-                                  endingVal = obj.endingValues;
-                                  TaxableEndingVal = obj.TaxableEndingValues;
-                                  TaxFreeEndingVal = obj.TaxFreeEndingValues;
-                                  endingValPV = obj.endingValuesPV;
-
-
-                              }
-
-
-                              obj["owner"] = x.superId;
-                              obj["type"] = "Partner";
-                              obj["name"] = "Opening Value";
-
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  //BeginningValue
-                                  if (n == 1) {
-                                      if (x.startDateType == "Existing") {
-                                          begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-
-                                  }
-                                  else {
-                                      if ((this.clientDetails.startDate + i) == x.startDate) {
-                                          begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                      }
-                                      else if ((this.clientDetails.startDate + i) < x.startDate) {
-
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-                                      else {
-
-                                          begVal[this.clientDetails.startDate + i] = (Number(endingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
-                                      }
-                                  }
-
-
-                                  if ((this.clientDetails.startDate + i) == x.startDate) {
-                                      TaxableBegVal[this.clientDetails.startDate + i] = x.taxableComponent.toFixed();
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = x.taxFreeComponent.toFixed();
-                                  }
-                                  else if ((this.clientDetails.startDate + i) < x.startDate) {
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = 0;
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
-                                  }
-                                  else {
-
-                                      TaxableBegVal[this.clientDetails.startDate + i] = (Number(TaxableEndingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
-                                      TaxFreeBegVal[this.clientDetails.startDate + i] = (Number(TaxFreeEndingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
-                                  }
-                              }
-                              else {
-                                  TaxableBegVal[this.clientDetails.startDate + i] = 0;
-                                  TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
-                                  begVal[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              ////growth & income
-                              var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
-                              var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
-
-                              var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
-
-
-                              var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
-                              var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
-
-                              if (typeof growthVal === "number" && !isNaN(growthVal)) {
-                                  growth[this.clientDetails.startDate + i] = growthVal.toFixed();
-                              }
-                              else {
-                                  growth[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
-                                  income[this.clientDetails.startDate + i] = incomeVal.toFixed();
-                              }
-                              else {
-                                  income[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //FrankingCredits
-
-                              var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
-                              var ctr = Number(corporateTaxRate[0].percentage) / 100;
-
-                              frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
-
-                              //insurance
-
-                              let insuranceVal: number = 0;
-
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  insuranceVal = parseInt(x.insuranceCost);
-                              }
-
-                              insurance[this.clientDetails.startDate + i] = insuranceVal;
-
-                              //Super Guarantee
-
-                              var cc_cap = this.superAssumptions.filter((a: any) => a.type == "CC_Cap");
-                              var cc_cap_val = cc_cap[0].value;
-
-                              var ncc_cap = this.superAssumptions.filter((a: any) => a.type == "NCC_Cap");
-                              var ncc_cap_val = cc_cap[0].value;
-
-                              var mscb = this.superAssumptions.filter((a: any) => a.type == "MSCB");
-                              var mscb_val = mscb[0].value;
-
-
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (x.increaseToLimit == "Y") {
-
-                                      let ContributionSum: number = 0;
-                                      this.superSS.forEach((y: any) => {
-
-                                          if (y.fromDateType == "Start") {
-                                              y.fromDate = this.clientDetails.startDate;
-                                          }
-                                          if (y.toDateType == "End") {
-                                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                          }
-
-                                          if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                              var t = parseInt(y.amount);
-                                              ContributionSum = ContributionSum + t;
-                                          }
-
-                                      });
-
-                                      sgContr[this.clientDetails.startDate + i] = (cc_cap_val - ContributionSum).toFixed();
-                                  }
-                                  else {
-                                      //TODO: get SGCRatev-verify
-                                      var sgcRate: number = 1;
-
-                                      if (x.sgrate == "SGC") {
-                                          var sgc = this.sgcRates.sort((a: any, b: any) => a.year - b.year);
-                                          var currentYear = this.clientDetails.startDate + i;
-
-
-                                          for (var j = 0; j < sgc.length; j++) {
-
-
-                                              if ((j == (sgc.length - 1)) && ((this.clientDetails.startDate + i) >= sgc[j].year)) {
-                                                  sgcRate = sgc[j].sgcrate1;
-
-                                              }
-                                              else if (j == 0 && ((this.clientDetails.startDate + i) <= sgc[j].year)) {
-                                                  sgcRate = sgc[j].sgcrate1;
-                                                  break;
-
-                                              }
-                                              else if ((this.clientDetails.startDate + i) > sgc[j].year && (this.clientDetails.startDate + i) <= sgc[j + 1].year) {
-                                                  sgcRate = sgc[j + 1].sgcrate1;
-                                                  break;
-
-                                              }
-                                          }
-
-                                      }
-                                      else {
-                                          sgcRate = Number(x.sgrate);
-                                      }
-
-                                      var pEmploymentIncome = partnerEmploymentIncome.filter((g: any) => g.type === "Employment");
-
-                                      var totalpEmploymentIncome = 0;
-                                      for (var k = 0; k < pEmploymentIncome.length; k++) {
-                                          if (isNaN(pEmploymentIncome[k].values[this.clientDetails.startDate + i])) {
-                                              continue;
-                                          }
-                                          totalpEmploymentIncome += Number(pEmploymentIncome[k].values[this.clientDetails.startDate + i]);
-                                      }
-
-                                      //TODO: Verify if correct
-                                      //sgContr[this.clientDetails.startDate + i] = Math.min((x.superSalary * (sgcRate / 100)), mscb_val);
-                                      sgContr[this.clientDetails.startDate + i] = (Math.min((totalpEmploymentIncome * (sgcRate / 100)), mscb_val)).toFixed();
-
-                                  }
-                              }
-                              else {
-                                  sgContr[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Salary Sacrifice
-
-                              let SalarySacrificeSum: number = 0;
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  this.superSS.forEach((y: any) => { // client
-
-                                      if (y.fromDateType == "Start") {
-                                          y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
-                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
-
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                          if (y.increaseToLimit == "Y") {
-
-                                              var sgContr: number = 0;
-                                              var sgcRate: number = 1;
-
-
-
-                                              if (x.sgrate == "SGC") {
-                                                  var sgc = this.sgcRates.sort((a: any, b: any) => a.year - b.year);
-                                                  var currentYear = this.clientDetails.startDate + i;
-                                                  for (var j = 0; j < sgc.length; j++) {
-                                                      if ((j == (sgc.length - 1)) && ((this.clientDetails.startDate + i) >= sgc[j].year)) {
-                                                          sgcRate = sgc[j].sgcrate1;
-
-                                                      }
-                                                      else if (j == 0 && ((this.clientDetails.startDate + i) <= sgc[j].year)) {
-                                                          sgcRate = sgc[j].sgcrate1;
-                                                          break;
-
-                                                      }
-                                                      else if ((this.clientDetails.startDate + i) > sgc[j].year && (this.clientDetails.startDate + i) <= sgc[j + 1].year) {
-                                                          sgcRate = sgc[j + 1].sgcrate1;
-                                                          break;
-
-                                                      }
-                                                  }
-
-                                              }
-                                              else {
-                                                  sgcRate = Number(x.sgrate);
-                                              }
-
-                                              var pEmploymentIncome = partnerEmploymentIncome.filter((g: any) => g.type === "Employment");
-
-                                              var totalpEmploymentIncome = 0;
-                                              for (var k = 0; k < pEmploymentIncome.length; k++) {
-                                                  if (isNaN(pEmploymentIncome[k].values[this.clientDetails.startDate + i])) {
-                                                      continue;
-                                                  }
-                                                  totalpEmploymentIncome += Number(pEmploymentIncome[k].values[this.clientDetails.startDate + i]);
-                                              }
-
-                                              //TODO: Verify if correct
-                                              sgContr = Math.min((totalpEmploymentIncome * (sgcRate / 100)), mscb_val);
-                                              SalarySacrificeSum = cc_cap_val - sgContr;
-                                          }
-                                          else {
-                                              var t = parseInt(y.amount);
-                                              SalarySacrificeSum = SalarySacrificeSum + t;
-                                          }
-
-
-
-                                      }
-
-                                  });
-
-                                  ssContr[this.clientDetails.startDate + i] = (SalarySacrificeSum).toFixed();
-                              }
-                              else {
-                                  ssContr[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //PNC Contribution
+                            }
+                          }
+
+                          //PNC Contribution
+                          if (p == 0) {
+                            pncContr[this.clientDetails.startDate + i] = 0;
+                          }
+                          else {
+                            if (superStrategyNCC.length > 0 && superStrategyNCC[0].AllocatedValue > 0) {
+                              pncContr[this.clientDetails.startDate + i] = Number(superStrategyNCC[0].AllocatedValue);
+                            }
+                            else {
                               let PNCContributionSum: number = 0;
                               if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  this.superPNC.forEach((y: any) => { // client
+                                this.superPNC.forEach((y: any) => { // client
 
-                                      if (y.fromDateType == "Start") {
+                                  if (y.fromDateType == "Start") {
+                                    y.fromDate = this.clientDetails.startDate;
+                                  }
+                                  if (y.toDateType == "End") {
+                                    y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                  }
+
+                                  if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                    if (y.increaseToLimit == "Y") {
+                                      let SpouseSum: number = 0;
+                                      this.superSpouse.forEach((y: any) => {
+
+                                        if (y.fromDateType == "Start") {
                                           y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
+                                        }
+                                        if (y.toDateType == "End") {
                                           y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
+                                        }
 
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                          if (y.increaseToLimit == "Y") {
-                                              let SpouseSum: number = 0;
-                                              this.superSpouse.forEach((y: any) => {
-
-                                                  if (y.fromDateType == "Start") {
-                                                      y.fromDate = this.clientDetails.startDate;
-                                                  }
-                                                  if (y.toDateType == "End") {
-                                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                                  }
-
-                                                  if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                                      var t = parseInt(y.amount);
-                                                      SpouseSum = SpouseSum + t;
-                                                  }
-
-                                              });
-
-                                              PNCContributionSum = ncc_cap_val - SpouseSum;
-
-                                          }
-                                          else {
-                                              var t = parseInt(y.amount);
-                                              PNCContributionSum = PNCContributionSum + t;
-                                          }
-                                      }
-
-                                  });
-                                  pncContr[this.clientDetails.startDate + i] = (PNCContributionSum).toFixed();
-                              }
-                              else {
-                                  pncContr[this.clientDetails.startDate + i] = 0;
-                              }
-
-                              //Spouse Contribution
-                              let SpouseContributionSum: number = 0;
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  this.superSpouse.forEach((y: any) => { // client
-
-                                      if (y.fromDateType == "Start") {
-                                          y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
-                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
-
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                          if (y.increaseToLimit == "Y") {
-                                              let PNCSum: number = 0;
-                                              this.superPNC.forEach((y: any) => {
-
-                                                  if (y.fromDateType == "Start") {
-                                                      y.fromDate = this.clientDetails.startDate;
-                                                  }
-                                                  if (y.toDateType == "End") {
-                                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                                  }
-
-                                                  if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                                      var t = parseInt(y.amount);
-                                                      PNCSum = PNCSum + t;
-                                                  }
-
-                                              });
-
-                                              SpouseContributionSum = ncc_cap_val - PNCSum;
-
-                                          }
-                                          else {
-                                              var t = parseInt(y.amount);
-                                              SpouseContributionSum = SpouseContributionSum + t;
-                                          }
-                                      }
-
-                                  });
-                                  spouseContr[this.clientDetails.startDate + i] = (SpouseContributionSum).toFixed();
-                              }
-                              else {
-                                  spouseContr[this.clientDetails.startDate + i] = 0;
-                              }
-                              //Lumpsum Withdrawals
-                              let LumpsumWithdrawalsSum: number = 0;
-                              let LumpsumTaxableSum: number = 0;
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  this.superLumpSum.forEach((y: any) => { // client
-
-                                      if (y.fromDateType == "Start") {
-                                          y.fromDate = this.clientDetails.startDate;
-                                      }
-                                      if (y.toDateType == "End") {
-                                          y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                      }
-
-                                      if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                        if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
                                           var t = parseInt(y.amount);
-                                          LumpsumWithdrawalsSum = LumpsumWithdrawalsSum + t;
-                                      }
+                                          SpouseSum = SpouseSum + t;
+                                        }
+
+                                      });
+
+                                      PNCContributionSum = ncc_cap_val - SpouseSum;
+
+                                    }
+                                    else {
+                                      var t = parseInt(y.amount);
+                                      PNCContributionSum = PNCContributionSum + t;
+                                    }
+                                  }
+
+                                });
+                                pncContr[this.clientDetails.startDate + i] = (PNCContributionSum).toFixed();;
+                              }
+                              else {
+                                pncContr[this.clientDetails.startDate + i] = 0;
+                              }
+                            }
+                          }
+
+
+                          //Spouse Contribution
+                          let SpouseContributionSum: number = 0;
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            this.superSpouse.forEach((y: any) => { // client
+
+                              if (y.fromDateType == "Start") {
+                                y.fromDate = this.clientDetails.startDate;
+                              }
+                              if (y.toDateType == "End") {
+                                y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                              }
+
+                              if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                if (y.increaseToLimit == "Y") {
+                                  let PNCSum: number = 0;
+                                  this.superPNC.forEach((y: any) => {
+
+                                    if (y.fromDateType == "Start") {
+                                      y.fromDate = this.clientDetails.startDate;
+                                    }
+                                    if (y.toDateType == "End") {
+                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                    }
+
+                                    if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                      var t = parseInt(y.amount);
+                                      PNCSum = PNCSum + t;
+                                    }
 
                                   });
-                                  lumpSum[this.clientDetails.startDate + i] = LumpsumWithdrawalsSum;
+
+                                  SpouseContributionSum = ncc_cap_val - PNCSum;
+
+                                }
+                                else {
+                                  var t = parseInt(y.amount);
+                                  SpouseContributionSum = SpouseContributionSum + t;
+                                }
+                              }
+
+                            });
+                            spouseContr[this.clientDetails.startDate + i] = (SpouseContributionSum).toFixed();
+                          }
+                          else {
+                            spouseContr[this.clientDetails.startDate + i] = 0;
+                          }
+                          //Lumpsum Withdrawals
+                          let LumpsumWithdrawalsSum: number = 0;
+                          let LumpsumTaxableSum: number = 0;
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            this.superLumpSum.forEach((y: any) => { // client
+
+                              if (y.fromDateType == "Start") {
+                                y.fromDate = this.clientDetails.startDate;
+                              }
+                              if (y.toDateType == "End") {
+                                y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                              }
+
+                              if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                var t = parseInt(y.amount);
+                                LumpsumWithdrawalsSum = LumpsumWithdrawalsSum + t;
+                              }
+
+                            });
+                            lumpSum[this.clientDetails.startDate + i] = LumpsumWithdrawalsSum;
 
 
-                                  if (LumpsumWithdrawalsSum > 0) {
-                                      var TaxableBeforLS = Number(TaxableBegVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]);
-                                      //TODO: Add govtContr
-                                      var ValueBeforeLS = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) + Number(pncContr[this.clientDetails.startDate + i]) + Number(spouseContr[this.clientDetails.startDate + i]);
-                                      if (TaxableBeforLS != 0 && ValueBeforeLS != 0) {
-                                          lumpSumTaxable[this.clientDetails.startDate + i] = LumpsumWithdrawalsSum * (TaxableBeforLS / ValueBeforeLS);
+                            if (LumpsumWithdrawalsSum > 0) {
+                              var TaxableBeforLS = Number(TaxableBegVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]);
+                              //TODO: Add govtContr
+                              var ValueBeforeLS = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) + Number(pncContr[this.clientDetails.startDate + i]) + Number(spouseContr[this.clientDetails.startDate + i]);
+                              if (TaxableBeforLS != 0 && ValueBeforeLS != 0) {
+                                lumpSumTaxable[this.clientDetails.startDate + i] = LumpsumWithdrawalsSum * (TaxableBeforLS / ValueBeforeLS);
+                              }
+                              else {
+                                lumpSumTaxable[this.clientDetails.startDate + i] = 0;
+                              }
+                            }
+                            else {
+                              lumpSumTaxable[this.clientDetails.startDate + i] = 0;
+                            }
+
+                          }
+                          else {
+                            lumpSum[this.clientDetails.startDate + i] = 0;
+                            lumpSumTaxable[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          //Taxes Payable
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            var earningsTax = this.superAssumptions.filter((a: any) => a.type == "EarningsTaxRate");
+                            var earningsTax_val = earningsTax[0].value;
+
+                            var ccTaxRate = this.superAssumptions.filter((a: any) => a.type == "CCTaxRate");
+                            var ccTaxRate_val = ccTaxRate[0].value;
+
+                            var addTaxRate = this.superAssumptions.filter((a: any) => a.type == "AddTaxRate");
+                            var addTaxRate_val = addTaxRate[0].value;
+
+                            let ccTax: number = 0;
+                            var EarningsTax = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i])) * (earningsTax_val / 100);
+
+                            //var taxableIncome: any = {};
+                            //taxableIncome = this.clientTaxableIncome.filter(c => c.owner === "ClientTaxableIncome");
+                            //let taxableIncomeVal: number = Number(taxableIncome[0].values[this.clientDetails.startDate + i]);
+                            //if (taxableIncomeVal <= 250000) {
+                            ccTax = (Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i])) * (ccTaxRate_val / 100);
+                            //}
+                            //else {
+                            //    ccTax = (sgContr[this.clientDetails.startDate + i] + ssContr[this.clientDetails.startDate + i]) * ((ccTaxRate_val / 100) + (addTaxRate_val / 100));
+
+                            //}
+                            taxPayable[this.clientDetails.startDate + i] = (EarningsTax + ccTax).toFixed()
+                          }
+                          else {
+                            taxPayable[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+
+
+                          //Ending Value
+                          endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) + Number(pncContr[this.clientDetails.startDate + i]) + Number(spouseContr[this.clientDetails.startDate + i]) - Number(taxPayable[this.clientDetails.startDate + i]) - Number(lumpSum[this.clientDetails.startDate + i])).toFixed()
+
+                          ////Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = Number(inflation[0].percentage) / 100;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+                          //Ending Value - Taxable
+                          TaxableEndingVal[this.clientDetails.startDate + i] = (Number(TaxableBegVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) - Number(taxPayable[this.clientDetails.startDate + i]) - Number(lumpSum[this.clientDetails.startDate + i])).toFixed();
+
+                          TaxFreeEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) - Number(TaxableEndingVal[this.clientDetails.startDate + i])).toFixed();
+
+
+                          obj["BegValues"] = begVal;
+                          obj["TaxableBegValues"] = TaxableBegVal;
+                          obj["TaxFreeBegValues"] = TaxFreeBegVal;
+                          obj["growthValues"] = growth;
+                          obj["incomeValues"] = income;
+                          obj["frankingCreditsValues"] = frankingCredits;
+                          obj["insuranceValues"] = insurance;
+                          obj["sgContrValues"] = sgContr;
+                          obj["ssContrValues"] = ssContr;
+                          obj["pncContrValues"] = pncContr;
+                          obj["spouseContrValues"] = spouseContr;
+                          obj["lumpSumValues"] = lumpSum;
+                          obj["lumpSumTaxableValues"] = lumpSumTaxable;
+                          obj["taxPayableValues"] = taxPayable;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["TaxableEndingValues"] = TaxableEndingVal;
+                          obj["TaxFreeEndingValues"] = TaxFreeEndingVal;
+
+                          if (this.SuperValueOptimized.find((y: any) => y.owner === x.superId) != null) {
+                            this.SuperValueOptimized[this.SuperValueOptimized.findIndex((c: any) => c.owner === x.superId)] = obj;
+                          }
+                          else {
+                            this.SuperValueOptimized.push(obj);
+
+                          }
+
+                        });
+                        this.superPartner.forEach((x: any) => { // client
+
+                          this.superSS = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "SS");
+                          this.superPNC = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "PNC");
+                          this.superSpouse = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "Spouse");
+                          this.superLumpSum = this.superDetails.filter((c: any) => c.superId === x.superId).filter((r: any) => r.type === "LumpSum");
+
+
+                          if (x.startDateType == "Start" || x.startDateType == "Existing") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Retain") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period));
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          var obj = this.SuperValueOptimized.find((y: any) => y.owner === x.superId);
+                          var begVal: any = {};
+                          var TaxableBegVal: any = {};
+                          var TaxFreeBegVal: any = {};
+                          var growth: any = {};
+                          var income: any = {};
+                          var frankingCredits: any = {};
+                          var insurance: any = {};
+                          var sgContr: any = {};
+                          var ssContr: any = {};
+                          var pncContr: any = {};
+                          var spouseContr: any = {};
+                          var lumpSum: any = {};
+                          var lumpSumTaxable: any = {};
+                          var taxPayable: any = {};
+
+                          var endingVal: any = {};
+                          var TaxableEndingVal: any = {};
+                          var TaxFreeEndingVal: any = {};
+                          var endingValPV: any = {};
+
+                          if (obj == null) {
+                            obj = {};
+
+                          }
+                          else {
+                            begVal = obj.BegValues;
+                            TaxableBegVal = obj.TaxableBegValues;
+                            TaxFreeBegVal = obj.TaxFreeBegValues;
+                            growth = obj.growthValues;
+                            income = obj.incomeValues;
+                            frankingCredits = obj.frankingCreditsValues;
+
+                            insurance = obj.insuranceValues;
+                            sgContr = obj.sgContrValues;
+                            ssContr = obj.ssContrValues;
+                            pncContr = obj.pncContrValues;
+                            spouseContr = obj.spouseContrValues;
+                            lumpSum = obj.lumpSumValues;
+                            lumpSumTaxable = obj.lumpSumTaxableValues;
+                            taxPayable = obj.taxPayableValues;
+
+                            endingVal = obj.endingValues;
+                            TaxableEndingVal = obj.TaxableEndingValues;
+                            TaxFreeEndingVal = obj.TaxFreeEndingValues;
+                            endingValPV = obj.endingValuesPV;
+
+
+                          }
+
+
+                          obj["owner"] = x.superId;
+                          obj["type"] = "Partner";
+                          obj["name"] = "Opening Value";
+
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            //BeginningValue
+                            if (n == 1) {
+                              if (x.startDateType == "Existing") {
+                                begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                              }
+                              else {
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+
+                            }
+                            else {
+                              if ((this.clientDetails.startDate + i) == x.startDate) {
+                                begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                              }
+                              else if ((this.clientDetails.startDate + i) < x.startDate) {
+
+                                begVal[this.clientDetails.startDate + i] = 0;
+                              }
+                              else {
+
+                                begVal[this.clientDetails.startDate + i] = (Number(endingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
+                              }
+                            }
+
+
+                            if ((this.clientDetails.startDate + i) == x.startDate) {
+                              TaxableBegVal[this.clientDetails.startDate + i] = x.taxableComponent.toFixed();
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = x.taxFreeComponent.toFixed();
+                            }
+                            else if ((this.clientDetails.startDate + i) < x.startDate) {
+
+                              TaxableBegVal[this.clientDetails.startDate + i] = 0;
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
+                            }
+                            else {
+
+                              TaxableBegVal[this.clientDetails.startDate + i] = (Number(TaxableEndingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
+                              TaxFreeBegVal[this.clientDetails.startDate + i] = (Number(TaxFreeEndingVal[Number(this.clientDetails.startDate + i) - 1])).toFixed();
+                            }
+                          }
+                          else {
+                            TaxableBegVal[this.clientDetails.startDate + i] = 0;
+                            TaxFreeBegVal[this.clientDetails.startDate + i] = 0;
+                            begVal[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+                          ////growth & income
+                          var growthUnAdj = (x.growth / 100) * Number(begVal[this.clientDetails.startDate + i]);
+                          var incomeUnAdj = (x.income / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+                          var ICR = (x.productFees / 100) * Number(begVal[this.clientDetails.startDate + i]);
+
+
+                          var growthVal = growthUnAdj - (ICR * (growthUnAdj / (growthUnAdj + incomeUnAdj)));
+                          var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
+
+                          if (typeof growthVal === "number" && !isNaN(growthVal)) {
+                            growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                          }
+                          else {
+                            growth[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
+                            income[this.clientDetails.startDate + i] = incomeVal.toFixed();
+                          }
+                          else {
+                            income[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //FrankingCredits
+
+                          var corporateTaxRate = this.generalAssumptions.filter((a: any) => a.type == "CorporateTaxRate");
+                          var ctr = Number(corporateTaxRate[0].percentage) / 100;
+
+                          frankingCredits[this.clientDetails.startDate + i] = (income[this.clientDetails.startDate + i] * (ctr / (1 - ctr)) * (x.franked / 100)).toFixed();
+
+                          //insurance
+
+                          let insuranceVal: number = 0;
+
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            insuranceVal = parseInt(x.insuranceCost);
+                          }
+
+                          insurance[this.clientDetails.startDate + i] = insuranceVal;
+
+                          //Super Guarantee
+
+                          var cc_cap = this.superAssumptions.filter((a: any) => a.type == "CC_Cap");
+                          var cc_cap_val = cc_cap[0].value;
+
+                          var ncc_cap = this.superAssumptions.filter((a: any) => a.type == "NCC_Cap");
+                          var ncc_cap_val = cc_cap[0].value;
+
+                          var mscb = this.superAssumptions.filter((a: any) => a.type == "MSCB");
+                          var mscb_val = mscb[0].value;
+
+
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            if (x.increaseToLimit == "Y") {
+
+                              let ContributionSum: number = 0;
+                              this.superSS.forEach((y: any) => {
+
+                                if (y.fromDateType == "Start") {
+                                  y.fromDate = this.clientDetails.startDate;
+                                }
+                                if (y.toDateType == "End") {
+                                  y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                }
+
+                                if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                  var t = parseInt(y.amount);
+                                  ContributionSum = ContributionSum + t;
+                                }
+
+                              });
+
+                              sgContr[this.clientDetails.startDate + i] = (cc_cap_val - ContributionSum).toFixed();
+                            }
+                            else {
+                              //TODO: get SGCRatev-verify
+                              var sgcRate: number = 1;
+
+                              if (x.sgrate == "SGC") {
+                                var sgc = this.sgcRates.sort((a: any, b: any) => a.year - b.year);
+                                var currentYear = this.clientDetails.startDate + i;
+
+
+                                for (var j = 0; j < sgc.length; j++) {
+
+
+                                  if ((j == (sgc.length - 1)) && ((this.clientDetails.startDate + i) >= sgc[j].year)) {
+                                    sgcRate = sgc[j].sgcrate1;
+
+                                  }
+                                  else if (j == 0 && ((this.clientDetails.startDate + i) <= sgc[j].year)) {
+                                    sgcRate = sgc[j].sgcrate1;
+                                    break;
+
+                                  }
+                                  else if ((this.clientDetails.startDate + i) > sgc[j].year && (this.clientDetails.startDate + i) <= sgc[j + 1].year) {
+                                    sgcRate = sgc[j + 1].sgcrate1;
+                                    break;
+
+                                  }
+                                }
+
+                              }
+                              else {
+                                sgcRate = Number(x.sgrate);
+                              }
+
+                              var pEmploymentIncome = partnerEmploymentIncome.filter((g: any) => g.type === "Employment");
+
+                              var totalpEmploymentIncome = 0;
+                              for (var k = 0; k < pEmploymentIncome.length; k++) {
+                                if (isNaN(pEmploymentIncome[k].values[this.clientDetails.startDate + i])) {
+                                  continue;
+                                }
+                                totalpEmploymentIncome += Number(pEmploymentIncome[k].values[this.clientDetails.startDate + i]);
+                              }
+
+                              //TODO: Verify if correct
+                              //sgContr[this.clientDetails.startDate + i] = Math.min((x.superSalary * (sgcRate / 100)), mscb_val);
+                              sgContr[this.clientDetails.startDate + i] = (Math.min((totalpEmploymentIncome * (sgcRate / 100)), mscb_val)).toFixed();
+
+                            }
+                          }
+                          else {
+                            sgContr[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //Salary Sacrifice
+
+                          let SalarySacrificeSum: number = 0;
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            this.superSS.forEach((y: any) => { // client
+
+                              if (y.fromDateType == "Start") {
+                                y.fromDate = this.clientDetails.startDate;
+                              }
+                              if (y.toDateType == "End") {
+                                y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                              }
+
+                              if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                if (y.increaseToLimit == "Y") {
+
+                                  var sgContr: number = 0;
+                                  var sgcRate: number = 1;
+
+
+
+                                  if (x.sgrate == "SGC") {
+                                    var sgc = this.sgcRates.sort((a: any, b: any) => a.year - b.year);
+                                    var currentYear = this.clientDetails.startDate + i;
+                                    for (var j = 0; j < sgc.length; j++) {
+                                      if ((j == (sgc.length - 1)) && ((this.clientDetails.startDate + i) >= sgc[j].year)) {
+                                        sgcRate = sgc[j].sgcrate1;
+
                                       }
-                                      else {
-                                          lumpSumTaxable[this.clientDetails.startDate + i] = 0;
+                                      else if (j == 0 && ((this.clientDetails.startDate + i) <= sgc[j].year)) {
+                                        sgcRate = sgc[j].sgcrate1;
+                                        break;
+
                                       }
-                                  }
-                                  else {
-                                      lumpSumTaxable[this.clientDetails.startDate + i] = 0;
-                                  }
+                                      else if ((this.clientDetails.startDate + i) > sgc[j].year && (this.clientDetails.startDate + i) <= sgc[j + 1].year) {
+                                        sgcRate = sgc[j + 1].sgcrate1;
+                                        break;
 
-                              }
-                              else {
-                                  lumpSum[this.clientDetails.startDate + i] = 0;
-                                  lumpSumTaxable[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-                              //Taxes Payable
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  var earningsTax = this.superAssumptions.filter((a: any) => a.type == "EarningsTaxRate");
-                                  var earningsTax_val = earningsTax[0].value;
-
-                                  var ccTaxRate = this.superAssumptions.filter((a: any) => a.type == "CCTaxRate");
-                                  var ccTaxRate_val = ccTaxRate[0].value;
-
-                                  var addTaxRate = this.superAssumptions.filter((a: any) => a.type == "AddTaxRate");
-                                  var addTaxRate_val = addTaxRate[0].value;
-
-                                  let ccTax: number = 0;
-                                  var EarningsTax = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i])) * (earningsTax_val / 100);
-
-                                  //var taxableIncome: any = {};
-                                  //taxableIncome = this.clientTaxableIncome.filter(c => c.owner === "ClientTaxableIncome");
-                                  //let taxableIncomeVal: number = Number(taxableIncome[0].values[this.clientDetails.startDate + i]);
-                                  //if (taxableIncomeVal <= 250000) {
-                                  ccTax = (Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i])) * (ccTaxRate_val / 100);
-                                  //}
-                                  //else {
-                                  //    ccTax = (sgContr[this.clientDetails.startDate + i] + ssContr[this.clientDetails.startDate + i]) * ((ccTaxRate_val / 100) + (addTaxRate_val / 100));
-
-                                  //}
-                                  taxPayable[this.clientDetails.startDate + i] = (EarningsTax + ccTax).toFixed()
-                              }
-                              else {
-                                  taxPayable[this.clientDetails.startDate + i] = 0;
-                              }
-
-
-
-
-                              //Ending Value
-                              endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) + Number(pncContr[this.clientDetails.startDate + i]) + Number(spouseContr[this.clientDetails.startDate + i]) - Number(taxPayable[this.clientDetails.startDate + i]) - Number(lumpSum[this.clientDetails.startDate + i])).toFixed()
-
-                              ////Ending Value PV
-                              var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
-                              var inf = Number(inflation[0].percentage) / 100;
-                              var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
-                              endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
-
-                              //Ending Value - Taxable
-                              TaxableEndingVal[this.clientDetails.startDate + i] = (Number(TaxableBegVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) - Number(taxPayable[this.clientDetails.startDate + i]) - Number(lumpSum[this.clientDetails.startDate + i])).toFixed();
-
-                              TaxFreeEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) - Number(TaxableEndingVal[this.clientDetails.startDate + i])).toFixed();
-
-
-                              obj["BegValues"] = begVal;
-                              obj["TaxableBegValues"] = TaxableBegVal;
-                              obj["TaxFreeBegValues"] = TaxFreeBegVal;
-                              obj["growthValues"] = growth;
-                              obj["incomeValues"] = income;
-                              obj["frankingCreditsValues"] = frankingCredits;
-                              obj["insuranceValues"] = insurance;
-                              obj["sgContrValues"] = sgContr;
-                              obj["ssContrValues"] = ssContr;
-                              obj["pncContrValues"] = pncContr;
-                              obj["spouseContrValues"] = spouseContr;
-                              obj["lumpSumValues"] = lumpSum;
-                              obj["lumpSumTaxableValues"] = lumpSumTaxable;
-                              obj["taxPayableValues"] = taxPayable;
-                              obj["endingValues"] = endingVal;
-                              obj["endingValuesPV"] = endingValPV;
-                              obj["TaxableEndingValues"] = TaxableEndingVal;
-                              obj["TaxFreeEndingValues"] = TaxFreeEndingVal;
-
-                              if (this.SuperValueOptimized.find((y: any) => y.owner === x.superId) != null) {
-                                  this.SuperValueOptimized[this.SuperValueOptimized.findIndex((c: any) => c.owner === x.superId)] = obj;
-                              }
-                              else {
-                                  this.SuperValueOptimized.push(obj);
-
-                              }
-
-
-                          });
-
-                          //SuperTotals
-                          this.calculateTotalLumpSumWithdrawalsOptimized("TotalLumpSumWithdrawals", i);
-                          this.calculateTotalSalarySacrificeContributionOptimized("TotalSalarySacrificeContributions", i);
-                          this.calculateTotalPNCContibutionOptimized("TotalPNCContributions", i);
-                          this.calculateTotalSpouseContibutionOptimized("TotalSpouseContributions", i);
-                          this.calculateLumpSumTaxOptimized("LumpSum-client", "Client", i);
-                          this.calculateSalarySacrificeTaxOptimized("SalarySacrifice-client", "Client", i);
-                          this.calculateLumpSumTaxOptimized("LumpSum-partner", "Partner", i);
-                          this.calculateSalarySacrificeTaxOptimized("SalarySacrifice-partner", "Partner", i);
-
-
-                          //Calculate Tax Deductions
-                          this.EPRTClient.forEach((x: any) => { // client
-
-                              if (x.startDateType == "Start") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-
-
-
-                              var obj = this.ClientDeductionsOptimized.find((y: any) => y.id === x.cflowId);
-                              var obj1: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
-                              }
-                              else {
-                                  obj1 = obj.values;
-                                  j = obj.increment;
-                              }
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.cfname;
-                              obj["id"] = x.cflowId;
-
-
-
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (j == 0) {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+                                      }
+                                    }
 
                                   }
                                   else {
-                                      obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
+                                    sgcRate = Number(x.sgrate);
                                   }
-                                  j++;
-                              }
-                              else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
-                              }
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
 
+                                  var pEmploymentIncome = partnerEmploymentIncome.filter((g: any) => g.type === "Employment");
 
-                              if (this.ClientDeductionsOptimized.find((y: any) => y.id === x.cflowId) != null) {
-                                  this.ClientDeductionsOptimized[this.ClientDeductionsOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
-                              }
-                              else {
-                                  this.ClientDeductionsOptimized.push(obj);
-                              }
-
-                          })
-                          this.EPRTPartner.forEach((x: any) => { // client
-
-                              if (x.startDateType == "Start") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = this.PartnerDeductionsOptimized.find((y: any) => y.id === x.cflowId);
-                              var obj1: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
-                              }
-                              else {
-                                  obj1 = obj.values;
-                                  j = obj.increment;
-                              }
-                              obj["owner"] = x.owner;
-                              obj["name"] = x.cfname;
-                              obj["id"] = x.cflowId;
-
-
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (j == 0) {
-                                      obj1[this.clientDetails.startDate + i] = x.value.toFixed();
-
+                                  var totalpEmploymentIncome = 0;
+                                  for (var k = 0; k < pEmploymentIncome.length; k++) {
+                                    if (isNaN(pEmploymentIncome[k].values[this.clientDetails.startDate + i])) {
+                                      continue;
+                                    }
+                                    totalpEmploymentIncome += Number(pEmploymentIncome[k].values[this.clientDetails.startDate + i]);
                                   }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
-                                  }
-                                  j++;
+
+                                  //TODO: Verify if correct
+                                  sgContr = Math.min((totalpEmploymentIncome * (sgcRate / 100)), mscb_val);
+                                  SalarySacrificeSum = cc_cap_val - sgContr;
+                                }
+                                else {
+                                  var t = parseInt(y.amount);
+                                  SalarySacrificeSum = SalarySacrificeSum + t;
+                                }
+
+
+
+                              }
+
+                            });
+
+                            ssContr[this.clientDetails.startDate + i] = (SalarySacrificeSum).toFixed();
+                          }
+                          else {
+                            ssContr[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //PNC Contribution
+                          let PNCContributionSum: number = 0;
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            this.superPNC.forEach((y: any) => { // client
+
+                              if (y.fromDateType == "Start") {
+                                y.fromDate = this.clientDetails.startDate;
+                              }
+                              if (y.toDateType == "End") {
+                                y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                              }
+
+                              if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                if (y.increaseToLimit == "Y") {
+                                  let SpouseSum: number = 0;
+                                  this.superSpouse.forEach((y: any) => {
+
+                                    if (y.fromDateType == "Start") {
+                                      y.fromDate = this.clientDetails.startDate;
+                                    }
+                                    if (y.toDateType == "End") {
+                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                    }
+
+                                    if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                      var t = parseInt(y.amount);
+                                      SpouseSum = SpouseSum + t;
+                                    }
+
+                                  });
+
+                                  PNCContributionSum = ncc_cap_val - SpouseSum;
+
+                                }
+                                else {
+                                  var t = parseInt(y.amount);
+                                  PNCContributionSum = PNCContributionSum + t;
+                                }
+                              }
+
+                            });
+                            pncContr[this.clientDetails.startDate + i] = (PNCContributionSum).toFixed();
+                          }
+                          else {
+                            pncContr[this.clientDetails.startDate + i] = 0;
+                          }
+
+                          //Spouse Contribution
+                          let SpouseContributionSum: number = 0;
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            this.superSpouse.forEach((y: any) => { // client
+
+                              if (y.fromDateType == "Start") {
+                                y.fromDate = this.clientDetails.startDate;
+                              }
+                              if (y.toDateType == "End") {
+                                y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                              }
+
+                              if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                if (y.increaseToLimit == "Y") {
+                                  let PNCSum: number = 0;
+                                  this.superPNC.forEach((y: any) => {
+
+                                    if (y.fromDateType == "Start") {
+                                      y.fromDate = this.clientDetails.startDate;
+                                    }
+                                    if (y.toDateType == "End") {
+                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                    }
+
+                                    if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                      var t = parseInt(y.amount);
+                                      PNCSum = PNCSum + t;
+                                    }
+
+                                  });
+
+                                  SpouseContributionSum = ncc_cap_val - PNCSum;
+
+                                }
+                                else {
+                                  var t = parseInt(y.amount);
+                                  SpouseContributionSum = SpouseContributionSum + t;
+                                }
+                              }
+
+                            });
+                            spouseContr[this.clientDetails.startDate + i] = (SpouseContributionSum).toFixed();
+                          }
+                          else {
+                            spouseContr[this.clientDetails.startDate + i] = 0;
+                          }
+                          //Lumpsum Withdrawals
+                          let LumpsumWithdrawalsSum: number = 0;
+                          let LumpsumTaxableSum: number = 0;
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            this.superLumpSum.forEach((y: any) => { // client
+
+                              if (y.fromDateType == "Start") {
+                                y.fromDate = this.clientDetails.startDate;
+                              }
+                              if (y.toDateType == "End") {
+                                y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                              }
+
+                              if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                var t = parseInt(y.amount);
+                                LumpsumWithdrawalsSum = LumpsumWithdrawalsSum + t;
+                              }
+
+                            });
+                            lumpSum[this.clientDetails.startDate + i] = LumpsumWithdrawalsSum;
+
+
+                            if (LumpsumWithdrawalsSum > 0) {
+                              var TaxableBeforLS = Number(TaxableBegVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]);
+                              //TODO: Add govtContr
+                              var ValueBeforeLS = Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) + Number(pncContr[this.clientDetails.startDate + i]) + Number(spouseContr[this.clientDetails.startDate + i]);
+                              if (TaxableBeforLS != 0 && ValueBeforeLS != 0) {
+                                lumpSumTaxable[this.clientDetails.startDate + i] = LumpsumWithdrawalsSum * (TaxableBeforLS / ValueBeforeLS);
                               }
                               else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
+                                lumpSumTaxable[this.clientDetails.startDate + i] = 0;
                               }
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
+                            }
+                            else {
+                              lumpSumTaxable[this.clientDetails.startDate + i] = 0;
+                            }
+
+                          }
+                          else {
+                            lumpSum[this.clientDetails.startDate + i] = 0;
+                            lumpSumTaxable[this.clientDetails.startDate + i] = 0;
+                          }
 
 
-                              if (this.PartnerDeductionsOptimized.find((y: any) => y.id === x.cflowId) != null) {
-                                  this.PartnerDeductionsOptimized[this.PartnerDeductionsOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          //Taxes Payable
+                          if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                            var earningsTax = this.superAssumptions.filter((a: any) => a.type == "EarningsTaxRate");
+                            var earningsTax_val = earningsTax[0].value;
+
+                            var ccTaxRate = this.superAssumptions.filter((a: any) => a.type == "CCTaxRate");
+                            var ccTaxRate_val = ccTaxRate[0].value;
+
+                            var addTaxRate = this.superAssumptions.filter((a: any) => a.type == "AddTaxRate");
+                            var addTaxRate_val = addTaxRate[0].value;
+
+                            let ccTax: number = 0;
+                            var EarningsTax = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i])) * (earningsTax_val / 100);
+
+                            //var taxableIncome: any = {};
+                            //taxableIncome = this.clientTaxableIncome.filter(c => c.owner === "ClientTaxableIncome");
+                            //let taxableIncomeVal: number = Number(taxableIncome[0].values[this.clientDetails.startDate + i]);
+                            //if (taxableIncomeVal <= 250000) {
+                            ccTax = (Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i])) * (ccTaxRate_val / 100);
+                            //}
+                            //else {
+                            //    ccTax = (sgContr[this.clientDetails.startDate + i] + ssContr[this.clientDetails.startDate + i]) * ((ccTaxRate_val / 100) + (addTaxRate_val / 100));
+
+                            //}
+                            taxPayable[this.clientDetails.startDate + i] = (EarningsTax + ccTax).toFixed()
+                          }
+                          else {
+                            taxPayable[this.clientDetails.startDate + i] = 0;
+                          }
+
+
+
+
+                          //Ending Value
+                          endingVal[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) + Number(pncContr[this.clientDetails.startDate + i]) + Number(spouseContr[this.clientDetails.startDate + i]) - Number(taxPayable[this.clientDetails.startDate + i]) - Number(lumpSum[this.clientDetails.startDate + i])).toFixed()
+
+                          ////Ending Value PV
+                          var inflation = this.generalAssumptions.filter((a: any) => a.type == "Inflation");
+                          var inf = Number(inflation[0].percentage) / 100;
+                          var k: number = Number(this.clientDetails.startDate + i) - new Date().getFullYear();
+                          endingValPV[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) / Math.pow((1 + inf), (k))).toFixed();
+
+                          //Ending Value - Taxable
+                          TaxableEndingVal[this.clientDetails.startDate + i] = (Number(TaxableBegVal[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(insurance[this.clientDetails.startDate + i]) + Number(sgContr[this.clientDetails.startDate + i]) + Number(ssContr[this.clientDetails.startDate + i]) - Number(taxPayable[this.clientDetails.startDate + i]) - Number(lumpSum[this.clientDetails.startDate + i])).toFixed();
+
+                          TaxFreeEndingVal[this.clientDetails.startDate + i] = (Number(endingVal[this.clientDetails.startDate + i]) - Number(TaxableEndingVal[this.clientDetails.startDate + i])).toFixed();
+
+
+                          obj["BegValues"] = begVal;
+                          obj["TaxableBegValues"] = TaxableBegVal;
+                          obj["TaxFreeBegValues"] = TaxFreeBegVal;
+                          obj["growthValues"] = growth;
+                          obj["incomeValues"] = income;
+                          obj["frankingCreditsValues"] = frankingCredits;
+                          obj["insuranceValues"] = insurance;
+                          obj["sgContrValues"] = sgContr;
+                          obj["ssContrValues"] = ssContr;
+                          obj["pncContrValues"] = pncContr;
+                          obj["spouseContrValues"] = spouseContr;
+                          obj["lumpSumValues"] = lumpSum;
+                          obj["lumpSumTaxableValues"] = lumpSumTaxable;
+                          obj["taxPayableValues"] = taxPayable;
+                          obj["endingValues"] = endingVal;
+                          obj["endingValuesPV"] = endingValPV;
+                          obj["TaxableEndingValues"] = TaxableEndingVal;
+                          obj["TaxFreeEndingValues"] = TaxFreeEndingVal;
+
+                          if (this.SuperValueOptimized.find((y: any) => y.owner === x.superId) != null) {
+                            this.SuperValueOptimized[this.SuperValueOptimized.findIndex((c: any) => c.owner === x.superId)] = obj;
+                          }
+                          else {
+                            this.SuperValueOptimized.push(obj);
+
+                          }
+
+
+                        });
+                        //SuperTotals
+                        this.calculateTotalLumpSumWithdrawalsOptimized("TotalLumpSumWithdrawals", i);
+                        this.calculateTotalSalarySacrificeContributionOptimized("TotalSalarySacrificeContributions", i);
+                        this.calculateTotalPNCContibutionOptimized("TotalPNCContributions", i);
+                        this.calculateTotalSpouseContibutionOptimized("TotalSpouseContributions", i);
+                        this.calculateLumpSumTaxOptimized("LumpSum-client", "Client", i);
+                        this.calculateSalarySacrificeTaxOptimized("SalarySacrifice-client", "Client", i);
+                        this.calculateLumpSumTaxOptimized("LumpSum-partner", "Partner", i);
+                        this.calculateSalarySacrificeTaxOptimized("SalarySacrifice-partner", "Partner", i);
+
+                        //Calculate Tax Deductions
+                        this.EPRTClient.forEach((x: any) => { // client
+
+                          if (x.startDateType == "Start") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+
+                          var obj = this.ClientDeductionsOptimized.find((y: any) => y.id === x.cflowId);
+                          var obj1: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            j = obj.increment;
+                          }
+                          obj["owner"] = x.owner;
+                          obj["name"] = x.cfname;
+                          obj["id"] = x.cflowId;
+
+
+                          if (p == 0) {
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (j == 0) {
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+
                               }
                               else {
-                                  this.PartnerDeductionsOptimized.push(obj);
+                                obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
                               }
-
-                          })
-                          this.EPRTJoint.forEach((x: any) => { // joint
-
-                              if (x.startDateType == "Start") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
-
-                              var obj = this.ClientDeductionsOptimized.find((y: any) => y.id === "ClientJoint" + x.cflowId);
-                              var obj1: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
-                              }
-                              else {
-                                  obj1 = obj.values;
-                                  j = obj.increment;
-                              }
-                              obj["owner"] = "Client";
-                              obj["name"] = x.cfname;
-                              obj["id"] = "ClientJoint" + x.cflowId;
+                              j++;
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
 
 
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (j == 0) {
-                                      obj1[this.clientDetails.startDate + i] = (x.value / 2).toFixed();
+                          if (this.ClientDeductionsOptimized.find((y: any) => y.id === x.cflowId) != null) {
+                            this.ClientDeductionsOptimized[this.ClientDeductionsOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          }
+                          else {
+                            this.ClientDeductionsOptimized.push(obj);
+                          }
 
-                                  }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = ((x.value * (Math.pow((1 + x.indexation / 100), j))) / 2).toFixed();
-                                  }
-                                  j++;
-                              }
-                              else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
-                              }
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
+                        })
+                        this.EPRTPartner.forEach((x: any) => { // client
 
+                          if (x.startDateType == "Start") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
 
-                              if (this.ClientDeductionsOptimized.find((y: any) => y.id === "ClientJoint" + x.cflowId) != null) {
-                                  this.ClientDeductionsOptimized[this.ClientDeductionsOptimized.findIndex((c: any) => c.id === "ClientJoint" + x.cflowId)] = obj;
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          var obj = this.PartnerDeductionsOptimized.find((y: any) => y.id === x.cflowId);
+                          var obj1: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            j = obj.increment;
+                          }
+                          obj["owner"] = x.owner;
+                          obj["name"] = x.cfname;
+                          obj["id"] = x.cflowId;
+
+                          if (p == 0) {
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (j == 0) {
+                                obj1[this.clientDetails.startDate + i] = x.value.toFixed();
+
                               }
                               else {
-                                  this.ClientDeductionsOptimized.push(obj);
+                                obj1[this.clientDetails.startDate + i] = (x.value * (Math.pow((1 + x.indexation / 100), j))).toFixed();
                               }
+                              j++;
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
 
-                          })
-                          this.EPRTJoint.forEach((x: any) => { // joint
 
-                              if (x.startDateType == "Start") {
-                                  x.startDate = this.clientDetails.startDate
-                              }
-                              else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.startDateType == "Partner Retirement") {
-                                  x.startDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
+                          if (this.PartnerDeductionsOptimized.find((y: any) => y.id === x.cflowId) != null) {
+                            this.PartnerDeductionsOptimized[this.PartnerDeductionsOptimized.findIndex((c: any) => c.id === x.cflowId)] = obj;
+                          }
+                          else {
+                            this.PartnerDeductionsOptimized.push(obj);
+                          }
 
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                              else if (x.endDateType == "Partner Retirement") {
-                                  x.endDate = this.clientDetails.partnerRetirementYear - 1;
-                              }
+                        })
+                        this.EPRTJoint.forEach((x: any) => { // joint
 
-                              var obj = this.PartnerDeductionsOptimized.find((y: any) => y.id === "PartnerJoint" + x.cflowId);
-                              var obj1: any = {};
-                              var j: number = 0;
-                              if (obj == null) {
-                                  obj = {};
-                                  j = 0;
+                          if (x.startDateType == "Start") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          var obj = this.ClientDeductionsOptimized.find((y: any) => y.id === "ClientJoint" + x.cflowId);
+                          var obj1: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            j = obj.increment;
+                          }
+                          obj["owner"] = "Client";
+                          obj["name"] = x.cfname;
+                          obj["id"] = "ClientJoint" + x.cflowId;
+
+                          if (p == 0) {
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (j == 0) {
+                                obj1[this.clientDetails.startDate + i] = (x.value / 2).toFixed();
+
                               }
                               else {
-                                  obj1 = obj.values;
-                                  j = obj.increment;
+                                obj1[this.clientDetails.startDate + i] = ((x.value * (Math.pow((1 + x.indexation / 100), j))) / 2).toFixed();
                               }
-                              obj["owner"] = "Partner";
-                              obj["name"] = x.cfname;
-                              obj["id"] = "PartnerJoint" + x.cflowId;
+                              j++;
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
 
 
-                              if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
-                                  if (j == 0) {
-                                      obj1[this.clientDetails.startDate + i] = (x.value / 2).toFixed();
+                          if (this.ClientDeductionsOptimized.find((y: any) => y.id === "ClientJoint" + x.cflowId) != null) {
+                            this.ClientDeductionsOptimized[this.ClientDeductionsOptimized.findIndex((c: any) => c.id === "ClientJoint" + x.cflowId)] = obj;
+                          }
+                          else {
+                            this.ClientDeductionsOptimized.push(obj);
+                          }
 
-                                  }
-                                  else {
-                                      obj1[this.clientDetails.startDate + i] = ((x.value * (Math.pow((1 + x.indexation / 100), j))) / 2).toFixed();
-                                  }
-                                  j++;
+                        })
+                        this.EPRTJoint.forEach((x: any) => { // joint
+
+                          if (x.startDateType == "Start") {
+                            x.startDate = this.clientDetails.startDate
+                          }
+                          else if (x.startDateType == "Client Retirement") {
+                            x.startDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.startDateType == "Partner Retirement") {
+                            x.startDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          if (x.endDateType == "End") {
+                            x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                          }
+                          else if (x.endDateType == "Client Retirement") {
+                            x.endDate = this.clientDetails.clientRetirementYear - 1;
+                          }
+                          else if (x.endDateType == "Partner Retirement") {
+                            x.endDate = this.clientDetails.partnerRetirementYear - 1;
+                          }
+
+                          var obj = this.PartnerDeductionsOptimized.find((y: any) => y.id === "PartnerJoint" + x.cflowId);
+                          var obj1: any = {};
+                          var j: number = 0;
+                          if (obj == null) {
+                            obj = {};
+                            j = 0;
+                          }
+                          else {
+                            obj1 = obj.values;
+                            j = obj.increment;
+                          }
+                          obj["owner"] = "Partner";
+                          obj["name"] = x.cfname;
+                          obj["id"] = "PartnerJoint" + x.cflowId;
+
+                          if (p == 0) {
+                            if (x.startDate <= this.clientDetails.startDate + i && x.endDate >= this.clientDetails.startDate + i) {
+                              if (j == 0) {
+                                obj1[this.clientDetails.startDate + i] = (x.value / 2).toFixed();
+
                               }
                               else {
-                                  obj1[this.clientDetails.startDate + i] = 0;
+                                obj1[this.clientDetails.startDate + i] = ((x.value * (Math.pow((1 + x.indexation / 100), j))) / 2).toFixed();
                               }
-                              obj["values"] = obj1;
-                              obj["increment"] = j;
+                              j++;
+                            }
+                            else {
+                              obj1[this.clientDetails.startDate + i] = 0;
+                            }
+                          }
+                          obj["values"] = obj1;
+                          obj["increment"] = j;
 
-                              if (this.PartnerDeductionsOptimized.find((y: any) => y.id === "PartnerJoint" + x.cflowId) != null) {
-                                  this.PartnerDeductionsOptimized[this.PartnerDeductionsOptimized.findIndex((c: any) => c.id === "PartnerJoint" + x.cflowId)] = obj;
-                              }
-                              else {
-                                  this.PartnerDeductionsOptimized.push(obj);
-                              }
+                          if (this.PartnerDeductionsOptimized.find((y: any) => y.id === "PartnerJoint" + x.cflowId) != null) {
+                            this.PartnerDeductionsOptimized[this.PartnerDeductionsOptimized.findIndex((c: any) => c.id === "PartnerJoint" + x.cflowId)] = obj;
+                          }
+                          else {
+                            this.PartnerDeductionsOptimized.push(obj);
+                          }
 
-                          })
+                        })
 
+                        ////Calculate Tax Totals
 
-                          ////Calculate Tax Totals
+                        this.calculateTotalTaxIncomeOptimized("TotalTax-client", "Client", i);
+                        this.calculateCapitalLossAdjustmentOptimized("CLA-client", "Client", i);
+                        this.calculateTotalAssessibleIncomeOptimized("ClientAssessibleIncome", "TotalTax-client", "Client", i);
+                        this.calculateClientTotalDeductionsOptimized("ClientDeductions", "Client", i);
+                        this.calculateClientTaxableIncomeOptimized(i);
+                        this.calculateLowIncomeTOOptimized("ClientLowIncomeTO", "ClientTaxableIncome", "Client", i);
+                        this.calculateRefundableTaxOffsetOptimized("ClientFrankingCredits", "Client", i);
 
-                          this.calculateTotalTaxIncomeOptimized("TotalTax-client", "Client", i);
-                          this.calculateCapitalLossAdjustmentOptimized("CLA-client", "Client", i);
-                          this.calculateTotalAssessibleIncomeOptimized("ClientAssessibleIncome", "TotalTax-client", "Client", i);
-                          this.calculateClientTotalDeductionsOptimized("ClientDeductions", "Client", i);
-                          this.calculateClientTaxableIncomeOptimized(i);
-                          this.calculateLowIncomeTOOptimized("ClientLowIncomeTO", "ClientTaxableIncome", "Client", i);
-                          this.calculateRefundableTaxOffsetOptimized("ClientFrankingCredits", "Client", i);
+                        this.calculateClientTotalNRTaxOffsetOptimized("ClientTotalTO", "ClientLowIncomeTO", i);
+                        this.calculateGrossTaxOptimized("ClientGrossTax", "ClientTaxableIncome", "Client", i);
+                        this.calculateMedicareLevyOptimized("ClientMedicareLevy", "ClientTaxableIncome", "Client", i);
 
-                          this.calculateClientTotalNRTaxOffsetOptimized("ClientTotalTO", "ClientLowIncomeTO", i);
-                          this.calculateGrossTaxOptimized("ClientGrossTax", "ClientTaxableIncome", "Client", i);
-                          this.calculateMedicareLevyOptimized("ClientMedicareLevy", "ClientTaxableIncome", "Client", i);
-
-                          this.calculateTaxPayableNonRefundableOptimized("ClientTPNonRefundable", "ClientGrossTax", "ClientTotalTO", "Client", i);
-                          this.calculateTaxPayableRefundableOptimized("ClientTPRefundable", "ClientTPNonRefundable", "ClientFrankingCredits", "Client", i);
-                          this.calculateTotalTaxesPayableOptimized("ClientTotalTaxPayable", "ClientTPRefundable", "ClientMedicareLevy", "Client", i);
-                          this.calculateAverageTaxRateOptimized("ClientAverageTaxRate", "ClientTotalTaxPayable", "ClientAssessibleIncome", "Client", i);
-                          this.calculateMarginalTaxRateOptimized("ClientMarginalTaxRate", "ClientTaxableIncome", "Client", i);
-
-
-                          this.calculateTotalTaxIncomeOptimized("TotalTax-partner", "Partner", i);
-
-                          this.calculateCapitalLossAdjustmentOptimized("CLA-partner", "Partner", i);
-                          this.calculateTotalAssessibleIncomeOptimized("PartnerAssessibleIncome", "TotalTax-partner", "Partner", i);
-                          this.calculatePartnerTotalDeductionsOptimized("PartnerDeductions", "Partner", i);
-                          this.calculatePartnerTaxableIncomeOptimized(i);
-                          this.calculateLowIncomeTOOptimized("PartnerLowIncomeTO", "PartnerTaxableIncome", "Partner", i);
-                          this.calculateRefundableTaxOffsetOptimized("PartnerFrankingCredits", "Partner", i);
-
-                          this.calculatePartnerTotalNRTaxOffsetOptimized("PartnerTotalTO", "PartnerLowIncomeTO", i);
-                          this.calculateGrossTaxOptimized("PartnerGrossTax", "PartnerTaxableIncome", "Partner", i);
-                          this.calculateMedicareLevyOptimized("PartnerMedicareLevy", "PartnerTaxableIncome", "Partner", i);
-
-                          this.calculateTaxPayableNonRefundableOptimized("PartnerTPNonRefundable", "PartnerGrossTax", "PartnerTotalTO", "Partner", i);
-                          this.calculateTaxPayableRefundableOptimized("PartnerTPRefundable", "PartnerTPNonRefundable", "PartnerFrankingCredits", "Partner", i);
-                          this.calculateTotalTaxesPayableOptimized("PartnerTotalTaxPayable", "PartnerTPRefundable", "PartnerMedicareLevy", "Partner", i);
-                          this.calculateAverageTaxRateOptimized("PartnerAverageTaxRate", "PartnerTotalTaxPayable", "PartnerAssessibleIncome", "Partner", i);
-                          this.calculateMarginalTaxRateOptimized("PartnerMarginalTaxRate", "PartnerTaxableIncome", "Partner", i);
-                          this.calculateTotalIncomeTaxPayableOptimized("TotalITPayable", i);
+                        this.calculateTaxPayableNonRefundableOptimized("ClientTPNonRefundable", "ClientGrossTax", "ClientTotalTO", "Client", i);
+                        this.calculateTaxPayableRefundableOptimized("ClientTPRefundable", "ClientTPNonRefundable", "ClientFrankingCredits", "Client", i);
+                        this.calculateTotalTaxesPayableOptimized("ClientTotalTaxPayable", "ClientTPRefundable", "ClientMedicareLevy", "Client", i);
+                        this.calculateAverageTaxRateOptimized("ClientAverageTaxRate", "ClientTotalTaxPayable", "ClientAssessibleIncome", "Client", i);
+                        this.calculateMarginalTaxRateOptimized("ClientMarginalTaxRate", "ClientTaxableIncome", "Client", i);
 
 
+                        this.calculateTotalTaxIncomeOptimized("TotalTax-partner", "Partner", i);
 
-                          //Calculate Cashflow Totals
-                          this.calculateTotalIncomeOptimized("Total-client", "Client", i);
-                          this.calculateTotalIncomeOptimized("Total-partner", "Partner", i);
-                          this.calculateTotalExpenditureOptimized("Total-client", "Client", i);
-                          this.calculateTotalExpenditureOptimized("Total-partner", "Partner", i);
-                          this.calculateTotalExpenditureOptimized("Total-joint", "Joint", i);
+                        this.calculateCapitalLossAdjustmentOptimized("CLA-partner", "Partner", i);
+                        this.calculateTotalAssessibleIncomeOptimized("PartnerAssessibleIncome", "TotalTax-partner", "Partner", i);
+                        this.calculatePartnerTotalDeductionsOptimized("PartnerDeductions", "Partner", i);
+                        this.calculatePartnerTaxableIncomeOptimized(i);
+                        this.calculateLowIncomeTOOptimized("PartnerLowIncomeTO", "PartnerTaxableIncome", "Partner", i);
+                        this.calculateRefundableTaxOffsetOptimized("PartnerFrankingCredits", "Partner", i);
 
-                          this.calculateTotalInflowsOptimized(i);
-                          this.calculateTotalOutflowsOptimized(i);
-                          this.calculateNetCashflowOptimized(i);
-                          this.calculateNetAssetOptimized(i);
+                        this.calculatePartnerTotalNRTaxOffsetOptimized("PartnerTotalTO", "PartnerLowIncomeTO", i);
+                        this.calculateGrossTaxOptimized("PartnerGrossTax", "PartnerTaxableIncome", "Partner", i);
+                        this.calculateMedicareLevyOptimized("PartnerMedicareLevy", "PartnerTaxableIncome", "Partner", i);
+
+                        this.calculateTaxPayableNonRefundableOptimized("PartnerTPNonRefundable", "PartnerGrossTax", "PartnerTotalTO", "Partner", i);
+                        this.calculateTaxPayableRefundableOptimized("PartnerTPRefundable", "PartnerTPNonRefundable", "PartnerFrankingCredits", "Partner", i);
+                        this.calculateTotalTaxesPayableOptimized("PartnerTotalTaxPayable", "PartnerTPRefundable", "PartnerMedicareLevy", "Partner", i);
+                        this.calculateAverageTaxRateOptimized("PartnerAverageTaxRate", "PartnerTotalTaxPayable", "PartnerAssessibleIncome", "Partner", i);
+                        this.calculateMarginalTaxRateOptimized("PartnerMarginalTaxRate", "PartnerTaxableIncome", "Partner", i);
+                        this.calculateTotalIncomeTaxPayableOptimized("TotalITPayable", i);
+
+
+
+                        //Calculate Cashflow Totals
+                        this.calculateTotalIncomeOptimized("Total-client", "Client", i);
+                        this.calculateTotalIncomeOptimized("Total-partner", "Partner", i);
+                        this.calculateTotalExpenditureOptimized("Total-client", "Client", i);
+                        this.calculateTotalExpenditureOptimized("Total-partner", "Partner", i);
+                        this.calculateTotalExpenditureOptimized("Total-joint", "Joint", i);
+
+                        this.calculateTotalInflowsOptimized(i);
+                        this.calculateTotalOutflowsOptimized(i);
+                        this.calculateNetCashflowOptimized(i);
+                        this.calculateNetAssetOptimized(i);
+                      }
+
+
 
 
                           n++;
@@ -11015,8 +11017,7 @@ export class CurrentProjectionsComponent implements OnInit {
 
                                   }
                               }
-
-
+                         
                           //Client LifeStyles
                           this.lifestyleClient.forEach((x: any) => { // client
 
@@ -11822,7 +11823,7 @@ export class CurrentProjectionsComponent implements OnInit {
                           this.investmentClientOptimized.forEach((x: any) => {
                               var investmentStrategy: any = [];
                               if (p == 1) {
-                                  investmentStrategy = strategyOrder.filter(c => c.id === x.investmentId).filter(c => c.status === "Existing");
+                                investmentStrategy = strategyOrder.filter(c => c.id === x.investmentId).filter(c => c.status === "Existing");
                               }
 
                               this.investmentContribution = this.investmentCW.filter((c: any) => c.investmentId === x.investmentId).filter((r: any) => r.type === "C");
@@ -11830,20 +11831,20 @@ export class CurrentProjectionsComponent implements OnInit {
 
 
                               if (x.startDateType == "Start" || x.startDateType == "Existing") {
-                                  x.startDate = this.clientDetails.startDate
+                                x.startDate = this.clientDetails.startDate
                               }
                               else if (x.startDateType == "Client Retirement") {
-                                  x.startDate = this.clientDetails.clientRetirementYear - 1;
-                              }
-                             
-                              if (x.endDateType == "End") {
-                                  x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                              }
-                              else if (x.endDateType == "Client Retirement") {
-                                  x.endDate = this.clientDetails.clientRetirementYear - 1;
+                                x.startDate = this.clientDetails.clientRetirementYear - 1;
                               }
 
-                          
+                              if (x.endDateType == "End") {
+                                x.endDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                              }
+                              else if (x.endDateType == "Client Retirement") {
+                                x.endDate = this.clientDetails.clientRetirementYear - 1;
+                              }
+
+
 
                               var obj = this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId);
                               var begVal: any = {};
@@ -11865,27 +11866,27 @@ export class CurrentProjectionsComponent implements OnInit {
                               var cashFlow: any = {};
 
                               if (obj == null) {
-                                  obj = {};
+                                obj = {};
                               }
                               else {
-                                  obj.values;
-                                  begVal = obj.BegValues;
-                                  growth = obj.growthValues;
-                                  income = obj.incomeValues;
-                                  incomePaidOut = obj.incomePaidOutValues;
-                                  frankingCredits = obj.frankingCreditsValues;
-                                  earnings = obj.earningsValues;
-                                  purchaseOfAssets = obj.purchaseOfAssetValues;
-                                  regularContributions = obj.regularContributionsValues;
-                                  contributions = obj.contributionsValues;
-                                  saleOfAssets = obj.saleOfAssetValues;
-                                  regularWithdrawals = obj.regularWithdrawalsValues;
-                                  withdrawals = obj.withdrawalsValues;
-                                  endingVal = obj.endingValues;
-                                  endingValPV = obj.endingValuesPV;
-                                  realCG = obj.realCGValues;
-                                  unrealCG = obj.unrealCGValues;
-                                  cashFlow = obj.cashFlowValues;
+                                obj.values;
+                                begVal = obj.BegValues;
+                                growth = obj.growthValues;
+                                income = obj.incomeValues;
+                                incomePaidOut = obj.incomePaidOutValues;
+                                frankingCredits = obj.frankingCreditsValues;
+                                earnings = obj.earningsValues;
+                                purchaseOfAssets = obj.purchaseOfAssetValues;
+                                regularContributions = obj.regularContributionsValues;
+                                contributions = obj.contributionsValues;
+                                saleOfAssets = obj.saleOfAssetValues;
+                                regularWithdrawals = obj.regularWithdrawalsValues;
+                                withdrawals = obj.withdrawalsValues;
+                                endingVal = obj.endingValues;
+                                endingValPV = obj.endingValuesPV;
+                                realCG = obj.realCGValues;
+                                unrealCG = obj.unrealCGValues;
+                                cashFlow = obj.cashFlowValues;
                               }
 
 
@@ -11896,45 +11897,45 @@ export class CurrentProjectionsComponent implements OnInit {
 
                               //BeginningValue
                               if (n == 1) {
-                                  if (x.startDateType == "Existing") {
-                                      begVal[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      begVal[this.clientDetails.startDate + i] = 0;
-                                  }
+                                if (x.startDateType == "Existing") {
+                                  begVal[this.clientDetails.startDate + i] = x.value.toFixed();
+                                }
+                                else {
+                                  begVal[this.clientDetails.startDate + i] = 0;
+                                }
 
                               }
                               else {
-                                  var t: number = 0;
-                                  var cashflow = this.netCashFlowOptimized.find((y: any) => y.owner === "NetCashflow");
-                                  if (cashflow.values[(this.clientDetails.startDate + i) -  1] > 0) {
-                                      t += cashflow.values[(this.clientDetails.startDate + i) - 1];
+                                var t: number = 0;
+                                var cashflow = this.netCashFlowOptimized.find((y: any) => y.owner === "NetCashflow");
+                                if (cashflow.values[(this.clientDetails.startDate + i) - 1] > 0) {
+                                  t += cashflow.values[(this.clientDetails.startDate + i) - 1];
+                                }
+
+                                if (x.type == "Domestic Cash") {
+                                  if ((this.clientDetails.startDate + i) == x.startDate) {
+                                    begVal[this.clientDetails.startDate + i] = (x.value + t).toFixed();
                                   }
+                                  else if ((this.clientDetails.startDate + i) < x.startDate) {
 
-                                  if (x.type == "Domestic Cash") {
-                                      if ((this.clientDetails.startDate + i) == x.startDate) {
-                                          begVal[this.clientDetails.startDate + i] = (x.value + t).toFixed();
-                                      }
-                                      else if ((this.clientDetails.startDate + i) < x.startDate) {
-
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]) + t;
-                                      }
+                                    begVal[this.clientDetails.startDate + i] = 0;
                                   }
                                   else {
-                                      if ((this.clientDetails.startDate + i) == x.startDate) {
-                                          begVal[this.clientDetails.startDate + i] = (x.value).toFixed();
-                                      }
-                                      else if ((this.clientDetails.startDate + i) < x.startDate) {
-
-                                          begVal[this.clientDetails.startDate + i] = 0;
-                                      }
-                                      else {
-                                          begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]);
-                                      }
+                                    begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]) + t;
                                   }
+                                }
+                                else {
+                                  if ((this.clientDetails.startDate + i) == x.startDate) {
+                                    begVal[this.clientDetails.startDate + i] = (x.value).toFixed();
+                                  }
+                                  else if ((this.clientDetails.startDate + i) < x.startDate) {
+
+                                    begVal[this.clientDetails.startDate + i] = 0;
+                                  }
+                                  else {
+                                    begVal[this.clientDetails.startDate + i] = Number(endingVal[Number(this.clientDetails.startDate + i) - 1]);
+                                  }
+                                }
                               }
 
 
@@ -11953,28 +11954,28 @@ export class CurrentProjectionsComponent implements OnInit {
                               var incomeVal = incomeUnAdj - (ICR * (incomeUnAdj / (growthUnAdj + incomeUnAdj)));
 
                               if (typeof growthVal === "number" && !isNaN(growthVal)) {
-                                  growth[this.clientDetails.startDate + i] = growthVal.toFixed();
+                                growth[this.clientDetails.startDate + i] = growthVal.toFixed();
                               }
                               else {
-                                  growth[this.clientDetails.startDate + i] = 0;
+                                growth[this.clientDetails.startDate + i] = 0;
                               }
 
                               if (typeof incomeVal === "number" && !isNaN(incomeVal)) {
-                                  income[this.clientDetails.startDate + i] = incomeVal.toFixed();
+                                income[this.clientDetails.startDate + i] = incomeVal.toFixed();
                               }
                               else {
-                                  income[this.clientDetails.startDate + i] = 0;
+                                income[this.clientDetails.startDate + i] = 0;
                               }
 
 
                               //incomePaidOut
 
                               if (x.reinvest == "N") {
-                                  incomePaidOut[this.clientDetails.startDate + i] = income[this.clientDetails.startDate + i];
+                                incomePaidOut[this.clientDetails.startDate + i] = income[this.clientDetails.startDate + i];
 
                               }
                               else {
-                                  incomePaidOut[this.clientDetails.startDate + i] = 0;
+                                incomePaidOut[this.clientDetails.startDate + i] = 0;
                               }
 
                               //FrankingCredits
@@ -11988,48 +11989,48 @@ export class CurrentProjectionsComponent implements OnInit {
                               earnings[this.clientDetails.startDate + i] = (Number(growth[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])).toFixed();
 
                               if (p == 0) {
-                                  regularContributions[this.clientDetails.startDate + i] = 0;
+                                regularContributions[this.clientDetails.startDate + i] = 0;
                               }
                               else {
-                                  if ((investmentStrategy.length > 0) && (investmentStrategy[0].AllocatedValue > 0) && (investmentStrategy[0].AllocatedValue > (begVal[this.clientDetails.startDate + i] + income[this.clientDetails.startDate + i] + growth[this.clientDetails.startDate + i] - incomePaidOut[this.clientDetails.startDate + i]))) {
-                                      regularContributions[this.clientDetails.startDate + i] = Number(investmentStrategy[0].AllocatedValue) - Number(begVal[this.clientDetails.startDate + i] + income[this.clientDetails.startDate + i] + growth[this.clientDetails.startDate + i] -  incomePaidOut[this.clientDetails.startDate + i]);
-                                  }
-                                  else {
-                                      //List of Contributions
-                                      let ContributionSum: number = 0;
-                                      this.investmentContribution.forEach((y: any) => { // client
+                                if ((investmentStrategy.length > 0) && (investmentStrategy[0].AllocatedValue > 0) && (investmentStrategy[0].AllocatedValue > (begVal[this.clientDetails.startDate + i] + income[this.clientDetails.startDate + i] + growth[this.clientDetails.startDate + i] - incomePaidOut[this.clientDetails.startDate + i]))) {
+                                  regularContributions[this.clientDetails.startDate + i] = Number(investmentStrategy[0].AllocatedValue) - Number(begVal[this.clientDetails.startDate + i] + income[this.clientDetails.startDate + i] + growth[this.clientDetails.startDate + i] - incomePaidOut[this.clientDetails.startDate + i]);
+                                }
+                                else {
+                                  //List of Contributions
+                                  let ContributionSum: number = 0;
+                                  this.investmentContribution.forEach((y: any) => { // client
 
-                                          if (y.fromDateType == "Start") {
-                                              y.fromDate = this.clientDetails.startDate;
-                                          }
-                                          if (y.toDateType == "End") {
-                                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                          }
+                                    if (y.fromDateType == "Start") {
+                                      y.fromDate = this.clientDetails.startDate;
+                                    }
+                                    if (y.toDateType == "End") {
+                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                    }
 
-                                          if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                              var t = parseInt(y.value);
-                                              ContributionSum = ContributionSum + t;
-                                          }
+                                    if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                      var t = parseInt(y.value);
+                                      ContributionSum = ContributionSum + t;
+                                    }
 
-                                      });
+                                  });
 
-                                      regularContributions[this.clientDetails.startDate + i] = ContributionSum;
-                                  }
+                                  regularContributions[this.clientDetails.startDate + i] = ContributionSum;
+                                }
                               }
 
 
                               //Purchase of assets
                               if (x.startDateType != "Existing") {
 
-                                  if (x.startDate == this.clientDetails.startDate + i) {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
-                                  }
-                                  else {
-                                      purchaseOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
+                                if (x.startDate == this.clientDetails.startDate + i) {
+                                  purchaseOfAssets[this.clientDetails.startDate + i] = x.value.toFixed();
+                                }
+                                else {
+                                  purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                                }
                               }
                               else {
-                                  purchaseOfAssets[this.clientDetails.startDate + i] = 0;
+                                purchaseOfAssets[this.clientDetails.startDate + i] = 0;
                               }
 
                               //Contributions
@@ -12037,48 +12038,48 @@ export class CurrentProjectionsComponent implements OnInit {
 
 
                               if (p == 0) {
-                                  regularWithdrawals[this.clientDetails.startDate + i] = 0;
+                                regularWithdrawals[this.clientDetails.startDate + i] = 0;
                               }
                               else {
-                                  if ((investmentStrategy.length > 0) && (investmentStrategy[0].AllocatedValue < (Number(begVal[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])))) {
-                                      regularWithdrawals[this.clientDetails.startDate + i] =( Number(begVal[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])) - Number(investmentStrategy[0].AllocatedValue);
-                                  }
-                                  else {
-                                      //List of Withdrawals
-                                      //TODO: only if main date started
-                                      let WithdrawalSum: number = 0;
-                                      this.investmentWithdrawal.forEach((y: any) => { // client
+                                if ((investmentStrategy.length > 0) && (investmentStrategy[0].AllocatedValue < (Number(begVal[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])))) {
+                                  regularWithdrawals[this.clientDetails.startDate + i] = (Number(begVal[this.clientDetails.startDate + i]) + Number(income[this.clientDetails.startDate + i]) + Number(growth[this.clientDetails.startDate + i]) - Number(incomePaidOut[this.clientDetails.startDate + i])) - Number(investmentStrategy[0].AllocatedValue);
+                                }
+                                else {
+                                  //List of Withdrawals
+                                  //TODO: only if main date started
+                                  let WithdrawalSum: number = 0;
+                                  this.investmentWithdrawal.forEach((y: any) => { // client
 
-                                          if (y.fromDateType == "Start") {
-                                              y.fromDate = this.clientDetails.startDate;
-                                          }
-                                          if (y.toDateType == "End") {
-                                              y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
-                                          }
+                                    if (y.fromDateType == "Start") {
+                                      y.fromDate = this.clientDetails.startDate;
+                                    }
+                                    if (y.toDateType == "End") {
+                                      y.toDate = Number(this.clientDetails.startDate) + (Number(this.clientDetails.period) - 1);
+                                    }
 
-                                          if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
-                                              var t = parseInt(y.value);
-                                              WithdrawalSum = WithdrawalSum + t;
-                                          }
+                                    if (y.fromDate <= this.clientDetails.startDate + i && y.toDate >= this.clientDetails.startDate + i) {
+                                      var t = parseInt(y.value);
+                                      WithdrawalSum = WithdrawalSum + t;
+                                    }
 
-                                      });
+                                  });
 
-                                      regularWithdrawals[this.clientDetails.startDate + i] = WithdrawalSum;
-                                  }
+                                  regularWithdrawals[this.clientDetails.startDate + i] = WithdrawalSum;
+                                }
                               }
 
                               //Sale of assets
                               if (x.endDateType != "Retain") {
 
-                                  if (x.endDate == this.clientDetails.startDate + i) {
-                                      saleOfAssets[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(regularWithdrawals[this.clientDetails.startDate + i]);
-                                  }
-                                  else {
-                                      saleOfAssets[this.clientDetails.startDate + i] = 0;
-                                  }
+                                if (x.endDate == this.clientDetails.startDate + i) {
+                                  saleOfAssets[this.clientDetails.startDate + i] = Number(begVal[this.clientDetails.startDate + i]) + Number(earnings[this.clientDetails.startDate + i]) + Number(contributions[this.clientDetails.startDate + i]) - Number(regularWithdrawals[this.clientDetails.startDate + i]);
+                                }
+                                else {
+                                  saleOfAssets[this.clientDetails.startDate + i] = 0;
+                                }
                               }
                               else {
-                                  saleOfAssets[this.clientDetails.startDate + i] = 0;
+                                saleOfAssets[this.clientDetails.startDate + i] = 0;
                               }
 
                               //Withdrawals
@@ -12095,42 +12096,42 @@ export class CurrentProjectionsComponent implements OnInit {
 
 
                               if (x.type == "Domestic Cash" || x.type == "Domestic Fixed Interest") {
-                                  realCG[this.clientDetails.startDate + i] = 0;
-                                  unrealCG[this.clientDetails.startDate + i] = 0;
+                                realCG[this.clientDetails.startDate + i] = 0;
+                                unrealCG[this.clientDetails.startDate + i] = 0;
                               }
                               else {
-                                  if ((begVal[this.clientDetails.startDate + i]) != 0) {
-                                      //Real and Unreal CG
-                                      var TotalCG = 0;
-                                      var RateCG = 0
+                                if ((begVal[this.clientDetails.startDate + i]) != 0) {
+                                  //Real and Unreal CG
+                                  var TotalCG = 0;
+                                  var RateCG = 0
 
 
-                                      if (Number(this.clientDetails.startDate + i) == x.startDate) {
-                                          TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(growth[this.clientDetails.startDate + i])));
-                                      }
-                                      else if (Number(this.clientDetails.startDate + i) > x.startDate) {
-                                          TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(growth[this.clientDetails.startDate + i]);
-                                      }
+                                  if (Number(this.clientDetails.startDate + i) == x.startDate) {
+                                    TotalCG = Math.max(0, (Number(x.value) - x.costBase + Number(growth[this.clientDetails.startDate + i])));
+                                  }
+                                  else if (Number(this.clientDetails.startDate + i) > x.startDate) {
+                                    TotalCG = Number(unrealCG[Number(this.clientDetails.startDate + i) - 1]) + Number(growth[this.clientDetails.startDate + i]);
+                                  }
 
-                                      if (endingVal[this.clientDetails.startDate + i] == 0) {
-                                          realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
-                                      }
-                                      else {
-                                          if (Number(withdrawals[this.clientDetails.startDate + i]) != 0) {
-                                              realCG[this.clientDetails.startDate + i] = ((Number(withdrawals[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
-                                          }
-                                          else {
-                                              realCG[this.clientDetails.startDate + i] = 0;
-                                          }
-                                      }
-
-                                      unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
-
+                                  if (endingVal[this.clientDetails.startDate + i] == 0) {
+                                    realCG[this.clientDetails.startDate + i] = TotalCG.toFixed();
                                   }
                                   else {
+                                    if (Number(withdrawals[this.clientDetails.startDate + i]) != 0) {
+                                      realCG[this.clientDetails.startDate + i] = ((Number(withdrawals[this.clientDetails.startDate + i]) / Number(endingVal[this.clientDetails.startDate + i])) * Number(TotalCG)).toFixed();
+                                    }
+                                    else {
                                       realCG[this.clientDetails.startDate + i] = 0;
-                                      unrealCG[this.clientDetails.startDate + i] = 0;
+                                    }
                                   }
+
+                                  unrealCG[this.clientDetails.startDate + i] = (Number(TotalCG) - Number(realCG[this.clientDetails.startDate + i])).toFixed();
+
+                                }
+                                else {
+                                  realCG[this.clientDetails.startDate + i] = 0;
+                                  unrealCG[this.clientDetails.startDate + i] = 0;
+                                }
                               }
 
 
@@ -12154,12 +12155,12 @@ export class CurrentProjectionsComponent implements OnInit {
 
 
                               if (this.BeginningValueOptimized.find((y: any) => y.owner === x.investmentId) != null) {
-                                  this.BeginningValueOptimized[this.BeginningValueOptimized.findIndex((c: any) => c.owner === x.investmentId)] = obj;
+                                this.BeginningValueOptimized[this.BeginningValueOptimized.findIndex((c: any) => c.owner === x.investmentId)] = obj;
                               }
                               else {
-                                  this.BeginningValueOptimized.push(obj);
+                                this.BeginningValueOptimized.push(obj);
                               }
-                          })
+                            });
 
                           //Calculate Partner Investment
                           this.investmentPartner.forEach((x: any) => { // client
@@ -16228,6 +16229,73 @@ export class CurrentProjectionsComponent implements OnInit {
               totalPension["value"] = PensionSum;
               this.totalpensionOverview.push(totalPension);
 
+
+            ////Cashflow
+            //console.log(this.inflow);
+            //console.log(this.outflow);
+            //console.log(this.netCashFlow);
+            ////Liabilities
+            //console.log(this.LBValue);
+            ////Assets
+            //console.log(this.BeginningValue);
+            //console.log(this.PropertiesValue);
+            //console.log(this.SuperValue);
+            //console.log(this.PensionValue);
+            ////Tax
+            //console.log(this.LBValue);
+            //console.log(this.LBValue);
+            ////Totals
+            //console.log(this.FAtotal);
+            //console.log(this.LATotal);
+            //console.log(this.Pensiontotal);
+            //console.log(this.Propertiestotal);
+            //console.log(this.Supertotal);
+            //console.log(this.LBtotal);
+
+          
+
+            var masterJSON = {};
+            masterJSON["inflow"] = this.inflow;
+            masterJSON["outflow"] = this.outflow;
+            masterJSON["netCashflow"] = this.netCashFlow;
+
+            masterJSON["lifestyles"] = this.lifestyles;
+            masterJSON["investments"] = this.BeginningValue;
+            masterJSON["properties"] = this.PropertiesValue;
+            masterJSON["supers"] = this.SuperValue;
+            masterJSON["pensions"] = this.PensionValue;
+
+  
+            masterJSON["liabilities"] = this.LBValue;
+
+            masterJSON["Income"] = this.Income;
+            masterJSON["ClientDeductions"] = this.ClientDeductions;
+            masterJSON["PartnerDeductions"] = this.PartnerDeductions;
+            masterJSON["clientTaxableIncome"] = this.clientTaxableIncome;
+            masterJSON["partnerTaxableIncome"] = this.partnerTaxableIncome;
+            masterJSON["clientLossAdjustment"] = this.clientLossAdjustment;
+            masterJSON["partnerLossAdjustment"] = this.partnerLossAdjustment;
+            masterJSON["GrossTax"] = this.GrossTax;
+            masterJSON["clientNRTaxOffset"] = this.clientNRTaxOffset;
+            masterJSON["partnerNRTaxOffsets"] = this.partnerNRTaxOffset;
+            masterJSON["clientRTaxOffset"] = this.clientRTaxOffset;
+            masterJSON["partnerRTaxOffset"] = this.partnerRTaxOffset;
+            masterJSON["NetPayable"] = this.NetPayable;
+            masterJSON["clientMedicareLevy"] = this.clientMedicareLevy;
+            masterJSON["partnerMedicareLevy"] = this.partnerMedicareLevy;
+            masterJSON["TotalPayable"] = this.TotalPayable;
+
+
+            masterJSON["FATotal"] = this.FAtotal;
+            masterJSON["LATotal"] = this.LATotal;
+            masterJSON["PensionTotal"] = this.Pensiontotal;
+            masterJSON["PropertiesTotal"] = this.Propertiestotal;
+            masterJSON["SuperTotal"] = this.Supertotal;
+            masterJSON["LBTotal"] = this.LBtotal;
+
+       
+            console.log(JSON.stringify(masterJSON));
+            //console.log(JSON.stringify(this.finalStrategies));
           }
 
       }, err => {
@@ -16282,6 +16350,7 @@ export class CurrentProjectionsComponent implements OnInit {
      
   }
 
+  //Total Functions
  
   //Common functions
   private setYear() {
@@ -16557,11 +16626,8 @@ export class CurrentProjectionsComponent implements OnInit {
               this.outflow.push(total);
           }
       }
-
-
-
     }
-    private calculateNetCashflow(iVal: number, q: number, id: number) {
+  private calculateNetCashflow(iVal: number, q: number, id: number) {
       var inflow = this.inflow.filter(c => c.name === "Inflow");
       var outflow = this.outflow.filter(c => c.name === "Outflow");
 
@@ -16736,7 +16802,6 @@ export class CurrentProjectionsComponent implements OnInit {
 
       
   }
-
   private calculateNetAsset(iVal: number) {
     
 
@@ -16817,7 +16882,6 @@ export class CurrentProjectionsComponent implements OnInit {
 
 
   }
-
   private calculateNetAssetOptimized(iVal: number) {
 
 
@@ -16907,7 +16971,7 @@ export class CurrentProjectionsComponent implements OnInit {
 
 
   }
-  //Cashflow functions C
+  //Cashflow functions - Optimized
   private calculateTotalIncomeOptimized(owner: string, filter: string, iVal: number) {
       for (var i = 0; i <= iVal; i++) {
           var total = this.inflowOptimized.find((y: any) => y.owner === owner);
@@ -17457,7 +17521,7 @@ export class CurrentProjectionsComponent implements OnInit {
                   }
               });
 
-              this.PropertiesValue.forEach((x: any) => {
+            this.Propertiestotal.forEach((x: any) => {
                   if (x.owner == "RCGP-client") {
                       if (x.values[this.clientDetails.startDate + i] >= 0) {
                           SumCG = SumCG + Number(x.values[this.clientDetails.startDate + i]);
@@ -17506,7 +17570,7 @@ export class CurrentProjectionsComponent implements OnInit {
                   }
               });
 
-              this.PropertiesValue.forEach((x: any) => {
+            this.Propertiestotal.forEach((x: any) => {
                   if (x.owner == "RCGP-partner") {
                       if (x.values[this.clientDetails.startDate + i] >= 0) {
                           SumCG = SumCG + Number(x.values[this.clientDetails.startDate + i]);
@@ -17807,7 +17871,7 @@ export class CurrentProjectionsComponent implements OnInit {
           adjustment["owner"] = "ClientAdjustment";
           adjustment["name"] = "ClientAdjustment";
 
-          //Gti stands for ‘Gross taxable income’
+          //Gti stands for â€˜Gross taxable incomeâ€™
           let lossG: number = 0;
           let taxInc: number = 0;
 
@@ -17823,7 +17887,7 @@ export class CurrentProjectionsComponent implements OnInit {
                   lossG = deduction[0].values[this.clientDetails.startDate + i] - income[0].values[this.clientDetails.startDate + i];
               }
 
-              //LossCF stands for ‘Loss carried forward’
+              //LossCF stands for â€˜Loss carried forwardâ€™
               let lossCF: number = lossG + lossBF - lossAdj;
               lossBF = lossCF;
 
@@ -17898,7 +17962,7 @@ export class CurrentProjectionsComponent implements OnInit {
           adjustment["owner"] = "PartnerAdjustment";
           adjustment["name"] = "PartnerAdjustment";
 
-          //Gti stands for ‘Gross taxable income’
+          //Gti stands for â€˜Gross taxable incomeâ€™
           let lossG: number = 0;
           let taxInc: number = 0;
 
@@ -17914,7 +17978,7 @@ export class CurrentProjectionsComponent implements OnInit {
                   lossG = deduction[0].values[this.clientDetails.startDate + i] - income[0].values[this.clientDetails.startDate + i];
               }
 
-              //LossCF stands for ‘Loss carried forward’
+              //LossCF stands for â€˜Loss carried forwardâ€™
               let lossCF: number = lossG + lossBF - lossAdj;
               lossBF = lossCF;
 
@@ -18570,7 +18634,7 @@ export class CurrentProjectionsComponent implements OnInit {
 
 
               if (typeof taxableIncome[0].values[this.clientDetails.startDate + i] === "number" && !isNaN(taxableIncome[0].values[this.clientDetails.startDate + i])) {
-                  if (j == index) {
+                 if (j == index) {
                       if (val > one[0].threshold) {
                           mtr = two[0].rate;
                       }
@@ -18653,7 +18717,7 @@ export class CurrentProjectionsComponent implements OnInit {
 
   }
 
-  //Tax functions
+  //Tax functions - Optimized
 
   private calculateTotalTaxIncomeOptimized(owner: string, filter: string, iVal: number) {
 
@@ -19148,7 +19212,7 @@ export class CurrentProjectionsComponent implements OnInit {
           adjustment["owner"] = "ClientAdjustment";
           adjustment["name"] = "ClientAdjustment";
 
-          //Gti stands for ‘Gross taxable income’
+          //Gti stands for â€˜Gross taxable incomeâ€™
           let lossG: number = 0;
           let taxInc: number = 0;
 
@@ -19164,7 +19228,7 @@ export class CurrentProjectionsComponent implements OnInit {
                   lossG = deduction[0].values[this.clientDetails.startDate + i] - income[0].values[this.clientDetails.startDate + i];
               }
 
-              //LossCF stands for ‘Loss carried forward’
+              //LossCF stands for â€˜Loss carried forwardâ€™
               let lossCF: number = lossG + lossBF - lossAdj;
               lossBF = lossCF;
 
@@ -19239,7 +19303,7 @@ export class CurrentProjectionsComponent implements OnInit {
           adjustment["owner"] = "PartnerAdjustment";
           adjustment["name"] = "PartnerAdjustment";
 
-          //Gti stands for ‘Gross taxable income’
+          //Gti stands for â€˜Gross taxable incomeâ€™
           let lossG: number = 0;
           let taxInc: number = 0;
 
@@ -19255,7 +19319,7 @@ export class CurrentProjectionsComponent implements OnInit {
                   lossG = deduction[0].values[this.clientDetails.startDate + i] - income[0].values[this.clientDetails.startDate + i];
               }
 
-              //LossCF stands for ‘Loss carried forward’
+              //LossCF stands for â€˜Loss carried forwardâ€™
               let lossCF: number = lossG + lossBF - lossAdj;
               lossBF = lossCF;
 
@@ -20186,7 +20250,7 @@ export class CurrentProjectionsComponent implements OnInit {
               if (x.type == "Joint") {
                   if (x.rentValues[this.clientDetails.startDate + i] != "-") {
                       var t = parseInt(x.rentValues[this.clientDetails.startDate + i]);
-                      sum = sum + t;
+                    jointSum = jointSum + t;
                   }
               }
           });
@@ -21086,30 +21150,26 @@ export class CurrentProjectionsComponent implements OnInit {
           //TODO : Decimal Value ?
           this.PropertiesValue.forEach((x: any) => {
               if (x.type == "Joint") {
-                  if (x.type == filter) {
-                      if (x.startDateType == "Existing") {
-                          if (x.realCGValues[this.clientDetails.startDate + i] != "-") {
-                              var t = parseInt(x.realCGValues[this.clientDetails.startDate + i]);
-                              jointSum = jointSum + (t / 2);
-                          }
-                      }
-                      else {
-                          if ((this.clientDetails.startDate + i) - Number(x.propPurchase) > 1) {
-                              if (x.realCGValues[this.clientDetails.startDate + i] != "-") {
-                                  var t = parseInt(x.realCGValues[this.clientDetails.startDate + i]);
-                                  jointSum = jointSum + (t / 2);
-                              }
-                          }
-                          else {
-                              if (x.realCGValues[this.clientDetails.startDate + i] != "-") {
-                                  var t = parseInt(x.realCGValues[this.clientDetails.startDate + i]);
-                                  jointSum = jointSum + t;
-                              }
-                          }
-                      }
-
-
+                if (x.startDateType == "Existing") {
+                  if (x.realCGValues[this.clientDetails.startDate + i] != "-") {
+                    var t = parseInt(x.realCGValues[this.clientDetails.startDate + i]);
+                    jointSum = jointSum + (t / 2);
                   }
+                }
+                else {
+                  if ((this.clientDetails.startDate + i) - Number(x.propPurchase) > 1) {
+                    if (x.realCGValues[this.clientDetails.startDate + i] != "-") {
+                      var t = parseInt(x.realCGValues[this.clientDetails.startDate + i]);
+                      jointSum = jointSum + (t / 2);
+                    }
+                  }
+                  else {
+                    if (x.realCGValues[this.clientDetails.startDate + i] != "-") {
+                      var t = parseInt(x.realCGValues[this.clientDetails.startDate + i]);
+                      jointSum = jointSum + t;
+                    }
+                  }
+                }
               }
           });
 
@@ -22179,7 +22239,6 @@ export class CurrentProjectionsComponent implements OnInit {
           }
       }
   }
-
   private calculateTotalLASaleProceedsOptimized(owner: string, iVal: number) {
       for (var i = 0; i <= iVal; i++) {
           var total = this.LATotalOptimized.find((y: any) => y.owner === owner);
@@ -22444,6 +22503,9 @@ export class CurrentProjectionsComponent implements OnInit {
           }
       }
   }
+
+
+
 
   //Routing
     onPreviousCF() {

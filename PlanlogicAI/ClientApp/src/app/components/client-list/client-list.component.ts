@@ -227,7 +227,9 @@ export class ClientListComponent implements OnInit {
         this.clientService.createBasicDetails(this.client, this.cl, this.selectedClient).subscribe((data) => {
             localStorage.removeItem('ClientDetails');
             localStorage.setItem('ClientDetails', JSON.stringify(data));
-            this.router.navigate(['counter/current-position']);
+          this.router.navigate(['counter/current-position']);
+
+          console.log(JSON.stringify(this.client));
         });
     }
   changeDOB(event: MatDatepickerInputEvent<Date>, type: any) {

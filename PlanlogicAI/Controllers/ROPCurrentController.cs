@@ -45,8 +45,8 @@ namespace PlanlogicAI.Controllers
                                                                                                                                 Value = s.Value,
                                                                                                                                 Percentage = s.Percentage,
                                                                                                                                 Product = sa.ProductName,
-                                                                                                                                ProposedProduct = s.ProposedProduct
-
+                                                                                                                                ProposedProduct = s.ProposedProduct,
+                                                                                                                                OriginalProduct = s.OriginalProduct
 
                                                                                                                             });
             return list;

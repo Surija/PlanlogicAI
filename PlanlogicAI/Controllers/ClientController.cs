@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace PlanlogicAI.Controllers
 {
+
     [Route("/api/clients")]
     public class ClientController : Controller
     {

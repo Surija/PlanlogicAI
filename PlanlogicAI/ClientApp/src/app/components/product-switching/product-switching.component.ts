@@ -89,6 +89,7 @@ export class ProductSwitchingComponent implements OnInit {
 
   ropDetails: any = {
     productId: 0,
+    originalProduct:0,
     productName: "",
     productType: "",
     owner: "Client",
@@ -1564,7 +1565,7 @@ export class ProductSwitchingComponent implements OnInit {
       }
     }
   }
-  async getROPCurrent(id: number, product: string, owner: string, value: number, productId: number, type: number, proposedId: number) {
+  async getROPCurrent(id: number, product: string, owner: string, value: number, productId: number,originalProduct : number, type: number, proposedId: number) {
     var data: any = await this.ropCurrentService.getUnderlyingFundsROPCurrent(id, productId).toPromise();
     var fund: any = await this.fundService.getSelectedFunds(productId).toPromise();
     var ropFundDetails: any = {
@@ -1590,7 +1591,7 @@ export class ProductSwitchingComponent implements OnInit {
         this.productFeeDetails.push(feeDetails);
       }
     });
-    var temp = { 'id': id, 'data': data, 'owner': owner, 'proposedId': proposedId, 'product': product, 'value': value, 'productId': productId, 'ropFunds': fund, 'filteredFund': fund, 'fundDetails': ropFundDetails, 'feeDetails': fees, 'feeId': product + "" + id };
+    var temp = { 'id': id, 'data': data, 'owner': owner, 'proposedId': proposedId, 'originalProduct':originalProduct, 'product': product, 'value': value, 'productId': productId, 'ropFunds': fund, 'filteredFund': fund, 'fundDetails': ropFundDetails, 'feeDetails': fees, 'feeId': product + "" + id };
 
 
     if (type == 0) {
@@ -1694,7 +1695,7 @@ export class ProductSwitchingComponent implements OnInit {
   async setROPCurrent(id: number) {
     var data: any = await this.ropCurrentService.getClientROPCurrent(id).toPromise();
     data.forEach((item: any) => {
-      this.getROPCurrent(item.recId, item.product, item.owner, item.value, item.productId, 1, id);
+      this.getROPCurrent(item.recId, item.product, item.owner, item.value, item.productId, item.originalProduct, 1, id);
     });
   }
 
@@ -1784,7 +1785,7 @@ export class ProductSwitchingComponent implements OnInit {
       this.ropCurrentService.getClientROPCurrent(this.selectedProduct).subscribe((data: any) => {
         this.ropCurrentReplacement = data;
         for (var i = 0; i < this.ropCurrentReplacement.length; i++) {
-          this.getROPCurrent(data[i].recId, data[i].product, data[i].owner, data[i].value, data[i].productId, 0, this.selectedProduct);
+          this.getROPCurrent(data[i].recId, data[i].product, data[i].owner, data[i].value, data[i].productId, data[i].originalProduct, 0, this.selectedProduct);
         }
       });
 
@@ -2996,8 +2997,15 @@ export class ProductSwitchingComponent implements OnInit {
             this.ropDetails.clientId = this.selectedClient;
             this.ropDetails.recId = this.ropCurrent;
 
+          var t: any = this;
+          var originalCurrentProduct = $.grep(this.currentInvestments, function (fnd: any) {
+            return fnd.recId == t.ropDetails.originalProduct;
+          }); 
+
+          this.ropDetails.productId = originalCurrentProduct[0].productId;
+
             this.ropCurrentService.createNewProduct(this.ropDetails, this.selectedProduct).subscribe((data: any) => {
-                this.getROPCurrent(data.recId, data.product, data.owner, data.value, data.productId, 0, this.selectedProduct);
+              this.getROPCurrent(data.recId, data.product, data.owner, data.value, data.productId, data.originalProduct, 0, this.selectedProduct);
 
                 this.ropFundDetails = {
                     apircode: "",
@@ -3006,7 +3014,8 @@ export class ProductSwitchingComponent implements OnInit {
                 };
 
                 this.ropDetails = {
-                    productId: 0,
+                  productId: 0,
+                  originalProduct:0,
                     productName: "",
                     productType: "",
                     owner: "Client",
@@ -3020,9 +3029,16 @@ export class ProductSwitchingComponent implements OnInit {
     }
     editROPCurrentProduct(currentProduct: any, id: number) {
         currentProduct.recId = id;
-        currentProduct.clientId = this.selectedClient;
+      currentProduct.clientId = this.selectedClient;
+
+
+      var originalCurrentProduct = $.grep(this.currentInvestments, function (fnd: any) {
+        return fnd.recId == currentProduct.originalProduct;
+      });
+
+      currentProduct.productId = originalCurrentProduct[0].productId;
         this.ropCurrentService.createNewProduct(currentProduct, this.selectedProduct).subscribe((data: any) => {
-            this.getROPCurrent(data.recId, data.product, data.owner, data.value, data.productId, 2, this.selectedProduct);
+          this.getROPCurrent(data.recId, data.product, data.owner, data.value, data.productId, data.originalProduct, 2, this.selectedProduct);
         });
     }
     deleteROPCurrentProduct(id: number) {
